@@ -1,0 +1,6 @@
+
+.homeassistant/
+
+.idea/
+
+custom_components/webrtc/__pycache__/

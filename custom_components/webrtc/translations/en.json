@@ -1,0 +1,7 @@
+{
+  "config": {
+    "abort": {
+      "arch": "Unsupported OS architecture: {uname}"
+    }
+  }
+}

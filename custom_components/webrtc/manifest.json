@@ -1,0 +1,11 @@
+{
+  "domain": "webrtc",
+  "name": "WebRTC Camera",
+  "config_flow": true,
+  "documentation": "https://github.com/AlexxIT/WebRTC",
+  "issue_tracker": "https://github.com/AlexxIT/WebRTC/issues",
+  "requirements": [],
+  "dependencies": ["lovelace"],
+  "codeowners": ["@AlexxIT"],
+  "version": "v1.0.0"
+}
