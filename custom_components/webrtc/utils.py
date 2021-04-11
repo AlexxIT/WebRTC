@@ -39,5 +39,9 @@ async def init_resource(hass: HomeAssistantType, url: str) -> bool:
         if item['url'] == url:
             return False
 
-    await resources.async_create_item({'res_type': 'module', 'url': url})
+    try:
+        await resources.async_create_item({'res_type': 'module', 'url': url})
+    except:
+        resources.data.append({'type': 'module', 'url': url})
+
     return True
