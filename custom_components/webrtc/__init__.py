@@ -31,7 +31,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
                 os.remove(file)
 
         url = utils.get_binary_url(BINARY_VERSION)
-        _LOGGER.debug(f"Donwload new binary: {url}")
+        _LOGGER.debug(f"Download new binary: {url}")
 
         session = async_get_clientsession(hass)
         r = await session.get(url)

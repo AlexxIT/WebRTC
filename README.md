@@ -19,7 +19,7 @@ Why WebRTC:
 
 ## Install
 
-You can install component with [HACS](https://hacs.xyz/) custom repo: . HACS > Integrations > 3 dots (upper top corner) > Custom repositories > URL: `AlexxIT/WebRTC` > Category: Integration
+You can install component with [HACS](https://hacs.xyz/) custom repo: HACS > Integrations > 3 dots (upper top corner) > Custom repositories > URL: `AlexxIT/WebRTC` > Category: Integration
 
 Or manually copy `webrtc` folder from [latest release](https://github.com/AlexxIT/WebRTC/releases/latest) to `custom_components` folder in your config folder. 
 
