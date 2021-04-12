@@ -42,14 +42,18 @@ class WebRTCCamera extends HTMLElement {
         }
 
         const pingChannel = pc.createDataChannel('foo');
+        let intervalId;
         pingChannel.onopen = () => {
-            setInterval(() => {
+            intervalId = setInterval(() => {
                 try {
                     pingChannel.send('ping');
                 } catch (e) {
                     console.warn(e);
                 }
             }, 1000);
+        }
+        pingChannel.onclose = () => {
+            clearInterval(intervalId);
         }
     }
 
