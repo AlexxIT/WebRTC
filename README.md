@@ -54,6 +54,7 @@ Known work cameras:
 - Hikvision: DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS  
 - Reolink: RLC-410, RLC-410W, E1 Pro, 4505MP
 - TP-Link: Tapo C200
+- Wyze Cam v2 (support sound)
 
 Support external camera access. You need to forward UDP ports 50000-50009 to Hass.io server on your router.
 
