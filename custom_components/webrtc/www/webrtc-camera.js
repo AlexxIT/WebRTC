@@ -43,7 +43,9 @@ class WebRTCCamera extends HTMLElement {
         // recvonly don't work with Firefox
         // "Answer tried to set recv when offer did not set send"
         pc.addTransceiver('video', {'direction': 'sendrecv'})
-        pc.addTransceiver('audio', {'direction': 'sendrecv'})
+        if (this.config.audio !== false) {
+            pc.addTransceiver('audio', {'direction': 'sendrecv'})
+        }
 
         const pingChannel = pc.createDataChannel('foo');
         pingChannel.onopen = () => {
