@@ -1,8 +1,6 @@
 import logging
 import os
 import pathlib
-import subprocess
-from threading import Thread
 
 import voluptuous as vol
 from homeassistant.components import websocket_api
@@ -12,9 +10,9 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import HomeAssistantType, ConfigType
 
 from . import utils
+from .utils import DOMAIN, Server
 
 _LOGGER = logging.getLogger(__name__)
-DOMAIN = 'webrtc'
 
 BINARY_VERSION = 'v1'
 
@@ -39,6 +37,8 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
         open(filepath, 'wb').write(raw)
         os.chmod(filepath, 744)
 
+    Server.filepath = filepath
+
     # serve lovelace card
     path = curdir / 'www/webrtc-camera.js'
     url_path = '/webrtc/webrtc-camera.js'
@@ -50,43 +50,21 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     websocket_api.async_register_command(hass, websocket_webrtc_stream)
 
-    hass.data[DOMAIN] = {
-        'filepath': filepath
-    }
-
     return True
 
 
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
-    filepath = hass.data[DOMAIN]['filepath']
+    hass.data[DOMAIN] = server = Server()
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, server.stop)
 
-    # run communication webserver on localhost:8083
-    process = subprocess.Popen([filepath], stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT)
-
-    hass.data[DOMAIN][entry.entry_id] = process
-
-    def run():
-        # check alive
-        while process.poll() is None:
-            line = process.stdout.readline()
-            if line == b'':
-                break
-            _LOGGER.debug(line[:-1].decode())
-
-    def stop(*args):
-        process.terminate()
-
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop)
-
-    Thread(name=DOMAIN, target=run).start()
+    server.start()
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
-    process = hass.data[DOMAIN][entry.entry_id]
-    process.terminate()
+    server = hass.data[DOMAIN]
+    server.stop()
     return True
 
 
@@ -98,8 +76,13 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
 @websocket_api.async_response
 async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
     try:
+        server = hass.data[DOMAIN]
+        if not server.available:
+            _LOGGER.warning("WebRTC server not available")
+            return
+
         session = async_get_clientsession(hass)
-        r = await session.post('http://localhost:8083/stream', data={
+        r = await session.post(f"http://localhost:{server.port}/stream", data={
             'url': msg['url'], 'sdp64': msg['sdp64']
         })
         raw = await r.json()

@@ -1,9 +1,16 @@
+import logging
 import os
+import subprocess
+from threading import Thread
 from typing import Optional
 
 from homeassistant.components.lovelace.resources import \
     ResourceStorageCollection
 from homeassistant.helpers.typing import HomeAssistantType
+
+_LOGGER = logging.getLogger(__name__)
+
+DOMAIN = 'webrtc'
 
 ARCH = {
     'armv7l': 'armv7',
@@ -45,3 +52,44 @@ async def init_resource(hass: HomeAssistantType, url: str) -> bool:
         resources.data.append({'type': 'module', 'url': url})
 
     return True
+
+
+class Server(Thread):
+    filepath = None
+    port = 8083
+
+    def __init__(self):
+        super().__init__(name=DOMAIN, daemon=True)
+        self.enabled = None
+        self.process = None
+
+    @property
+    def available(self):
+        return self.process.poll() is None if self.process else False
+
+    def run(self):
+        self.enabled = True
+
+        while self.enabled:
+            self.process = subprocess.Popen(
+                [self.filepath, '--listen', f"localhost:{self.port}"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT
+            )
+
+            # check alive
+            while self.process.poll() is None:
+                line = self.process.stdout.readline()
+                if line == b'':
+                    break
+                _LOGGER.debug(line[:-1].decode())
+
+            # increase port number on each next try
+            self.port += 1
+            if self.port > 10000:
+                _LOGGER.exception("Can't run WebRTC server")
+                break
+
+    def stop(self, *args):
+        self.enabled = False
+        self.process.terminate()
