@@ -31,13 +31,7 @@ class WebRTCCamera extends HTMLElement {
 
         pc.ontrack = (event) => {
             // console.log('ontrack', event);
-            const el = document.createElement(event.track.kind);
-            el.srcObject = event.streams[0];
-            el.muted = true;
-            el.autoplay = true;
-            el.controls = true;
-            el.style.width = '100%';
-            this.content.appendChild(el);
+            this.stream.addTrack(event.track);
         }
 
         // recvonly don't work with Firefox
@@ -60,13 +54,19 @@ class WebRTCCamera extends HTMLElement {
     }
 
     set hass(hass) {
-        if (!this.content) {
-            this.content = document.createElement('div');
+        if (!this.stream) {
+            this.stream = new MediaStream();
+
+            const video = document.createElement('video');
+            video.autoplay = true;
+            video.controls = true;
+            video.muted = true;
+            video.style.width = '100%';
+            video.srcObject = this.stream;
 
             const card = document.createElement('ha-card');
             // card.header = 'WebRTC Card';
-            card.appendChild(this.content);
-
+            card.appendChild(video);
             this.appendChild(card);
 
             this._init(hass);
