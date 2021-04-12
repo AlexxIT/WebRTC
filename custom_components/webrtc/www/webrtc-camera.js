@@ -67,10 +67,12 @@ class WebRTCCamera extends HTMLElement {
             video.muted = true;
             video.playsInline = true;
             video.style.width = '100%';
+            video.style.display = 'block';
             video.srcObject = this.stream;
 
             const card = document.createElement('ha-card');
             // card.header = 'WebRTC Card';
+            card.style.overflow = 'hidden';
             card.appendChild(video);
             this.appendChild(card);
 
