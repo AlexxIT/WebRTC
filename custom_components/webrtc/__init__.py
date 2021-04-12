@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+from urllib.parse import urlparse
 
 import voluptuous as vol
 from homeassistant.components import websocket_api
@@ -76,6 +77,9 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
 @websocket_api.async_response
 async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
     try:
+        # just check if url valid, e.g. wrong chars in password
+        urlparse(msg['url'])
+
         server = hass.data[DOMAIN]
         if not server.available:
             _LOGGER.warning("WebRTC server not available")
