@@ -1,5 +1,17 @@
 class WebRTCCamera extends HTMLElement {
+    static get properties() {
+        return {
+            hass: {},
+            config: {}
+        }
+    }
+
     async _init(hass) {
+        // don't know if this may happen
+        if (typeof (this.config) === 'undefined') {
+            this.config = {}
+        }
+
         const pc = new RTCPeerConnection({
             iceServers: [{
                 urls: ['stun:stun.l.google.com:19302']
@@ -35,10 +47,14 @@ class WebRTCCamera extends HTMLElement {
         }
 
         // recvonly don't work with Firefox
-        // "Answer tried to set recv when offer did not set send"
-        pc.addTransceiver('video', {'direction': 'sendrecv'})
+        // https://github.com/pion/webrtc/issues/717
+        // sendrecv don't work with some Android mobile phones and tablets
+        // and Firefox can't play video with Bunny even with sendrecv
+        const direction = this.config.firefox !== true ? 'recvonly' : 'sendrecv';
+
+        pc.addTransceiver('video', {'direction': direction});
         if (this.config.audio !== false) {
-            pc.addTransceiver('audio', {'direction': 'sendrecv'})
+            pc.addTransceiver('audio', {'direction': direction});
         }
 
         const pingChannel = pc.createDataChannel('foo');
