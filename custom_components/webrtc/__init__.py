@@ -55,10 +55,14 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
 
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
-    hass.data[DOMAIN] = server = Server()
+    hass.data[DOMAIN] = server = Server(entry.options)
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, server.stop)
 
     server.start()
+
+    # add options handler
+    if not entry.update_listeners:
+        entry.add_update_listener(async_update_options)
 
     return True
 
@@ -67,6 +71,10 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
     server = hass.data[DOMAIN]
     server.stop()
     return True
+
+
+async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 @websocket_api.websocket_command({

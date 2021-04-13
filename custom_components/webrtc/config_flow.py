@@ -1,6 +1,8 @@
 import os
 
-from homeassistant.config_entries import ConfigFlow
+import voluptuous as vol
+from homeassistant.config_entries import ConfigFlow, OptionsFlow, ConfigEntry
+from homeassistant.core import callback
 
 from . import DOMAIN, utils
 
@@ -14,3 +16,28 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
         return self.async_abort(reason='arch', description_placeholders={
             'uname': os.uname() if os.name != 'nt' else os.name
         })
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(entry: ConfigEntry):
+        return OptionsFlowHandler(entry)
+
+
+class OptionsFlowHandler(OptionsFlow):
+    def __init__(self, entry: ConfigEntry):
+        self.entry = entry
+
+    async def async_step_init(self, user_input=None):
+        if user_input is not None:
+            return self.async_create_entry(title='', data=user_input)
+
+        udp_min = self.entry.options.get('udp_min', 50000)
+        udp_max = self.entry.options.get('udp_max', 50009)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required('udp_min', default=udp_min): int,
+                vol.Required('udp_max', default=udp_max): int
+            })
+        )

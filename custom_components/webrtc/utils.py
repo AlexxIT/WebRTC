@@ -58,10 +58,12 @@ class Server(Thread):
     filepath = None
     port = 8083
 
-    def __init__(self):
+    def __init__(self, options: dict):
         super().__init__(name=DOMAIN, daemon=True)
         self.enabled = None
         self.process = None
+        self.udp_min = str(options.get('udp_min', 50000))
+        self.udp_max = str(options.get('udp_max', 50009))
 
     @property
     def available(self):
@@ -72,7 +74,8 @@ class Server(Thread):
 
         while self.enabled:
             self.process = subprocess.Popen(
-                [self.filepath, '--listen', f"localhost:{self.port}"],
+                [self.filepath, '--listen', f"localhost:{self.port}",
+                 '--udp_min', self.udp_min, '--udp_max', self.udp_max],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT
             )

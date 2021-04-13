@@ -3,5 +3,16 @@
     "abort": {
       "arch": "Unsupported OS architecture: {uname}"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WebRTC Camera Options",
+        "data": {
+          "udp_min": "WebRTC UDP port min",
+          "udp_max": "WebRTC UDP port max"
+        }
+      }
+    }
   }
 }
