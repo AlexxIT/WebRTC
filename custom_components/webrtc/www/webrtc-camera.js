@@ -6,6 +6,24 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
+    async _connect(hass, pc) {
+        const data = await hass.callWS({
+            type: 'webrtc/stream',
+            url: this.config.url,
+            sdp64: btoa(pc.localDescription.sdp)
+        });
+
+        try {
+            const remoteDesc = new RTCSessionDescription({
+                type: 'answer',
+                sdp: atob(data.sdp64)
+            });
+            await pc.setRemoteDescription(remoteDesc);
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+
     async _init(hass) {
         // don't know if this may happen
         if (typeof (this.config) === 'undefined') {
@@ -15,29 +33,14 @@ class WebRTCCamera extends HTMLElement {
         const pc = new RTCPeerConnection({
             iceServers: [{
                 urls: ['stun:stun.l.google.com:19302']
-            }]
+            }],
+            iceCandidatePoolSize: 20
         });
 
-        pc.onnegotiationneeded = async () => {
-            // console.log('onnegotiationneeded');
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-
-            const data = await hass.callWS({
-                type: 'webrtc/stream',
-                url: this.config.url,
-                sdp64: btoa(pc.localDescription.sdp)
-            });
-            // console.log(data);
-
-            try {
-                const remoteDesc = new RTCSessionDescription({
-                    type: 'answer',
-                    sdp: atob(data.sdp64)
-                });
-                await pc.setRemoteDescription(remoteDesc);
-            } catch (e) {
-                console.warn(e);
+        pc.onicecandidate = (e) => {
+            // check that we got all the candidates
+            if (e.candidate === null) {
+                this._connect(hass, pc);
             }
         }
 
@@ -71,6 +74,8 @@ class WebRTCCamera extends HTMLElement {
         pingChannel.onclose = () => {
             clearInterval(intervalId);
         }
+
+        pc.setLocalDescription(await pc.createOffer());
     }
 
     set hass(hass) {
