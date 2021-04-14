@@ -48,11 +48,14 @@ class WebRTCCamera extends HTMLElement {
             this.stream.addTrack(event.track);
         }
 
+        // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+        const isFirefox = typeof InstallTrigger !== 'undefined';
+
         // recvonly don't work with Firefox
         // https://github.com/pion/webrtc/issues/717
         // sendrecv don't work with some Android mobile phones and tablets
         // and Firefox can't play video with Bunny even with sendrecv
-        const direction = this.config.firefox !== true ? 'recvonly' : 'sendrecv';
+        const direction = !isFirefox ? 'recvonly' : 'sendrecv';
 
         pc.addTransceiver('video', {'direction': direction});
         if (this.config.audio !== false) {

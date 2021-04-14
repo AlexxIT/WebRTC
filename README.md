@@ -94,7 +94,6 @@ type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 intersection: 0.75  # auto pause stream when less than 75% of video element is in the screen, 50% by default
-firefox: true  # enable Firefox support, but breaks support some mobile phones, disabled by default
 ```
 
 ## About
