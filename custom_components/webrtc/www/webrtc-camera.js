@@ -87,6 +87,16 @@ class WebRTCCamera extends HTMLElement {
             video.style.display = 'block';
             video.srcObject = this.stream;
 
+            const observer = new IntersectionObserver(
+                (entries, observer) => {
+                    entries.forEach((entry) => {
+                        entry.isIntersecting ? video.play() : video.pause();
+                    });
+                },
+                {threshold: this.config.intersection || 0.5}
+            );
+            observer.observe(video);
+
             const card = document.createElement('ha-card');
             // card.header = 'WebRTC Card';
             card.style.overflow = 'hidden';
