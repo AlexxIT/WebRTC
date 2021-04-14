@@ -21,9 +21,9 @@ Why WebRTC:
 
 **Q. I can't see video stream**  
 A.
-- If your camera works with another integration - this **don't mean** it will work with this integration
-- If your camera works in VLC - this **don't mean** it will work with this integration
-- If your camera works remotely with another integration - this **don't mean** it will work remotely with this integration
+- If your camera works with another integration - it **doesn’t mean** it will work with this integration
+- If your camera works in VLC - it **doesn’t mean** it will work with this integration
+- If your camera works remotely with another integration - it **doesn’t mean** it will work remotely with this integration
 
 In case of any problems, check:
 
@@ -60,7 +60,7 @@ A. The default settings only support 10 simultaneous streams (from Hass server t
 **Q. Which codecs are supported?**  
 A. WebRTC [supported](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/WebRTC_codecs): `AVC/H.264` for video and `G.711 PCM (A-law)`, `G.711 PCM (µ-law)` for audio.
 
-WebRTC technology don't support `HEVC/H.265` for video and `AAC` for audio.
+WebRTC technology doesn't support `HEVC/H.265` for video and `AAC` for audio.
 
 ## Install
 
