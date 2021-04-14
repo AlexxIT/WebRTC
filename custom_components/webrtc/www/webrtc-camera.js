@@ -82,6 +82,7 @@ class WebRTCCamera extends HTMLElement {
             video.controls = true;
             video.muted = true;
             video.playsInline = true;
+            video.poster = this.config.poster || '';
             video.style.width = '100%';
             video.style.display = 'block';
             video.srcObject = this.stream;
