@@ -98,9 +98,14 @@ Limitations:
 - for external access you need a public IP-address (without provider NAT), dynamic IP is also supported
 
 Known work cameras:
-- Sonoff GK-200MP2-B (support sound)  
+- ActiveCam AC-D2121IR3 
+- ActiveCam AC-D7121IR1W (support sound)
 - EZVIZ C3S  
-- Hikvision: DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS  
+- Hikvision DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS  
 - Reolink: RLC-410, RLC-410W, E1 Pro, 4505MP
-- TP-Link: Tapo C200
+- Sonoff GK-200MP2-B (support sound)  
+- TP-Link Tapo C200
 - Wyze Cam v2 (support sound)
+- Dahua DH-IPC-HDPW1431FP-AS-0280B (support sound)
+- Yi 1080p Dome Hi3518e Chipset ([with hack](https://github.com/alienatedsec/yi-hack-v5))
+- Yi 1080p Dome MStar Infinity Chipset ([with hack](https://github.com/roleoroleo/yi-hack-MStar))
