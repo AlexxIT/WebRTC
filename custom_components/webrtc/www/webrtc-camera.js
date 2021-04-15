@@ -46,6 +46,8 @@ class WebRTCCamera extends HTMLElement {
         pc.ontrack = (event) => {
             if (this.video.srcObject === null) {
                 this.video.srcObject = event.streams[0];
+            } else {
+                this.video.srcObject.addTrack(event.track);
             }
         }
 
