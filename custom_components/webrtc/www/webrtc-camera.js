@@ -44,8 +44,26 @@ class WebRTCCamera extends HTMLElement {
         }
 
         pc.ontrack = (event) => {
-            // console.log('ontrack', event);
-            this.stream.addTrack(event.track);
+            if (this.video.srcObject === null) {
+                this.video.srcObject = event.streams[0];
+            } else {
+                this.video.srcObject.addTrack(event.track);
+            }
+        }
+
+        pc.onconnectionstatechange = async (ev) => {
+            // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
+            console.debug("Connection state:", pc.connectionState);
+            if (pc.connectionState === 'failed') {
+                // version1
+                // const offer = await pc.createOffer({iceRestart: true})
+                // await pc.setLocalDescription(offer);
+
+                // version2 - works better when 1, less reconnect tries
+                pc.close();
+                this.video.srcObject = null;
+                await this._init(hass);
+            }
         }
 
         // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
@@ -77,13 +95,11 @@ class WebRTCCamera extends HTMLElement {
             clearInterval(intervalId);
         }
 
-        pc.setLocalDescription(await pc.createOffer());
+        await pc.setLocalDescription(await pc.createOffer());
     }
 
     set hass(hass) {
-        if (!this.stream) {
-            this.stream = new MediaStream();
-
+        if (!this.video) {
             const video = document.createElement('video');
             video.autoplay = true;
             video.controls = true;
@@ -92,7 +108,7 @@ class WebRTCCamera extends HTMLElement {
             video.poster = this.config.poster || '';
             video.style.width = '100%';
             video.style.display = 'block';
-            video.srcObject = this.stream;
+            this.video = video;
 
             const observer = new IntersectionObserver(
                 (entries, observer) => {
