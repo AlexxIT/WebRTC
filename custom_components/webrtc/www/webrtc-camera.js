@@ -113,6 +113,7 @@ class WebRTCCamera extends HTMLElement {
         pause.style.right = '5px';
         pause.style.bottom = '5px';
         pause.style.cursor = 'pointer';
+        pause.style.display = 'none';
         pause.onclick = () => {
             if (video.paused) {
                 video.play();
@@ -150,6 +151,7 @@ class WebRTCCamera extends HTMLElement {
                 };
                 card.appendChild(volume);
             }
+            pause.style.display = 'block';
         };
         video.onwaiting = () => {
             spinner.style.display = 'block';
