@@ -91,100 +91,104 @@ class WebRTCCamera extends HTMLElement {
 
         const video = document.createElement('video');
         video.autoplay = true;
-        video.controls = false;
+        video.controls = true;
         video.volume = 1;
         video.muted = true;
         video.playsInline = true;
         video.poster = this.config.poster || '';
         video.style.width = '100%';
         video.style.display = 'block';
-        video.style.pointerEvents = 'none';
         video.srcObject = this.stream;
         card.appendChild(video);
 
-        var spinner = document.createElement('ha-circular-progress');
-        spinner.active = true;
-        spinner.style.position = 'absolute';
-        spinner.style.top = '50%';
-        spinner.style.left = '50%';
-        spinner.style.transform = 'translate(-50%, -50%)';
-        spinner.style.setProperty('--mdc-theme-primary', 'var(--primary-text-color)');
-        card.appendChild(spinner);
+        if (this.config.ui) {
+            video.controls = false;
+            video.style.pointerEvents = 'none';
 
-        const pause = document.createElement('ha-icon');
-        pause.icon = 'mdi:pause';
-        pause.style.position = 'absolute';
-        pause.style.right = '5px';
-        pause.style.bottom = '5px';
-        pause.style.cursor = 'pointer';
-        pause.style.display = 'none';
-        pause.onclick = () => {
-            if (video.paused) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        };
-        card.appendChild(pause);
+            const spinner = document.createElement('ha-circular-progress');
+            spinner.active = true;
+            spinner.style.position = 'absolute';
+            spinner.style.top = '50%';
+            spinner.style.left = '50%';
+            spinner.style.transform = 'translate(-50%, -50%)';
+            spinner.style.setProperty('--mdc-theme-primary', 'var(--primary-text-color)');
+            card.appendChild(spinner);
 
-        const fullscreen = document.createElement('ha-icon');
-        fullscreen.icon = 'mdi:fullscreen';
-        fullscreen.style.position = 'absolute';
-        fullscreen.style.left = '5px';
-        fullscreen.style.bottom = '5px';
-        fullscreen.style.cursor = 'pointer';
-        fullscreen.onclick = () => {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                this.requestFullscreen();
-            }
-        };
-        card.appendChild(fullscreen);
+            const pause = document.createElement('ha-icon');
+            pause.icon = 'mdi:pause';
+            pause.style.position = 'absolute';
+            pause.style.right = '5px';
+            pause.style.bottom = '5px';
+            pause.style.cursor = 'pointer';
+            pause.style.display = 'none';
+            pause.onclick = () => {
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            };
+            card.appendChild(pause);
 
-        this.onfullscreenchange = () => {
-            if (document.fullscreenElement) {
-                fullscreen.icon = 'mdi:fullscreen-exit';
-            } else {
-                fullscreen.icon = 'mdi:fullscreen';
-            }
-        };
+            const fullscreen = document.createElement('ha-icon');
+            fullscreen.icon = 'mdi:fullscreen';
+            fullscreen.style.position = 'absolute';
+            fullscreen.style.left = '5px';
+            fullscreen.style.bottom = '5px';
+            fullscreen.style.cursor = 'pointer';
+            fullscreen.onclick = () => {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    this.requestFullscreen();
+                }
+            };
+            card.appendChild(fullscreen);
 
-        let volume;
+            this.onfullscreenchange = () => {
+                if (document.fullscreenElement) {
+                    fullscreen.icon = 'mdi:fullscreen-exit';
+                } else {
+                    fullscreen.icon = 'mdi:fullscreen';
+                }
+            };
+
+            let volume;
+            video.onvolumechange = () => {
+                volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
+            };
+            video.onloadeddata = () => {
+                if (this.stream.getAudioTracks().length) {
+                    volume = document.createElement('ha-icon');
+                    volume.icon = 'mdi:volume-mute';
+                    volume.style.position = 'absolute';
+                    volume.style.right = '35px';
+                    volume.style.bottom = '5px';
+                    volume.style.cursor = 'pointer';
+                    volume.onclick = () => {
+                        video.muted = !video.muted;
+                    };
+                    card.appendChild(volume);
+                }
+                pause.style.display = 'block';
+            };
+            video.onpause = () => {
+                pause.icon = 'mdi:play';
+            };
+            video.onplay = () => {
+                pause.icon = 'mdi:pause';
+            };
+            video.onwaiting = () => {
+                spinner.style.display = 'block';
+            };
+            video.onplaying = () => {
+                spinner.style.display = 'none';
+            };
+        }
 
         const recover = () => {
             video.srcObject = this.stream;
             video.play();
-        };
-        video.onpause = () => {
-            pause.icon = 'mdi:play';
-        };
-        video.onplay = () => {
-            pause.icon = 'mdi:pause';
-        };
-        video.onvolumechange = () => {
-            volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
-        };
-        video.onloadeddata = () => {
-            if (this.stream.getAudioTracks().length) {
-                volume = document.createElement('ha-icon');
-                volume.icon = 'mdi:volume-mute';
-                volume.style.position = 'absolute';
-                volume.style.right = '35px';
-                volume.style.bottom = '5px';
-                volume.style.cursor = 'pointer';
-                volume.onclick = () => {
-                    video.muted = !video.muted;
-                };
-                card.appendChild(volume);
-            }
-            pause.style.display = 'block';
-        };
-        video.onwaiting = () => {
-            spinner.style.display = 'block';
-        };
-        video.onplaying = () => {
-            spinner.style.display = 'none';
         };
         video.onstalled = recover;
         video.onerror = recover;
