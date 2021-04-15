@@ -80,7 +80,7 @@ class WebRTCCamera extends HTMLElement {
             clearInterval(intervalId);
         }
 
-        pc.setLocalDescription(await pc.createOffer());
+        await pc.setLocalDescription(await pc.createOffer());
     }
 
     set hass(hass) {
