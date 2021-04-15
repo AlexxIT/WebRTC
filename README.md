@@ -45,14 +45,14 @@ A. Component automatically adds custom card `/webrtc/webrtc-camera.js` to your r
 
 Check if you install component in "Integrations" page. And try to clear your browser cache. Also, you can try to add this card to your resources manually.
 
-**Q. How to setup exernal access?**  
-A. External access will work **only** if you have [public IP-address](https://help.keenetic.com/hc/en-us/articles/213965789) (without provider NAT). Dynamic address is also supported.
+**Q. Exernal access to streams doesn't work**  
+A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses its own UDP port range (50000-50009 ports by default). And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
 
-You need to forward UDP ports 50000-50009 to Hass server on your router.
+For a better user experience it is recommended to forward UDP ports 50000-50009 to Hass server on your router.
 
 50000-50009 ports are used only during video streaming. At each start of the streaming, a random port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
 
-WebRTC can't work with external access via [Nabu Casa](https://www.nabucasa.com/) or [Dataplicity](https://github.com/AlexxIT/Dataplicity) if you have private IP-address.
+For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN), [Symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation#Symmetric_NAT) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
 
 **Q. Some streams are not loaded when there are many cameras on the page.**  
 A. The default settings only support 10 simultaneous streams (from Hass server to app or browser). Go to "Configuration > Integrations > WebRTC Camera > Options" and increase port range. You also need forward new port range on your router if you want external access to cameras.
@@ -106,7 +106,7 @@ Supported clients:
 
 Limitations:
 - works only with H.264 camaras
-- for external access you need a public IP-address (without provider NAT), dynamic IP is also supported
+- sometimes there are difficulties with external access to streams
 
 Known work cameras:
 - ActiveCam AC-D2121IR3 

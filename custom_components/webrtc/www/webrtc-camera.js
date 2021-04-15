@@ -38,7 +38,6 @@ class WebRTCCamera extends HTMLElement {
         });
 
         pc.onicecandidate = (e) => {
-            // check that we got all the candidates
             if (e.candidate === null) {
                 this._connect(hass, pc);
             }

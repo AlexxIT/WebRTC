@@ -23,6 +23,8 @@ def get_arch() -> Optional[str]:
     uname = ('Windows',) if os.name == 'nt' else os.uname()
     if uname[0] == 'Windows':
         return 'amd64.exe'
+    elif uname[0] == 'Darwin':
+        return 'darwin'
     elif uname[0] == 'Linux' and uname[4] in ARCH:
         return ARCH[uname[4]]
     return None
