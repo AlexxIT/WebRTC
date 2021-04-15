@@ -51,6 +51,21 @@ class WebRTCCamera extends HTMLElement {
             }
         }
 
+        pc.onconnectionstatechange = async (ev) => {
+            // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
+            console.debug("Connection state:", pc.connectionState);
+            if (pc.connectionState === 'failed') {
+                // version1
+                // const offer = await pc.createOffer({iceRestart: true})
+                // await pc.setLocalDescription(offer);
+
+                // version2 - works better when 1, less reconnect tries
+                pc.close();
+                this.video.srcObject = null;
+                await this._init(hass);
+            }
+        }
+
         // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
         const isFirefox = typeof InstallTrigger !== 'undefined';
 
