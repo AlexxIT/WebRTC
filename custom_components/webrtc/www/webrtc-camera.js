@@ -81,9 +81,13 @@ class WebRTCCamera extends HTMLElement {
     }
 
     _render() {
+        this.style.display = 'flex';
+
         const card = document.createElement('ha-card');
         // card.header = 'WebRTC Card';
         card.style.overflow = 'hidden';
+        card.style.margin = 'auto';
+        card.style.width = '100%';
 
         const video = document.createElement('video');
         video.autoplay = true;
@@ -122,6 +126,29 @@ class WebRTCCamera extends HTMLElement {
             }
         };
         card.appendChild(pause);
+
+        const fullscreen = document.createElement('ha-icon');
+        fullscreen.icon = 'mdi:fullscreen';
+        fullscreen.style.position = 'absolute';
+        fullscreen.style.left = '5px';
+        fullscreen.style.bottom = '5px';
+        fullscreen.style.cursor = 'pointer';
+        fullscreen.onclick = () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                this.requestFullscreen();
+            }
+        };
+        card.appendChild(fullscreen);
+
+        this.onfullscreenchange = () => {
+            if (document.fullscreenElement) {
+                fullscreen.icon = 'mdi:fullscreen-exit';
+            } else {
+                fullscreen.icon = 'mdi:fullscreen';
+            }
+        };
 
         let volume;
 
