@@ -44,8 +44,11 @@ class WebRTCCamera extends HTMLElement {
         }
 
         pc.ontrack = (event) => {
-            // console.log('ontrack', event);
-            this.stream.addTrack(event.track);
+            if (this.video.srcObject === null) {
+                this.video.srcObject = event.streams[0];
+            } else {
+                this.video.srcObject.addTrack(event.track);
+            }
         }
 
         // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
@@ -81,9 +84,7 @@ class WebRTCCamera extends HTMLElement {
     }
 
     set hass(hass) {
-        if (!this.stream) {
-            this.stream = new MediaStream();
-
+        if (!this.video) {
             const video = document.createElement('video');
             video.autoplay = true;
             video.controls = true;
@@ -92,7 +93,7 @@ class WebRTCCamera extends HTMLElement {
             video.poster = this.config.poster || '';
             video.style.width = '100%';
             video.style.display = 'block';
-            video.srcObject = this.stream;
+            this.video = video;
 
             const observer = new IntersectionObserver(
                 (entries, observer) => {
