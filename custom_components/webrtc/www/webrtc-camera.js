@@ -55,14 +55,8 @@ class WebRTCCamera extends HTMLElement {
             // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
             console.debug("Connection state:", pc.connectionState);
             if (pc.connectionState === 'failed') {
-                // version1
-                // const offer = await pc.createOffer({iceRestart: true})
-                // await pc.setLocalDescription(offer);
-
-                // version2 - works better when 1, less reconnect tries
-                pc.close();
-                this.video.srcObject = null;
-                await this._init(hass);
+                const offer = await pc.createOffer({iceRestart: true})
+                await pc.setLocalDescription(offer);
             }
         }
 
