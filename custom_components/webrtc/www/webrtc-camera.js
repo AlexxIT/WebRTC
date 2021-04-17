@@ -14,6 +14,10 @@ class WebRTCCamera extends HTMLElement {
         });
 
         try {
+            // only for debug purpose
+            const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
+            console.debug("Public IP: " + (m ? m[1] : '-'));
+
             const remoteDesc = new RTCSessionDescription({
                 type: 'answer',
                 sdp: atob(data.sdp64)
@@ -39,6 +43,13 @@ class WebRTCCamera extends HTMLElement {
 
         pc.onicecandidate = (e) => {
             if (e.candidate === null) {
+                // only for debug purpose
+                const iceTransport = pc.getSenders()[0].transport.iceTransport;
+                iceTransport.onselectedcandidatepairchange = ev => {
+                    const pair = iceTransport.getSelectedCandidatePair();
+                    console.debug("Connect to:", pair.remote.address, pair.remote.port);
+                }
+
                 this._connect(hass, pc);
             }
         }
