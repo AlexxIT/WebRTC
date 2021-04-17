@@ -32,7 +32,7 @@ class OptionsFlowHandler(OptionsFlow):
             return self.async_create_entry(title='', data=user_input)
 
         udp_min = self.entry.options.get('udp_min', 50000)
-        udp_max = self.entry.options.get('udp_max', 50009)
+        udp_max = self.entry.options.get('udp_max', 59999)
 
         return self.async_show_form(
             step_id="init",
