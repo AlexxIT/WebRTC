@@ -130,11 +130,12 @@ class WebRTCCamera extends HTMLElement {
         spinner.style.top = '50%';
         spinner.style.left = '50%';
         spinner.style.transform = 'translate(-50%, -50%)';
-        spinner.style.setProperty('--mdc-theme-primary', 'var(--primary-text-color)');
+        spinner.style.setProperty('--mdc-theme-primary', 'white');
         card.appendChild(spinner);
 
         const pause = document.createElement('ha-icon');
         pause.icon = 'mdi:pause';
+        pause.style.color = 'white';
         pause.style.position = 'absolute';
         pause.style.right = '5px';
         pause.style.bottom = '5px';
@@ -151,6 +152,7 @@ class WebRTCCamera extends HTMLElement {
 
         const fullscreen = document.createElement('ha-icon');
         fullscreen.icon = 'mdi:fullscreen';
+        fullscreen.style.color = 'white';
         fullscreen.style.position = 'absolute';
         fullscreen.style.left = '5px';
         fullscreen.style.bottom = '5px';
@@ -176,6 +178,7 @@ class WebRTCCamera extends HTMLElement {
             if (this.video.srcObject.getAudioTracks().length) {
                 const volume = document.createElement('ha-icon');
                 volume.icon = 'mdi:volume-mute';
+                volume.style.color = 'white';
                 volume.style.position = 'absolute';
                 volume.style.right = '35px';
                 volume.style.bottom = '5px';
