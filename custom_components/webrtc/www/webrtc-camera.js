@@ -116,14 +116,11 @@ class WebRTCCamera extends HTMLElement {
     }
 
     set status(value) {
-        this.div.innerText = value;
+        this.header.innerText = value;
+        this.header.style.display = value ? 'block' : 'none';
     }
 
     _ui(card) {
-        this.style.display = 'flex';
-        card.style.margin = 'auto';
-        card.style.width = '100%';
-
         this.video.controls = false;
         this.video.style.pointerEvents = 'none';
 
@@ -227,7 +224,7 @@ class WebRTCCamera extends HTMLElement {
 
             video.onloadeddata = () => {
                 if (video.readyState === 4) {
-                    this.status = '';
+                    this.status = this.config.title || '';
                 }
             }
 
@@ -242,13 +239,29 @@ class WebRTCCamera extends HTMLElement {
             observer.observe(video);
 
             const card = document.createElement('ha-card');
-            // card.header = 'WebRTC Card';
+            card.style.margin = 'auto';
             card.style.overflow = 'hidden';
+            card.style.width = '100%';
             card.appendChild(video);
+
+            this.style.display = 'flex';
             this.appendChild(card);
 
-            const status = this.div = document.createElement('div');
-            card.appendChild(status);
+            const box = document.createElement('div');
+            box.style.position = 'absolute';
+            box.style.left = '0px';
+            box.style.right = '0px';
+            box.style.top = '0px';
+            box.style['background-color'] = 'var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) )';
+            card.appendChild(box)
+
+            const header = this.header = document.createElement('div');
+            header.style.color = 'var(--ha-picture-card-text-color, white)';
+            header.style.margin = '4px 16px';
+            header.style['font-size'] = '16px';
+            header.style['font-weight'] = 500;
+            header.style['line-height'] = '40px';
+            box.appendChild(header);
 
             this.status = "Init connection";
 
