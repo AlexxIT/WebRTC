@@ -1,11 +1,4 @@
 class WebRTCCamera extends HTMLElement {
-    static get properties() {
-        return {
-            hass: {},
-            config: {}
-        }
-    }
-
     async _connect(hass, pc) {
         const data = await hass.callWS({
             type: 'webrtc/stream',
@@ -20,6 +13,7 @@ class WebRTCCamera extends HTMLElement {
             });
             await pc.setRemoteDescription(remoteDesc);
 
+            // check external IP-address
             const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
             return m !== null;
         } else {
@@ -29,7 +23,7 @@ class WebRTCCamera extends HTMLElement {
 
     async _init(hass) {
         // don't know if this may happen
-        if (typeof (this.config) === 'undefined') {
+        if (typeof this.config === 'undefined') {
             this.config = {}
         }
 
@@ -40,11 +34,11 @@ class WebRTCCamera extends HTMLElement {
             iceCandidatePoolSize: 20
         });
 
-        pc.onicecandidate = async (e) => {
-            if (e.candidate === null) {
+        pc.onicecandidate = async (ev) => {
+            if (ev.candidate === null) {
                 // only for debug purpose
                 const iceTransport = pc.getSenders()[0].transport.iceTransport;
-                iceTransport.onselectedcandidatepairchange = ev => {
+                iceTransport.onselectedcandidatepairchange = () => {
                     const pair = iceTransport.getSelectedCandidatePair();
                     this.status = `Connecting to: ${pair.remote.address} ${pair.remote.port}`;
                 }
@@ -67,11 +61,11 @@ class WebRTCCamera extends HTMLElement {
             }
         }
 
-        pc.ontrack = (event) => {
+        pc.ontrack = (ev) => {
             if (this.video.srcObject === null) {
-                this.video.srcObject = event.streams[0];
+                this.video.srcObject = ev.streams[0];
             } else {
-                this.video.srcObject.addTrack(event.track);
+                this.video.srcObject.addTrack(ev.track);
             }
         }
 
@@ -125,18 +119,113 @@ class WebRTCCamera extends HTMLElement {
         this.div.innerText = value;
     }
 
+    _ui(card) {
+        this.style.display = 'flex';
+        card.style.margin = 'auto';
+        card.style.width = '100%';
+
+        this.video.controls = false;
+        this.video.style.pointerEvents = 'none';
+
+        const spinner = document.createElement('ha-circular-progress');
+        spinner.active = true;
+        spinner.style.position = 'absolute';
+        spinner.style.top = '50%';
+        spinner.style.left = '50%';
+        spinner.style.transform = 'translate(-50%, -50%)';
+        spinner.style.setProperty('--mdc-theme-primary', 'var(--primary-text-color)');
+        card.appendChild(spinner);
+
+        const pause = document.createElement('ha-icon');
+        pause.icon = 'mdi:pause';
+        pause.style.position = 'absolute';
+        pause.style.right = '5px';
+        pause.style.bottom = '5px';
+        pause.style.cursor = 'pointer';
+        pause.style.display = 'none';
+        pause.onclick = () => {
+            if (this.video.paused) {
+                this.video.play();
+            } else {
+                this.video.pause();
+            }
+        };
+        card.appendChild(pause);
+
+        const fullscreen = document.createElement('ha-icon');
+        fullscreen.icon = 'mdi:fullscreen';
+        fullscreen.style.position = 'absolute';
+        fullscreen.style.left = '5px';
+        fullscreen.style.bottom = '5px';
+        fullscreen.style.cursor = 'pointer';
+        fullscreen.onclick = () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                this.requestFullscreen();
+            }
+        };
+        card.appendChild(fullscreen);
+
+        this.onfullscreenchange = () => {
+            if (document.fullscreenElement) {
+                fullscreen.icon = 'mdi:fullscreen-exit';
+            } else {
+                fullscreen.icon = 'mdi:fullscreen';
+            }
+        };
+
+        this.video.onloadeddata = () => {
+            if (this.video.srcObject.getAudioTracks().length) {
+                const volume = document.createElement('ha-icon');
+                volume.icon = 'mdi:volume-mute';
+                volume.style.position = 'absolute';
+                volume.style.right = '35px';
+                volume.style.bottom = '5px';
+                volume.style.cursor = 'pointer';
+                volume.onclick = () => {
+                    this.video.muted = !this.video.muted;
+                };
+                card.appendChild(volume);
+
+                this.video.onvolumechange = () => {
+                    volume.icon = this.video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
+                };
+            }
+            pause.style.display = 'block';
+        };
+        this.video.onpause = () => {
+            pause.icon = 'mdi:play';
+        };
+        this.video.onplay = () => {
+            pause.icon = 'mdi:pause';
+        };
+        this.video.onwaiting = () => {
+            spinner.style.display = 'block';
+        };
+        this.video.onplaying = () => {
+            spinner.style.display = 'none';
+        };
+    }
+
     set hass(hass) {
         if (!this.video) {
             const video = this.video = document.createElement('video');
             video.autoplay = true;
             video.controls = true;
+            video.volume = 1;
             video.muted = true;
             video.playsInline = true;
             video.poster = this.config.poster || '';
             video.style.width = '100%';
             video.style.display = 'block';
 
-            video.onloadeddata = ev => {
+            video.onstalled = video.onerror = () => {
+                video.srcObject = new MediaStream(video.srcObject.getTracks());
+                video.play();
+            };
+
+            video.onloadeddata = () => {
                 if (video.readyState === 4) {
                     this.status = '';
                 }
@@ -163,6 +252,9 @@ class WebRTCCamera extends HTMLElement {
 
             this.status = "Init connection";
 
+            if (this.config.ui) {
+                this._ui(card);
+            }
             this._init(hass);
         }
     }
