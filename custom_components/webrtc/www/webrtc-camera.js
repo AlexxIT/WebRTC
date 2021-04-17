@@ -43,14 +43,14 @@ class WebRTCCamera extends HTMLElement {
                     this.status = `Connecting to: ${pair.remote.address} ${pair.remote.port}`;
                 }
 
-                this.status = "Try to start stream";
+                this.status = "Trying to start stream";
                 const hasPublicIP = await this._connect(hass, pc);
                 if (hasPublicIP === true) {
                     // everything is fine, waiting for the connection
-                    this.status = "Try to connect (public)";
+                    this.status = "Trying to connect";
                 } else if (hasPublicIP === false) {
                     // try to connect in parallel
-                    this.status = "Try to connect (local)";
+                    this.status = "Trying to connect over LAN";
                 } else if (hasPublicIP === null) {
                     this.status = "Reconnect in 10 seconds";
                     setTimeout(async () => {
