@@ -174,7 +174,7 @@ class WebRTCCamera extends HTMLElement {
             }
         };
 
-        this.video.onloadeddata = () => {
+        this.video.addEventListener('loadeddata', () => {
             if (this.video.srcObject.getAudioTracks().length) {
                 const volume = document.createElement('ha-icon');
                 volume.icon = 'mdi:volume-mute';
@@ -193,7 +193,7 @@ class WebRTCCamera extends HTMLElement {
                 };
             }
             pause.style.display = 'block';
-        };
+        });
         this.video.onpause = () => {
             pause.icon = 'mdi:play';
         };
