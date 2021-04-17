@@ -113,8 +113,7 @@ async def start_stream(hass: HomeAssistantType, url: str, sdp64: str):
 @websocket_api.async_response
 async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
     result = await start_stream(hass, msg['url'], msg['sdp64'])
-    if result:
-        connection.send_result(msg['id'], result)
+    connection.send_result(msg['id'], result)
 
 
 class WebRTCStreamView(HomeAssistantView):
@@ -125,5 +124,4 @@ class WebRTCStreamView(HomeAssistantView):
         hass = request.app['hass']
         data = await request.post()
         result = await start_stream(hass, data['url'], data['sdp64'])
-        if result:
-            return web.json_response(result)
+        return web.json_response(result)
