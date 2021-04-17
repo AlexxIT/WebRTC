@@ -13,18 +13,17 @@ class WebRTCCamera extends HTMLElement {
             sdp64: btoa(pc.localDescription.sdp)
         });
 
-        try {
-            // only for debug purpose
-            const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
-            console.debug("Public IP: " + (m ? m[1] : '-'));
-
+        if (data) {
             const remoteDesc = new RTCSessionDescription({
                 type: 'answer',
                 sdp: atob(data.sdp64)
             });
             await pc.setRemoteDescription(remoteDesc);
-        } catch (e) {
-            console.warn(e);
+
+            const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
+            return m !== null;
+        } else {
+            return null;
         }
     }
 
@@ -41,16 +40,30 @@ class WebRTCCamera extends HTMLElement {
             iceCandidatePoolSize: 20
         });
 
-        pc.onicecandidate = (e) => {
+        pc.onicecandidate = async (e) => {
             if (e.candidate === null) {
                 // only for debug purpose
                 const iceTransport = pc.getSenders()[0].transport.iceTransport;
                 iceTransport.onselectedcandidatepairchange = ev => {
                     const pair = iceTransport.getSelectedCandidatePair();
-                    console.debug("Connect to:", pair.remote.address, pair.remote.port);
+                    this.status = `Connecting to: ${pair.remote.address} ${pair.remote.port}`;
                 }
 
-                this._connect(hass, pc);
+                this.status = "Try to start stream";
+                const hasPublicIP = await this._connect(hass, pc);
+                if (hasPublicIP === true) {
+                    // everything is fine, waiting for the connection
+                    this.status = "Try to connect (public)";
+                } else if (hasPublicIP === false) {
+                    // try to connect in parallel
+                    this.status = "Try to connect (local)";
+                } else if (hasPublicIP === null) {
+                    this.status = "Reconnect in 10 seconds";
+                    setTimeout(async () => {
+                        this.status = "Restart connection";
+                        await this._init(hass);
+                    }, 10000);
+                }
             }
         }
 
@@ -64,10 +77,15 @@ class WebRTCCamera extends HTMLElement {
 
         pc.onconnectionstatechange = async (ev) => {
             // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
-            console.debug("Connection state:", pc.connectionState);
+            // console.debug("Connection state:", pc.connectionState);
             if (pc.connectionState === 'failed') {
+                // if we have not started a second connection
+                this.status = "Restart connection";
+
                 const offer = await pc.createOffer({iceRestart: true})
                 await pc.setLocalDescription(offer);
+            } else if (pc.connectionState === 'connected') {
+                this.status = "Connected";
             }
         }
 
@@ -103,9 +121,13 @@ class WebRTCCamera extends HTMLElement {
         await pc.setLocalDescription(await pc.createOffer());
     }
 
+    set status(value) {
+        this.div.innerText = value;
+    }
+
     set hass(hass) {
         if (!this.video) {
-            const video = document.createElement('video');
+            const video = this.video = document.createElement('video');
             video.autoplay = true;
             video.controls = true;
             video.muted = true;
@@ -113,7 +135,12 @@ class WebRTCCamera extends HTMLElement {
             video.poster = this.config.poster || '';
             video.style.width = '100%';
             video.style.display = 'block';
-            this.video = video;
+
+            video.onloadeddata = ev => {
+                if (video.readyState === 4) {
+                    this.status = '';
+                }
+            }
 
             const observer = new IntersectionObserver(
                 (entries, observer) => {
@@ -130,6 +157,11 @@ class WebRTCCamera extends HTMLElement {
             card.style.overflow = 'hidden';
             card.appendChild(video);
             this.appendChild(card);
+
+            const status = this.div = document.createElement('div');
+            card.appendChild(status);
+
+            this.status = "Init connection";
 
             this._init(hass);
         }
