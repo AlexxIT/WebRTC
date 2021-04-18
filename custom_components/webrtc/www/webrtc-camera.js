@@ -36,12 +36,16 @@ class WebRTCCamera extends HTMLElement {
 
         pc.onicecandidate = async (ev) => {
             if (ev.candidate === null) {
-                // only for debug purpose
-                const iceTransport = pc.getSenders()[0].transport.iceTransport;
-                iceTransport.onselectedcandidatepairchange = () => {
-                    const pair = iceTransport.getSelectedCandidatePair();
-                    const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
-                    this.status = `Connecting over ${type}`;
+                try {
+                    // only for debug purpose
+                    const iceTransport = pc.getSenders()[0].transport.iceTransport;
+                    iceTransport.onselectedcandidatepairchange = () => {
+                        const pair = iceTransport.getSelectedCandidatePair();
+                        const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
+                        this.status = `Connecting over ${type}`;
+                    }
+                } catch (e) {
+                    // Hi to Safari and Firefox...
                 }
 
                 this.status = "Trying to start stream";
@@ -138,7 +142,7 @@ class WebRTCCamera extends HTMLElement {
         pause.icon = 'mdi:pause';
         pause.onclick = () => {
             if (video.paused) {
-                video.play();
+                video.play().then(() => null, () => null);
             } else {
                 video.pause();
             }
@@ -206,7 +210,7 @@ class WebRTCCamera extends HTMLElement {
                 overflow: hidden;
                 width: 100%;
             }
-            video {
+            video, .fix-safari {
                 width: 100%;
                 display: block;
             }
@@ -254,13 +258,15 @@ class WebRTCCamera extends HTMLElement {
 
         const card = document.createElement('ha-card');
         card.innerHTML = `
-            <video id="video"
-                autoplay="true"
-                controls="true"
-                muted="true"
-                playsinline="true"
-                poster="${this.config.poster || ''}">
-            </video>
+            <div class="fix-safari">
+                <video id="video"
+                    autoplay="true"
+                    controls="true"
+                    muted="true"
+                    playsinline="true"
+                    poster="${this.config.poster || ''}">
+                </video>
+            </div>
             <div class="box">
                 <div class="header"></div>
             </div>
@@ -271,7 +277,7 @@ class WebRTCCamera extends HTMLElement {
 
         video.onstalled = video.onerror = () => {
             video.srcObject = new MediaStream(video.srcObject.getTracks());
-            video.play();
+            video.play().then(() => null, () => null);
         };
 
         video.onloadeddata = () => {
@@ -281,9 +287,13 @@ class WebRTCCamera extends HTMLElement {
         }
 
         const observer = new IntersectionObserver(
-            (entries, observer) => {
+            (entries) => {
                 entries.forEach((entry) => {
-                    entry.isIntersecting ? video.play() : video.pause();
+                    if (entry.isIntersecting) {
+                        video.play().then(() => null, () => null);
+                    } else {
+                        video.pause();
+                    }
                 });
             },
             {threshold: this.config.intersection || 0.5}
