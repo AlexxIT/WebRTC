@@ -40,7 +40,8 @@ class WebRTCCamera extends HTMLElement {
                 const iceTransport = pc.getSenders()[0].transport.iceTransport;
                 iceTransport.onselectedcandidatepairchange = () => {
                     const pair = iceTransport.getSelectedCandidatePair();
-                    this.status = `Connecting to: ${pair.remote.address} ${pair.remote.port}`;
+                    const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
+                    this.status = `Connecting over ${type}`;
                 }
 
                 this.status = "Trying to start stream";
