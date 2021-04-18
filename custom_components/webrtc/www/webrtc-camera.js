@@ -274,7 +274,7 @@ class WebRTCCamera extends HTMLElement {
         };
 
         video.onloadeddata = () => {
-            if (video.readyState === 4) {
+            if (video.readyState >= 1) {
                 this.status = this.config.title || '';
             }
         }
