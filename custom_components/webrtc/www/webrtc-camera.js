@@ -313,6 +313,13 @@ class WebRTCCamera extends HTMLElement {
         if (!config.url) {
             throw new Error('Missing `url: "..."`');
         }
+
+        var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+        if (isOpera) {
+            // UDP test fails: https://test.webrtc.org/
+            throw new Error("Opera doesn't supported");
+        }
+
         this.config = config;
     }
 
