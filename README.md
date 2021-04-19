@@ -29,7 +29,7 @@ In case of any problems, check:
 
 1. Check that you have installed the integration on the "Configuration > Integrations" page
 2. Check that you are on the same network as your Hass server
-3. Check that you don't setup Hass server with forward only 8123 port (users with Virtual Machine or Docker installation or firewall), because WebRTC using 50000-50009 UDP ports for video streaming
+3. Check that you don't setup Hass server with forward only 8123 port (users with Virtual Machine or Docker installation or firewall), because WebRTC using random UDP ports for video streaming
 4. Check that you don't have any erros in "Configuration > Logs" page
 5. Check if default video with Bunny works:
 
@@ -46,13 +46,13 @@ A. Component automatically adds custom card `/webrtc/webrtc-camera.js` to your r
 Check if you install component in "Integrations" page. And try to clear your browser cache. Also, you can try to add this card to your resources manually.
 
 **Q. Exernal access to streams doesn't work**  
-A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses its own UDP port range (50000-50009 ports by default). And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
+A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses a random UDP port to connect. And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
 
-For a better user experience it is recommended to forward UDP ports 50000-50009 to Hass server on your router.
+At each start of the streaming, a random UDP port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
 
-50000-50009 ports are used only during video streaming. At each start of the streaming, a random port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
+If your stream does not start with an external connection (stuck on status `Trying to connect`), you may be behind a [symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation#Symmetric_NAT). Some users are helped by UDP port forwarding on the router. You can customize the range of ports in the integration options. It is recommended to use at least 10 ports per camera.
 
-For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN), [Symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation#Symmetric_NAT) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
+For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
 
 **Q. Some streams are not loaded when there are many cameras on the page.**  
 A. The default settings only support 10 simultaneous streams (from Hass server to app or browser). Go to "Configuration > Integrations > WebRTC Camera > Options" and increase port range. You also need forward new port range on your router if you want external access to cameras.
@@ -87,14 +87,22 @@ type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 ```
 
+**or**
+
+```yaml
+type: 'custom:webrtc-camera'
+entity: camera.generic_stream  # change to your camera entity_id
+```
+
 **Full**
 
 ```yaml
 type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
+title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 intersection: 0.75  # auto pause stream when less than 75% of video element is in the screen, 50% by default
-ui: true  # custom video controls
+ui: true  # custom video controls, default false
 ```
 
 ## About
@@ -121,3 +129,14 @@ Known work cameras:
 - Dahua DH-IPC-HDPW1431FP-AS-0280B (support sound)
 - Yi 1080p Dome Hi3518e Chipset ([with hack](https://github.com/alienatedsec/yi-hack-v5))
 - Yi 1080p Dome MStar Infinity Chipset ([with hack](https://github.com/roleoroleo/yi-hack-MStar))
+
+## Debug
+
+Add to your `configuration.yaml`:
+
+```yaml
+logger:
+  default: warning
+  logs:
+    custom_components.webrtc: debug
+```
