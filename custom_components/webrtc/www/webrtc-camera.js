@@ -1,11 +1,17 @@
 class WebRTCCamera extends HTMLElement {
     async _connect(hass, pc) {
-        const data = await hass.callWS({
-            type: 'webrtc/stream',
-            url: this.config.url || null,
-            entity: this.config.entity || null,
-            sdp64: btoa(pc.localDescription.sdp)
-        });
+        let data;
+        try {
+            data = await hass.callWS({
+                type: 'webrtc/stream',
+                url: this.config.url || null,
+                entity: this.config.entity || null,
+                sdp64: btoa(pc.localDescription.sdp)
+            });
+        } catch (e) {
+            this.status = `ERROR: ${JSON.stringify(e)}`;
+            return;
+        }
 
         if (data) {
             const remoteDesc = new RTCSessionDescription({
@@ -224,10 +230,11 @@ class WebRTCCamera extends HTMLElement {
             }
             .header {
                 color: var(--ha-picture-card-text-color, white);
-                margin: 4px 16px;
+                margin: 14px 16px;
                 font-size: 16px;
                 font-weight: 500;
-                line-height: 40px;
+                line-height: 20px;
+                word-wrap: break-word;
             }
             .spinner {
                 position: absolute;
@@ -311,8 +318,8 @@ class WebRTCCamera extends HTMLElement {
     }
 
     setConfig(config) {
-        if (!config.url && !config.entity) {
-            throw new Error('Missing `url: "..."` or `entity: "..."`');
+        if (typeof config.url !== 'string' && typeof config.entity !== 'string') {
+            throw new Error('Missing `url` or `entity`');
         }
 
         // this integraion https://github.com/thomasloven/hass-fontawesome
