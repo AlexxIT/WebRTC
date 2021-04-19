@@ -3,6 +3,7 @@ import os
 import pathlib
 from urllib.parse import urlparse
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from homeassistant.components import websocket_api
@@ -82,10 +83,14 @@ async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def start_stream(hass: HomeAssistantType, url: str, sdp64: str):
+async def start_stream(hass: HomeAssistantType, sdp64: str, url: str = None,
+                       entity: str = None, **kwargs):
     try:
-        # just check if url valid, e.g. wrong chars in password
-        urlparse(url)
+        if entity:
+            url = await utils.get_stream_source(hass, entity)
+
+        # also check if url valid, e.g. wrong chars in password
+        assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
 
         server = hass.data[DOMAIN]
         if not server.available:
@@ -107,12 +112,13 @@ async def start_stream(hass: HomeAssistantType, url: str, sdp64: str):
 
 @websocket_api.websocket_command({
     vol.Required('type'): 'webrtc/stream',
-    vol.Required('url'): str,
+    vol.Optional('url'): vol.Any(cv.string, None),
+    vol.Optional('entity'): vol.Any(cv.entity_id, None),
     vol.Required('sdp64'): str
 })
 @websocket_api.async_response
 async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
-    result = await start_stream(hass, msg['url'], msg['sdp64'])
+    result = await start_stream(hass, **msg)
     connection.send_result(msg['id'], result)
 
 
@@ -123,5 +129,5 @@ class WebRTCStreamView(HomeAssistantView):
     async def post(self, request: web.Request):
         hass = request.app['hass']
         data = await request.post()
-        result = await start_stream(hass, data['url'], data['sdp64'])
+        result = await start_stream(hass, **data)
         return web.json_response(result)

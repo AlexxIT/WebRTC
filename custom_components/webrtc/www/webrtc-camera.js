@@ -2,7 +2,8 @@ class WebRTCCamera extends HTMLElement {
     async _connect(hass, pc) {
         const data = await hass.callWS({
             type: 'webrtc/stream',
-            url: this.config.url,
+            url: this.config.url || null,
+            entity: this.config.entity || null,
             sdp64: btoa(pc.localDescription.sdp)
         });
 
@@ -310,8 +311,8 @@ class WebRTCCamera extends HTMLElement {
     }
 
     setConfig(config) {
-        if (!config.url) {
-            throw new Error('Missing `url: "..."`');
+        if (!config.url && !config.entity) {
+            throw new Error('Missing `url: "..."` or `entity: "..."`');
         }
 
         var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
