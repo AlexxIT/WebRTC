@@ -77,8 +77,8 @@ class Server(Thread):
         super().__init__(name=DOMAIN, daemon=True)
         self.enabled = None
         self.process = None
-        self.udp_min = str(options.get('udp_min', 50000))
-        self.udp_max = str(options.get('udp_max', 59999))
+        self.udp_min = str(options.get('udp_min', 0))
+        self.udp_max = str(options.get('udp_max', 0))
 
     @property
     def available(self):

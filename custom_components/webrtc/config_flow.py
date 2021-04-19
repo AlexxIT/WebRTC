@@ -31,13 +31,13 @@ class OptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title='', data=user_input)
 
-        udp_min = self.entry.options.get('udp_min', 50000)
-        udp_max = self.entry.options.get('udp_max', 59999)
+        udp_min = self.entry.options.get('udp_min', 0)
+        udp_max = self.entry.options.get('udp_max', 0)
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema({
-                vol.Required('udp_min', default=udp_min): int,
-                vol.Required('udp_max', default=udp_max): int
+                vol.Optional('udp_min', default=udp_min): int,
+                vol.Optional('udp_max', default=udp_max): int
             })
         )
