@@ -315,9 +315,10 @@ class WebRTCCamera extends HTMLElement {
             throw new Error('Missing `url: "..."` or `entity: "..."`');
         }
 
-        var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+        // this integraion https://github.com/thomasloven/hass-fontawesome
+        // breaks the `!!window.opera` check in all browsers
+        const isOpera = (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
         if (isOpera) {
-            // UDP test fails: https://test.webrtc.org/
             throw new Error("Opera doesn't supported");
         }
 
