@@ -5,8 +5,6 @@ from threading import Thread
 from typing import Optional
 
 from homeassistant.components.camera import Camera
-from homeassistant.components.lovelace.resources import \
-    ResourceStorageCollection
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.typing import HomeAssistantType
 
@@ -50,23 +48,6 @@ async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
     camera: Camera = next(e for e in component.entities
                           if e.entity_id == entity)
     return await camera.stream_source()
-
-
-async def init_resource(hass: HomeAssistantType, url: str) -> bool:
-    resources: ResourceStorageCollection = hass.data['lovelace']['resources']
-    # force load storage
-    await resources.async_get_info()
-
-    for item in resources.async_items():
-        if item['url'] == url:
-            return False
-
-    try:
-        await resources.async_create_item({'res_type': 'module', 'url': url})
-    except:
-        resources.data.append({'type': 'module', 'url': url})
-
-    return True
 
 
 class Server(Thread):

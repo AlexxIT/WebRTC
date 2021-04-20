@@ -7,6 +7,7 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from homeassistant.components import websocket_api
+from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -44,13 +45,12 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     Server.filepath = filepath
 
     # serve lovelace card
-    path = curdir / 'www/webrtc-camera.js'
     url_path = '/webrtc/webrtc-camera.js'
+    path = hass.config.path(f"custom_components/webrtc/www/webrtc-camera.js")
     hass.http.register_static_path(url_path, path, cache_headers=False)
 
     # register lovelace card
-    if await utils.init_resource(hass, url_path):
-        _LOGGER.debug(f"Init new lovelace custom card: {url_path}")
+    add_extra_js_url(hass, url_path)
 
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software
