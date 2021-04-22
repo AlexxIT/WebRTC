@@ -31,7 +31,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
         for file in os.listdir(hass.config.config_dir):
             if file.startswith('rtsp2webrtc_'):
                 _LOGGER.debug(f"Remove old binary: {file}")
-                os.remove(file)
+                os.remove(hass.config.path(file))
 
         url = utils.get_binary_url(BINARY_VERSION)
         _LOGGER.debug(f"Download new binary: {url}")
