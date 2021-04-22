@@ -44,10 +44,13 @@ def get_binary_url(version: str) -> str:
 
 
 async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
-    component: EntityComponent = hass.data['camera']
-    camera: Camera = next(e for e in component.entities
-                          if e.entity_id == entity)
-    return await camera.stream_source()
+    try:
+        component: EntityComponent = hass.data['camera']
+        camera: Camera = next(e for e in component.entities
+                              if e.entity_id == entity)
+        return await camera.stream_source()
+    except:
+        return None
 
 
 class Server(Thread):
