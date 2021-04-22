@@ -341,6 +341,10 @@ class WebRTCCamera extends HTMLElement {
         this.config = config;
     }
 
+    getCardSize() {
+        return 5;
+    }
+
     static getStubConfig() {
         return {
             url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
