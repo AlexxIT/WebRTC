@@ -56,22 +56,24 @@ class Server(Thread):
 
     def __init__(self, options: dict):
         super().__init__(name=DOMAIN, daemon=True)
-        self.enabled = None
         self.process = None
-        self.udp_min = str(options.get('udp_min', 0))
-        self.udp_max = str(options.get('udp_max', 0))
+        self.args = [
+            self.filepath, '--ice_server', 'stun:stun.l.google.com:19302'
+        ]
+        if options.get('udp_min', 0) or options.get('udp_max', 0):
+            self.args += [
+                '--udp_min', str(options['udp_min']),
+                '--udp_max', str(options['udp_max'])
+            ]
 
     @property
     def available(self):
         return self.process.poll() is None if self.process else False
 
     def run(self):
-        self.enabled = True
-
-        while self.enabled:
+        while self.args:
             self.process = subprocess.Popen(
-                [self.filepath, '--listen', f"localhost:{self.port}",
-                 '--udp_min', self.udp_min, '--udp_max', self.udp_max],
+                self.args + ['--listen', f"localhost:{self.port}"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT
             )
@@ -90,5 +92,5 @@ class Server(Thread):
                 break
 
     def stop(self, *args):
-        self.enabled = False
+        self.args = None
         self.process.terminate()

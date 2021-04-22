@@ -19,7 +19,7 @@ from .utils import DOMAIN, Server
 
 _LOGGER = logging.getLogger(__name__)
 
-BINARY_VERSION = 'v1'
+BINARY_VERSION = 'v2'
 
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
