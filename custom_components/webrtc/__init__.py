@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import random
 from urllib.parse import urlparse
 
 import homeassistant.helpers.config_validation as cv
@@ -50,7 +51,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     hass.http.register_static_path(url_path, path, cache_headers=False)
 
     # register lovelace card
-    add_extra_js_url(hass, url_path)
+    add_extra_js_url(hass, f"{url_path}?{random.random()}")
 
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software
