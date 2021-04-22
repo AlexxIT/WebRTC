@@ -9,11 +9,10 @@ class WebRTCCamera extends HTMLElement {
                 sdp64: btoa(pc.localDescription.sdp)
             });
         } catch (e) {
-            this.status = `ERROR: ${JSON.stringify(e)}`;
-            return;
+            data = {error: JSON.stringify(e)}
         }
 
-        if (data) {
+        if (typeof data.sdp64 !== 'undefined') {
             const remoteDesc = new RTCSessionDescription({
                 type: 'answer',
                 sdp: atob(data.sdp64)
@@ -23,9 +22,13 @@ class WebRTCCamera extends HTMLElement {
             // check external IP-address
             const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
             return m !== null;
+        } else if (typeof data.error !== 'undefined') {
+            this.status = `ERROR: ${data.error}`;
         } else {
-            return null;
+            this.status = "ERROR: Empty response from Hass";
         }
+
+        return null;
     }
 
     async _init(hass) {
@@ -64,7 +67,6 @@ class WebRTCCamera extends HTMLElement {
                     // try to connect in parallel
                     this.status = "Trying to connect over LAN";
                 } else if (hasPublicIP === null) {
-                    this.status = "Reconnect in 10 seconds";
                     setTimeout(async () => {
                         this.status = "Restart connection";
                         await this._init(hass);

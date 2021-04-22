@@ -88,14 +88,13 @@ async def start_stream(hass: HomeAssistantType, sdp64: str, url: str = None,
     try:
         if entity:
             url = await utils.get_stream_source(hass, entity)
+            assert url, f"Can't get URL for {entity}"
 
         # also check if url valid, e.g. wrong chars in password
         assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
 
         server = hass.data[DOMAIN]
-        if not server.available:
-            _LOGGER.warning("WebRTC server not available")
-            return
+        assert server.available, "WebRTC server not available"
 
         session = async_get_clientsession(hass)
         r = await session.post(f"http://localhost:{server.port}/stream", data={
@@ -107,7 +106,7 @@ async def start_stream(hass: HomeAssistantType, sdp64: str, url: str = None,
         return raw
 
     except Exception as e:
-        _LOGGER.error(f"Can't start stream: {url}, because: {e}")
+        return {'error': str(e)}
 
 
 @websocket_api.websocket_command({
