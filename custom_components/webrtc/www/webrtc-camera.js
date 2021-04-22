@@ -69,6 +69,10 @@ class WebRTCCamera extends HTMLElement {
                 } else if (hasPublicIP === null) {
                     setTimeout(async () => {
                         this.status = "Restart connection";
+
+                        const video = this.getElementsByTagName('video')[0];
+                        video.srcObject = null;
+
                         await this._init(hass);
                     }, 10000);
                 }
@@ -90,6 +94,9 @@ class WebRTCCamera extends HTMLElement {
             if (pc.connectionState === 'failed') {
                 // if we have not started a second connection
                 this.status = "Restart connection";
+
+                const video = this.getElementsByTagName('video')[0];
+                video.srcObject = null;
 
                 const offer = await pc.createOffer({iceRestart: true})
                 await pc.setLocalDescription(offer);
