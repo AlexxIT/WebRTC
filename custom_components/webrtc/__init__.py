@@ -24,8 +24,6 @@ BINARY_VERSION = 'v2'
 
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
-    curdir = pathlib.Path(__file__).parent.absolute()
-
     # check and download file if needed
     filepath = hass.config.path(utils.get_binary_name(BINARY_VERSION))
     if not os.path.isfile(filepath):
@@ -47,7 +45,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     # serve lovelace card
     url_path = '/webrtc/webrtc-camera.js'
-    path = hass.config.path(f"custom_components/webrtc/www/webrtc-camera.js")
+    path = hass.config.path('custom_components/webrtc/www/webrtc-camera.js')
     hass.http.register_static_path(url_path, path, cache_headers=False)
 
     # register lovelace card
