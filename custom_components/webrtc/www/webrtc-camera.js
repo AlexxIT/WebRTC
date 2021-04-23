@@ -225,6 +225,7 @@ class WebRTCCamera extends HTMLElement {
                 margin: auto;
                 overflow: hidden;
                 width: 100%;
+                position: relative;
             }
             video, .fix-safari {
                 width: 100%;
@@ -270,6 +271,41 @@ class WebRTCCamera extends HTMLElement {
                 right: 35px;
                 bottom: 5px;
             }
+            .ptz{
+              position: absolute;
+              right: 5px;
+              top: 50%;
+              transform: translateY(-50%);
+              background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+              border-radius: 50%;
+              width: 80px;
+              height: 80px;
+              opacity: 0.4;
+              transition: opacity .3s ease-in-out;
+            }
+            .ptz:hover{
+                opacity: 1;
+            }
+            [ptz-direction="up"]{
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            [ptz-direction="down"]{
+                bottom: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            [ptz-direction="left"]{
+                left: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            [ptz-direction="right"]{
+                right: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
         `;
         this.appendChild(style);
 
@@ -287,6 +323,14 @@ class WebRTCCamera extends HTMLElement {
             <div class="box">
                 <div class="header"></div>
             </div>
+            ${this.config.sonoff_ptz &&
+              `<div class="ptz">
+                  <ha-icon ptz-direction="right" icon="mdi:arrow-right"></ha-icon>
+                  <ha-icon ptz-direction="left" icon="mdi:arrow-left"></ha-icon>
+                  <ha-icon ptz-direction="up" icon="mdi:arrow-up"></ha-icon>
+                  <ha-icon ptz-direction="down" icon="mdi:arrow-down"></ha-icon>
+              </div>`
+            }
         `;
         this.appendChild(card);
 
@@ -321,6 +365,24 @@ class WebRTCCamera extends HTMLElement {
 
         if (this.config.ui) {
             this._ui(card);
+        }
+
+        if (this.config.sonoff_ptz) {
+          const PTZButton = this.querySelectorAll('[ptz-direction]');
+      
+          const handlePTZ = (e) => {
+              const direction = e.target.getAttribute('ptz-direction');
+              
+              hass.callService('sonoff', 'send_command', {
+                entity_id: 'camera.sonoff',
+                device: this.config.sonoff_ptz,
+                cmd: direction
+              });
+          }
+          
+          Array.from(PTZButton).forEach(function(el) {
+            el.addEventListener('click', handlePTZ);
+          });
         }
 
         this._init(hass);
