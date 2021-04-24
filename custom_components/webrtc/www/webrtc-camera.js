@@ -209,9 +209,11 @@ class WebRTCCamera extends HTMLElement {
         };
         video.onwaiting = () => {
             spinner.style.display = 'block';
+            this.setPTZVisibility(false);
         };
         video.onplaying = () => {
             spinner.style.display = 'none';
+            this.setPTZVisibility(true);
         };
     }
 
@@ -271,20 +273,32 @@ class WebRTCCamera extends HTMLElement {
                 right: 35px;
                 bottom: 5px;
             }
-            .ptz{
+            ptz-control{
               position: absolute;
-              right: 5px;
               top: 50%;
               transform: translateY(-50%);
               background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
-              border-radius: 50%;
-              width: 80px;
-              height: 80px;
-              opacity: 0.4;
+              opacity: ${this.config.ptz?.opacity ?? 0.4};
               transition: opacity .3s ease-in-out;
+              display: none;
+              z-index: 10;
+              ${this.getPTZControlStyle()}
             }
-            .ptz:hover{
+            ptz-control.show{
+                display: block;
+            }
+            ptz-control:hover{
                 opacity: 1;
+            }
+            ptz-control.right{
+                right: 10px;
+            }
+            ptz-control.left{
+                left: 10px;
+            }
+            ptz-control.center{
+                left: 50%;
+                transform: translateX(-50%) translateY(-50%);
             }
             [ptz-direction="up"]{
                 top: 5px;
@@ -323,14 +337,17 @@ class WebRTCCamera extends HTMLElement {
             <div class="box">
                 <div class="header"></div>
             </div>
-            ${this.config.sonoff_ptz &&
-              `<div class="ptz">
-                  <ha-icon ptz-direction="right" icon="mdi:arrow-right"></ha-icon>
-                  <ha-icon ptz-direction="left" icon="mdi:arrow-left"></ha-icon>
-                  <ha-icon ptz-direction="up" icon="mdi:arrow-up"></ha-icon>
-                  <ha-icon ptz-direction="down" icon="mdi:arrow-down"></ha-icon>
-              </div>`
-            }
+            ${this.config.ptz?.actions ?
+              `<ptz-control class="${this.config.ptz?.position || 'right'}">
+                  ${this.config.ptz?.actions?.right ? 
+                   `<ha-icon ptz-direction="right" icon="${this.config.ptz?.actions?.right?.icon || 'mdi:arrow-right'}"></ha-icon>` : ''}
+                  ${this.config.ptz?.actions?.left ?
+                   `<ha-icon ptz-direction="left" icon="${this.config.ptz?.actions?.left?.icon || 'mdi:arrow-left'}"></ha-icon>` : ''}
+                  ${this.config.ptz?.actions?.up ? 
+                   `<ha-icon ptz-direction="up" icon="${this.config.ptz?.actions?.up?.icon || 'mdi:arrow-up'}"></ha-icon>` : ''}
+                  ${this.config.ptz?.actions?.down ?
+                   `<ha-icon ptz-direction="down" icon="${this.config.ptz?.actions?.down?.icon || 'mdi:arrow-down'}"></ha-icon>` : ''}
+              </ptz-control>` : ''}
         `;
         this.appendChild(card);
 
@@ -344,6 +361,9 @@ class WebRTCCamera extends HTMLElement {
         video.onloadeddata = () => {
             if (video.readyState >= 1) {
                 this.status = this.config.title || '';
+                this.setPTZVisibility(true);
+            } else {
+                this.setPTZVisibility(false);
             }
         }
 
@@ -367,17 +387,18 @@ class WebRTCCamera extends HTMLElement {
             this._ui(card);
         }
 
-        if (this.config.sonoff_ptz) {
+        if (this.config.ptz?.actions) {
           const PTZButton = this.querySelectorAll('[ptz-direction]');
       
           const handlePTZ = (e) => {
               const direction = e.target.getAttribute('ptz-direction');
-              
-              hass.callService('sonoff', 'send_command', {
-                entity_id: 'camera.sonoff',
-                device: this.config.sonoff_ptz,
-                cmd: direction
-              });
+              if ( this.config.ptz.actions[direction].service ) {
+                  const [domain, service] = this.config.ptz.actions[direction].service.split('.', 2);
+  
+                  hass.callService(domain, service, {
+                    ...this.config.ptz.actions[direction],
+                  });
+              }
           }
           
           Array.from(PTZButton).forEach(function(el) {
@@ -387,6 +408,38 @@ class WebRTCCamera extends HTMLElement {
 
         this._init(hass);
     }
+
+    setPTZVisibility(show) {
+      const ptz = this.getElementsByTagName('ptz-control')[0];
+      
+      if (ptz) {
+          if (show) {
+            ptz.classList.add('show');
+          } else {
+              ptz.classList.remove('show');
+          }  
+      }
+    }
+    
+    getPTZControlStyle() {
+      if (this.config.ptz?.actions?.right && this.config.ptz?.actions?.left &&
+        !this.config.ptz?.actions?.up && !this.config.ptz?.actions?.down) {
+        return `
+          border-radius: 15px;
+          width: 65px;
+          height: 30px;`;
+      } else if (!this.config.ptz?.actions?.right && !this.config.ptz?.actions?.left &&
+        this.config.ptz?.actions?.up && this.config.ptz?.actions?.down) {
+        return `
+          border-radius: 15px;
+          width: 30px;
+          height: 65px;`;
+      }
+      return `
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;`;
+    };
 
     setConfig(config) {
         if (typeof config.url !== 'string' && typeof config.entity !== 'string') {
