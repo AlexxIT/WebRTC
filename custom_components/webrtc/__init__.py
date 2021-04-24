@@ -1,6 +1,5 @@
 import logging
 import os
-import pathlib
 import random
 from urllib.parse import urlparse
 
@@ -47,6 +46,9 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     url_path = '/webrtc/webrtc-camera.js'
     path = hass.config.path('custom_components/webrtc/www/webrtc-camera.js')
     hass.http.register_static_path(url_path, path, cache_headers=False)
+
+    # remove lovelace card from previous version
+    await utils.delete_resource(hass, url_path)
 
     # register lovelace card
     add_extra_js_url(hass, f"{url_path}?{random.random()}")

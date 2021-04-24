@@ -5,6 +5,8 @@ from threading import Thread
 from typing import Optional
 
 from homeassistant.components.camera import Camera
+from homeassistant.components.lovelace.resources import \
+    ResourceStorageCollection
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.typing import HomeAssistantType
 
@@ -51,6 +53,21 @@ async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
         return await camera.stream_source()
     except:
         return None
+
+
+async def delete_resource(hass: HomeAssistantType, url: str):
+    resources = hass.data['lovelace']['resources']
+
+    # force load storage
+    await resources.async_get_info()
+
+    for item in resources.async_items():
+        if item['url'] == url:
+            if isinstance(resources, ResourceStorageCollection):
+                await resources.async_delete_item(item['id'])
+            else:
+                resources.data.remove(item)
+            return
 
 
 class Server(Thread):
