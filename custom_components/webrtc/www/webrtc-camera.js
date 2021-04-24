@@ -276,6 +276,7 @@ class WebRTCCamera extends HTMLElement {
             ptz-control{
               position: absolute;
               top: 50%;
+              right: 10px;
               transform: translateY(-50%);
               background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
               opacity: ${this.config.ptz?.opacity ?? 0.4};
@@ -289,16 +290,6 @@ class WebRTCCamera extends HTMLElement {
             }
             ptz-control:hover{
                 opacity: 1;
-            }
-            ptz-control.right{
-                right: 10px;
-            }
-            ptz-control.left{
-                left: 10px;
-            }
-            ptz-control.center{
-                left: 50%;
-                transform: translateX(-50%) translateY(-50%);
             }
             [ptz-direction="up"]{
                 top: 5px;
@@ -338,7 +329,7 @@ class WebRTCCamera extends HTMLElement {
                 <div class="header"></div>
             </div>
             ${this.config.ptz?.actions ?
-              `<ptz-control class="${this.config.ptz?.position || 'right'}">
+              `<ptz-control>
                   ${this.config.ptz?.actions?.right ? 
                    `<ha-icon ptz-direction="right" icon="${this.config.ptz?.actions?.right?.icon || 'mdi:arrow-right'}"></ha-icon>` : ''}
                   ${this.config.ptz?.actions?.left ?
