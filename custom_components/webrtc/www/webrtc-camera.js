@@ -393,10 +393,11 @@ class WebRTCCamera extends HTMLElement {
           const handlePTZ = (e) => {
               const direction = e.target.getAttribute('ptz-direction');
               if ( this.config.ptz.actions[direction].service ) {
-                  const [domain, service] = this.config.ptz.actions[direction].service.split('.', 2);
-  
+                  const {service: serviceCall, icon, ...data} = this.config.ptz.actions[direction];
+                  const [domain, service] = serviceCall.split('.', 2);
+
                   hass.callService(domain, service, {
-                    ...this.config.ptz.actions[direction],
+                    ...data,
                   });
               }
           }
