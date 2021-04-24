@@ -203,9 +203,11 @@ class WebRTCCamera extends HTMLElement {
         });
         video.onpause = () => {
             pause.icon = 'mdi:play';
+            this.setPTZVisibility(false);
         };
         video.onplay = () => {
             pause.icon = 'mdi:pause';
+            this.setPTZVisibility(true);
         };
         video.onwaiting = () => {
             spinner.style.display = 'block';
@@ -357,6 +359,14 @@ class WebRTCCamera extends HTMLElement {
                 this.setPTZVisibility(false);
             }
         }
+
+        video.onpause = () => {
+          this.setPTZVisibility(false);
+        };
+
+        video.onplay = () => {
+            this.setPTZVisibility(true);
+        };
 
         const observer = new IntersectionObserver(
             (entries) => {
