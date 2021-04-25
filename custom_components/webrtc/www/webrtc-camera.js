@@ -13,21 +13,26 @@ class WebRTCCamera extends HTMLElement {
         }
 
         if (typeof data.sdp64 !== 'undefined') {
-            const remoteDesc = new RTCSessionDescription({
+            await pc.setRemoteDescription(new RTCSessionDescription({
                 type: 'answer',
                 sdp: atob(data.sdp64)
-            });
-            await pc.setRemoteDescription(remoteDesc);
+            }));
 
             // check external IP-address
-            return atob(data.sdp64).indexOf(' typ srflx ') > 0;
-        } else if (typeof data.error !== 'undefined') {
-            this.status = `ERROR: ${data.error}`;
+            this.status = (atob(data.sdp64).indexOf(' typ srflx ') > 0)
+                ? "Trying to connect"
+                : "Trying to connect over LAN";
         } else {
-            this.status = "ERROR: Empty response from Hass";
-        }
+            this.status = (typeof data.error !== 'undefined')
+                ? `ERROR: ${data.error}`
+                : "ERROR: Empty response from Hass";
 
-        return null;
+            setTimeout(async () => {
+                this.status = "Restart connection";
+
+                await this.exchangeSDP(hass, pc);
+            }, 10000);
+        }
     }
 
     async initConnection(hass) {
@@ -39,38 +44,23 @@ class WebRTCCamera extends HTMLElement {
         });
 
         pc.onicecandidate = async (ev) => {
-            if (ev.candidate === null) {
-                try {
-                    // only for debug purpose
-                    const iceTransport = pc.getSenders()[0].transport.iceTransport;
-                    iceTransport.onselectedcandidatepairchange = () => {
-                        const pair = iceTransport.getSelectedCandidatePair();
-                        const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
-                        this.status = `Connecting over ${type}`;
-                    }
-                } catch (e) {
-                    // Hi to Safari and Firefox...
+            if (ev.candidate) return;
+
+            try {
+                // only for debug purpose
+                const iceTransport = pc.getSenders()[0].transport.iceTransport;
+                iceTransport.onselectedcandidatepairchange = () => {
+                    const pair = iceTransport.getSelectedCandidatePair();
+                    const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
+                    this.status = `Connecting over ${type}`;
                 }
-
-                this.status = "Trying to start stream";
-                const hasPublicIP = await this.exchangeSDP(hass, pc);
-                if (hasPublicIP === true) {
-                    // everything is fine, waiting for the connection
-                    this.status = "Trying to connect";
-                } else if (hasPublicIP === false) {
-                    // try to connect in parallel
-                    this.status = "Trying to connect over LAN";
-                } else if (hasPublicIP === null) {
-                    setTimeout(async () => {
-                        this.status = "Restart connection";
-
-                        const video = this.getElementsByTagName('video')[0];
-                        video.srcObject = null;
-
-                        await this.initConnection(hass);
-                    }, 10000);
-                }
+            } catch (e) {
+                // Hi to Safari and Firefox...
             }
+
+            this.status = "Trying to start stream";
+
+            await this.exchangeSDP(hass, pc);
         }
 
         pc.ontrack = (ev) => {
