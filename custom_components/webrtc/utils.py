@@ -4,6 +4,7 @@ import subprocess
 from threading import Thread
 from typing import Optional
 
+from aiohttp import web
 from homeassistant.components.camera import Camera
 from homeassistant.components.lovelace.resources import \
     ResourceStorageCollection
@@ -53,6 +54,15 @@ async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
         return await camera.stream_source()
     except:
         return None
+
+
+def register_static_path(app: web.Application, url_path: str, path: str):
+    """Register static path with CORS for Chromecast"""
+    async def serve_file(request):
+        return web.FileResponse(path)
+
+    route = app.router.add_route("GET", url_path, serve_file)
+    app['allow_cors'](route)
 
 
 async def delete_resource(hass: HomeAssistantType, url: str):
