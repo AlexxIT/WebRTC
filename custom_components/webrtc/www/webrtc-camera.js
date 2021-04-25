@@ -13,13 +13,18 @@ class WebRTCCamera extends HTMLElement {
         }
 
         if (typeof data.sdp64 !== 'undefined') {
+            // remove docker IP-address
+            const sdp = atob(data.sdp64).replace(
+                /a=candidate.+? 172\.\d+\.\d+\.1 .+?\r\n/g, ''
+            );
+
             await pc.setRemoteDescription(new RTCSessionDescription({
                 type: 'answer',
-                sdp: atob(data.sdp64)
+                sdp: sdp
             }));
 
             // check external IP-address
-            this.status = (atob(data.sdp64).indexOf(' typ srflx ') > 0)
+            this.status = (sdp.indexOf(' typ srflx ') > 0)
                 ? "Trying to connect"
                 : "Trying to connect over LAN";
         } else {
