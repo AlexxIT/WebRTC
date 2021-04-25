@@ -1,5 +1,5 @@
 class WebRTCCamera extends HTMLElement {
-    async _connect(hass, pc) {
+    async exchangeSDP(hass, pc) {
         let data;
         try {
             data = await hass.callWS({
@@ -20,8 +20,7 @@ class WebRTCCamera extends HTMLElement {
             await pc.setRemoteDescription(remoteDesc);
 
             // check external IP-address
-            const m = atob(data.sdp64).match(/([\d.]+ \d+) typ [sp]rflx/);
-            return m !== null;
+            return atob(data.sdp64).indexOf(' typ srflx ') > 0;
         } else if (typeof data.error !== 'undefined') {
             this.status = `ERROR: ${data.error}`;
         } else {
@@ -31,12 +30,7 @@ class WebRTCCamera extends HTMLElement {
         return null;
     }
 
-    async _init(hass) {
-        // don't know if this may happen
-        if (typeof this.config === 'undefined') {
-            this.config = {}
-        }
-
+    async initConnection(hass) {
         const pc = new RTCPeerConnection({
             iceServers: [{
                 urls: ['stun:stun.l.google.com:19302']
@@ -59,7 +53,7 @@ class WebRTCCamera extends HTMLElement {
                 }
 
                 this.status = "Trying to start stream";
-                const hasPublicIP = await this._connect(hass, pc);
+                const hasPublicIP = await this.exchangeSDP(hass, pc);
                 if (hasPublicIP === true) {
                     // everything is fine, waiting for the connection
                     this.status = "Trying to connect";
@@ -73,7 +67,7 @@ class WebRTCCamera extends HTMLElement {
                         const video = this.getElementsByTagName('video')[0];
                         video.srcObject = null;
 
-                        await this._init(hass);
+                        await this.initConnection(hass);
                     }, 10000);
                 }
             }
@@ -143,7 +137,7 @@ class WebRTCCamera extends HTMLElement {
         header.style.display = value ? 'block' : 'none';
     }
 
-    _ui(card) {
+    renderCustomGUI(card) {
         const video = this.getElementsByTagName('video')[0];
         video.controls = false;
         video.style.pointerEvents = 'none';
@@ -215,9 +209,7 @@ class WebRTCCamera extends HTMLElement {
         };
     }
 
-    set hass(hass) {
-        if (this.firstChild) return;
-
+    async renderGUI() {
         const style = document.createElement('style');
         style.textContent = `
             ha-card {
@@ -317,13 +309,18 @@ class WebRTCCamera extends HTMLElement {
         );
         observer.observe(video);
 
-        this.status = "Init connection";
-
         if (this.config.ui) {
-            this._ui(card);
+            this.renderCustomGUI(card);
         }
+    }
 
-        this._init(hass);
+    set hass(hass) {
+        if (this.firstChild || typeof this.config === 'undefined') return;
+
+        this.renderGUI().then(async () => {
+            this.status = "Init connection";
+            await this.initConnection(hass);
+        });
     }
 
     setConfig(config) {
