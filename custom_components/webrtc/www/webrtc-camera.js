@@ -89,9 +89,6 @@ class WebRTCCamera extends HTMLElement {
                 // if we have not started a second connection
                 this.status = "Restart connection";
 
-                const video = this.getElementsByTagName('video')[0];
-                video.srcObject = null;
-
                 const offer = await pc.createOffer({iceRestart: true})
                 await pc.setLocalDescription(offer);
             } else if (pc.connectionState === 'connected') {
