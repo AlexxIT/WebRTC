@@ -1,13 +1,11 @@
 import logging
 import os
-import random
 from urllib.parse import urlparse
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from homeassistant.components import websocket_api
-from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -48,10 +46,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     utils.register_static_path(hass.http.app, url_path, path)
 
     # remove lovelace card from previous version
-    await utils.delete_resource(hass, url_path)
-
-    # register lovelace card
-    add_extra_js_url(hass, f"{url_path}?{random.random()}")
+    await utils.init_resource(hass, url_path)
 
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software

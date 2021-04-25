@@ -328,7 +328,6 @@ class WebRTCCamera extends HTMLElement {
 
 customElements.define('webrtc-camera', WebRTCCamera);
 
-
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: 'webrtc-camera',

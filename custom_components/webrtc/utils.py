@@ -1,11 +1,13 @@
 import logging
 import os
+import random
 import subprocess
 from threading import Thread
 from typing import Optional
 
 from aiohttp import web
 from homeassistant.components.camera import Camera
+from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.lovelace.resources import \
     ResourceStorageCollection
 from homeassistant.helpers.entity_component import EntityComponent
@@ -58,6 +60,7 @@ async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
 
 def register_static_path(app: web.Application, url_path: str, path: str):
     """Register static path with CORS for Chromecast"""
+
     async def serve_file(request):
         return web.FileResponse(path)
 
@@ -65,19 +68,28 @@ def register_static_path(app: web.Application, url_path: str, path: str):
     app['allow_cors'](route)
 
 
-async def delete_resource(hass: HomeAssistantType, url: str):
-    resources = hass.data['lovelace']['resources']
-
+async def init_resource(hass: HomeAssistantType, url: str) -> bool:
+    """Add extra JS module for lovelace mode YAML and new lovelace resource
+    for mode GUI. It's better to add extra JS for all modes, because it has
+    random url to avoid problems with the cache. But chromecast don't support
+    extra JS urls and can't load custom card.
+    """
+    resources: ResourceStorageCollection = hass.data['lovelace']['resources']
     # force load storage
     await resources.async_get_info()
 
     for item in resources.async_items():
         if item['url'] == url:
-            if isinstance(resources, ResourceStorageCollection):
-                await resources.async_delete_item(item['id'])
-            else:
-                resources.data.remove(item)
-            return
+            return False
+
+    if isinstance(resources, ResourceStorageCollection):
+        _LOGGER.debug(f"Add new lovelace resource: {url}")
+        await resources.async_create_item({'res_type': 'module', 'url': url})
+    else:
+        _LOGGER.debug(f"Add extra JS module: {url}")
+        add_extra_js_url(hass, f"{url}?{random.random()}")
+
+    return True
 
 
 class Server(Thread):
