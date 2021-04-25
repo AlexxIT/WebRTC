@@ -100,21 +100,6 @@ class WebRTCCamera extends HTMLElement {
             pc.addTransceiver('audio', {'direction': direction});
         }
 
-        const pingChannel = pc.createDataChannel('foo');
-        let intervalId;
-        pingChannel.onopen = () => {
-            intervalId = setInterval(() => {
-                try {
-                    pingChannel.send('ping');
-                } catch (e) {
-                    console.warn(e);
-                }
-            }, 1000);
-        }
-        pingChannel.onclose = () => {
-            clearInterval(intervalId);
-        }
-
         await pc.setLocalDescription(await pc.createOffer());
     }
 
