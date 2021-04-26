@@ -174,19 +174,49 @@ class WebRTCCamera extends HTMLElement {
         });
         video.onpause = () => {
             pause.icon = 'mdi:play';
+            this.setPTZVisibility(false);
         };
         video.onplay = () => {
             pause.icon = 'mdi:pause';
+            this.setPTZVisibility(true);
         };
         video.onwaiting = () => {
             spinner.style.display = 'block';
+            this.setPTZVisibility(false);
         };
         video.onplaying = () => {
             spinner.style.display = 'none';
+            this.setPTZVisibility(true);
         };
     }
 
-    async renderGUI() {
+    renderPTZ(card, hass) {
+        const ptz = document.createElement('div');
+        ptz.className = 'ptz'
+        ptz.style.opacity = this.config.ptz.opacity || '0.4';
+        ptz.innerHTML = `
+            <ha-icon class="right" icon="mdi:arrow-right"></ha-icon>
+            <ha-icon class="left" icon="mdi:arrow-left"></ha-icon>
+            <ha-icon class="up" icon="mdi:arrow-up"></ha-icon>
+            <ha-icon class="down" icon="mdi:arrow-down"></ha-icon>
+        `;
+        card.appendChild(ptz);
+
+        const handlePTZ = (ev) => {
+            const [domain, service] = this.config.ptz.service.split('.', 2);
+            const data = this.config.ptz['data_' + ev.target.className];
+            if (data) {
+                hass.callService(domain, service, data);
+            }
+        }
+
+        const buttons = ptz.getElementsByTagName('ha-icon');
+        Array.from(buttons).forEach(function (el) {
+            el.addEventListener('click', handlePTZ);
+        });
+    }
+
+    async renderGUI(hass) {
         const style = document.createElement('style');
         style.textContent = `
             ha-card {
@@ -194,6 +224,7 @@ class WebRTCCamera extends HTMLElement {
                 margin: auto;
                 overflow: hidden;
                 width: 100%;
+                position: relative;
             }
             video, .fix-safari {
                 width: 100%;
@@ -239,6 +270,45 @@ class WebRTCCamera extends HTMLElement {
                 right: 35px;
                 bottom: 5px;
             }
+            .ptz {
+                position: absolute;
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%);
+                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+                transition: opacity .3s ease-in-out;
+                display: none;
+                z-index: 10;
+                border-radius: 50%;
+                width: 80px;
+                height: 80px;
+            }
+            .show {
+                display: block;
+            }
+            .ptz:hover {
+                opacity: 1 !important;
+            }
+            .up {
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .down {
+                bottom: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .left {
+                left: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .right {
+                right: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
         `;
         this.appendChild(style);
 
@@ -269,8 +339,19 @@ class WebRTCCamera extends HTMLElement {
         video.onloadeddata = () => {
             if (video.readyState >= 1) {
                 this.status = this.config.title || '';
+                this.setPTZVisibility(true);
+            } else {
+                this.setPTZVisibility(false);
             }
         }
+
+        video.onpause = () => {
+            this.setPTZVisibility(false);
+        };
+
+        video.onplay = () => {
+            this.setPTZVisibility(true);
+        };
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -289,15 +370,30 @@ class WebRTCCamera extends HTMLElement {
         if (this.config.ui) {
             this.renderCustomGUI(card);
         }
+
+        if (this.config.ptz) {
+            this.renderPTZ(card, hass);
+        }
     }
 
     set hass(hass) {
         if (this.firstChild || typeof this.config === 'undefined') return;
 
-        this.renderGUI().then(async () => {
+        this.renderGUI(hass).then(async () => {
             this.status = "Init connection";
             await this.initConnection(hass);
         });
+    }
+
+    setPTZVisibility(show) {
+        const ptz = this.getElementsByClassName('ptz')[0];
+        if (ptz) {
+            if (show) {
+                ptz.classList.add('show');
+            } else {
+                ptz.classList.remove('show');
+            }
+        }
     }
 
     setConfig(config) {
@@ -310,6 +406,10 @@ class WebRTCCamera extends HTMLElement {
         const isOpera = (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
         if (isOpera) {
             throw new Error("Opera doesn't supported");
+        }
+
+        if (config.ptz && !config.ptz.service) {
+            throw new Error("Missing `service` for `ptz`");
         }
 
         this.config = config;
