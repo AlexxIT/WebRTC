@@ -10,7 +10,8 @@ from homeassistant.components.camera import Camera
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.lovelace.resources import \
     ResourceStorageCollection
-from homeassistant.helpers.entity_component import EntityComponent
+from homeassistant.helpers.entity_component import EntityComponent, \
+    DATA_INSTANCES
 from homeassistant.helpers.typing import HomeAssistantType
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ def get_binary_url(version: str) -> str:
            f"{version}/rtsp2webrtc_{get_arch()}"
 
 
+# noinspection PyTypeChecker
 async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
     try:
         component: EntityComponent = hass.data['camera']
@@ -90,6 +92,31 @@ async def init_resource(hass: HomeAssistantType, url: str) -> bool:
         add_extra_js_url(hass, f"{url}?{random.random()}")
 
     return True
+
+
+# noinspection PyProtectedMember
+def dash_cast(hass: HomeAssistantType, cast_entities: list, url: str):
+    """Cast webpage to chromecast device via DashCast application."""
+    try:
+        entities = [
+            e for e in hass.data[DATA_INSTANCES]['media_player'].entities
+            if e.entity_id in cast_entities and e._chromecast
+        ]
+        if not entities:
+            _LOGGER.warning(f"Can't find {cast_entities} for DashCast")
+
+        for entity in entities:
+            from pychromecast.controllers.dashcast import DashCastController
+
+            if not hasattr(entity, 'dashcast'):
+                entity.dashcast = DashCastController()
+                entity._chromecast.register_handler(entity.dashcast)
+
+            _LOGGER.debug(f"DashCast to {entity.entity_id}")
+            entity.dashcast.load_url(url)
+
+    except:
+        _LOGGER.exception(f"Can't DashCast to {cast_entities}")
 
 
 class Server(Thread):

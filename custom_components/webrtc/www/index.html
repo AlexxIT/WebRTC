@@ -22,7 +22,7 @@
     const hass = {}
     hass.callWS = async (data) => {
         const body = new FormData();
-        body.append('url', data['url'])
+        body.append('link_id', data['url'])
         body.append('sdp64', data['sdp64'])
         const response = await fetch('/api/webrtc/stream', {
             method: 'POST', body: body

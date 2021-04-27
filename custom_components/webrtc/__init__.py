@@ -1,17 +1,19 @@
 import logging
 import os
 import time
+import uuid
 from urllib.parse import urlparse
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
-from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone
+from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components import websocket_api
 from homeassistant.components.http import HomeAssistantView, KEY_AUTHENTICATED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.network import get_url
 from homeassistant.helpers.typing import HomeAssistantType, ConfigType, \
     ServiceCallType
 
@@ -26,9 +28,18 @@ CREATE_LINK_SCHEMA = vol.Schema(
     {
         vol.Required('link_id'): cv.string,
         vol.Exclusive('url', 'url'): cv.string,
-        vol.Exclusive(ATTR_ENTITY_ID, 'url'): cv.entity_ids,
+        vol.Exclusive('entity', 'url'): cv.entity_id,
         vol.Optional('open_limit', default=1): cv.positive_int,
         vol.Optional('time_to_live', default=60): cv.positive_int,
+    },
+    required=True,
+)
+
+DASH_CAST_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
+        vol.Exclusive('url', 'url'): cv.string,
+        vol.Exclusive('entity', 'url'): cv.entity_id,
     },
     required=True,
 )
@@ -73,21 +84,39 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     websocket_api.async_register_command(hass, websocket_webrtc_stream)
     hass.http.register_view(WebRTCStreamView)
 
-    async def service(call: ServiceCallType):
+    async def create_link(call: ServiceCallType):
         link_id = call.data['link_id']
-        entity = call.data.get(ATTR_ENTITY_ID)
         ttl = call.data['time_to_live']
         LINKS[link_id] = {
             'data': {
                 'url': call.data.get('url'),
-                'entity': entity[0] if entity else None
+                'entity': call.data.get('entity')
             },
             'limit': call.data['open_limit'],
             'ts': time.time() + ttl if ttl else 0
         }
 
-    hass.services.async_register(DOMAIN, 'create_link', service,
+    async def dash_cast(call: ServiceCallType):
+        link_id = uuid.uuid4().hex
+        LINKS[link_id] = {
+            'data': {
+                'url': call.data.get('url'),
+                'entity': call.data.get('entity')
+            },
+            'limit': 3,  # 3 attempts
+            'ts': time.time() + 30  # for 30 seconds
+        }
+
+        await hass.async_add_executor_job(
+            utils.dash_cast, hass,
+            call.data[ATTR_ENTITY_ID],
+            f"{get_url(hass)}/webrtc/embed?url={link_id}"
+        )
+
+    hass.services.async_register(DOMAIN, 'create_link', create_link,
                                  CREATE_LINK_SCHEMA)
+    hass.services.async_register(DOMAIN, 'dash_cast', dash_cast,
+                                 DASH_CAST_SCHEMA)
 
     return True
 
@@ -162,10 +191,13 @@ class WebRTCStreamView(HomeAssistantView):
         """Must be authorized or url must be in the streams list."""
         data = await request.post()
 
-        if data.get('url') in LINKS:
-            link_id = data['url']
-            link = LINKS[link_id]
+        # with link_id without auth
+        if 'link_id' in data:
+            link_id = data['link_id']
+            if link_id not in LINKS:
+                raise HTTPNotFound()
 
+            link = LINKS[link_id]
             if link['ts'] and time.time() > link['ts']:
                 LINKS.pop(link_id)
                 raise HTTPGone()

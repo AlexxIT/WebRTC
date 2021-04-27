@@ -1,6 +1,6 @@
 create_link:
   name: Create Link
-  description: Create a temporary or permanent link to a stream (enter "url" or "entity_id")
+  description: Create a temporary or permanent link to a stream (enter "url" or "entity")
   fields:
     link_id:
       description: Create a random or permanent ID for your link
@@ -15,7 +15,7 @@ create_link:
       selector:
         text:
 
-    entity_id:
+    entity:
       description: Camera entity
       example: camera.generic_stream
       selector:
@@ -39,3 +39,29 @@ create_link:
         number:
           min: 0
           unit_of_measurement: seconds
+
+dash_cast:
+  name: DashCast
+  description: Cast stream to Chromecast device via DashCast application
+  fields:
+    entity_id:
+      description: Media player entity
+      example: media_player.mibox4
+      required: true
+      selector:
+        entity:
+          integration: cast
+          domain: media_player
+
+    url:
+      description: Link to RTSP-stream
+      example: rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0
+      selector:
+        text:
+
+    entity:
+      description: Camera entity
+      example: camera.generic_stream
+      selector:
+        entity:
+          domain: camera
