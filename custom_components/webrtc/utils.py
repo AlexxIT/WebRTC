@@ -101,7 +101,7 @@ def dash_cast(hass: HomeAssistantType, cast_entities: list, url: str):
     try:
         entities = [
             e for e in hass.data[DATA_INSTANCES]['media_player'].entities
-            if e.entity_id in cast_entities and e._chromecast
+            if e.entity_id in cast_entities and getattr(e, '_chromecast', 0)
         ]
         if not entities:
             _LOGGER.warning(f"Can't find {cast_entities} for DashCast")
