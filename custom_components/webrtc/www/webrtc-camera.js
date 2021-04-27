@@ -229,6 +229,7 @@ class WebRTCCamera extends HTMLElement {
             video, .fix-safari {
                 width: 100%;
                 display: block;
+                z-index: 0;
             }
             .box {
                 position: absolute;
