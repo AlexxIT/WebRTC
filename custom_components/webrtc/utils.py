@@ -20,6 +20,7 @@ DOMAIN = 'webrtc'
 
 ARCH = {
     'armv7l': 'armv7',
+    'armv8l': 'armv7',  # https://github.com/AlexxIT/WebRTC/issues/18
     'aarch64': 'aarch64',
     'x86_64': 'amd64',
     'i386': 'i386',
