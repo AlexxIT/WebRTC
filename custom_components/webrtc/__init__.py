@@ -1,16 +1,19 @@
 import logging
 import os
+import time
 from urllib.parse import urlparse
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
+from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone
 from homeassistant.components import websocket_api
-from homeassistant.components.http import HomeAssistantView
+from homeassistant.components.http import HomeAssistantView, KEY_AUTHENTICATED
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.typing import HomeAssistantType, ConfigType
+from homeassistant.helpers.typing import HomeAssistantType, ConfigType, \
+    ServiceCallType
 
 from . import utils
 from .utils import DOMAIN, Server
@@ -18,6 +21,19 @@ from .utils import DOMAIN, Server
 _LOGGER = logging.getLogger(__name__)
 
 BINARY_VERSION = 'v3'
+
+CREATE_LINK_SCHEMA = vol.Schema(
+    {
+        vol.Required('link_id'): cv.string,
+        vol.Exclusive('url', 'url'): cv.string,
+        vol.Exclusive(ATTR_ENTITY_ID, 'url'): cv.entity_ids,
+        vol.Optional('open_limit', default=1): cv.positive_int,
+        vol.Optional('time_to_live', default=60): cv.positive_int,
+    },
+    required=True,
+)
+
+LINKS = {}  # 2 3 4
 
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
@@ -48,10 +64,30 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     # remove lovelace card from previous version
     await utils.init_resource(hass, url_path)
 
+    # serve html page
+    path = hass.config.path('custom_components/webrtc/www/index.html')
+    utils.register_static_path(hass.http.app, '/webrtc/embed', path)
+
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software
     websocket_api.async_register_command(hass, websocket_webrtc_stream)
     hass.http.register_view(WebRTCStreamView)
+
+    async def service(call: ServiceCallType):
+        link_id = call.data['link_id']
+        entity = call.data.get(ATTR_ENTITY_ID)
+        ttl = call.data['time_to_live']
+        LINKS[link_id] = {
+            'data': {
+                'url': call.data.get('url'),
+                'entity': entity[0] if entity else None
+            },
+            'limit': call.data['open_limit'],
+            'ts': time.time() + ttl if ttl else 0
+        }
+
+    hass.services.async_register(DOMAIN, 'create_link', service,
+                                 CREATE_LINK_SCHEMA)
 
     return True
 
@@ -120,9 +156,31 @@ async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
 class WebRTCStreamView(HomeAssistantView):
     url = '/api/webrtc/stream'
     name = 'api:webrtc:stream'
+    requires_auth = False
 
     async def post(self, request: web.Request):
-        hass = request.app['hass']
+        """Must be authorized or url must be in the streams list."""
         data = await request.post()
+
+        if data.get('url') in LINKS:
+            link_id = data['url']
+            link = LINKS[link_id]
+
+            if link['ts'] and time.time() > link['ts']:
+                LINKS.pop(link_id)
+                raise HTTPGone()
+
+            if link['limit']:
+                link['limit'] -= 1
+                if link['limit'] == 0:
+                    LINKS.pop(link_id)
+
+            data = {**link['data'], 'sdp64': data['sdp64']}
+
+        elif not request.get(KEY_AUTHENTICATED, False):
+            # you shall not pass
+            raise HTTPUnauthorized()
+
+        hass = request.app['hass']
         result = await start_stream(hass, **data)
         return web.json_response(result)

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebRTC Camera</title>
+    <script src="/webrtc/webrtc-camera.js"></script>
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body, ha-card, video {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<script>
+    const hass = {}
+    hass.callWS = async (data) => {
+        const body = new FormData();
+        body.append('url', data['url'])
+        body.append('sdp64', data['sdp64'])
+        const response = await fetch('/api/webrtc/stream', {
+            method: 'POST', body: body
+        });
+        return response.json();
+    }
+
+    const config = Object.fromEntries(new URLSearchParams(location.search));
+    const element = customElements.get('webrtc-camera');
+
+    const custom = new element();
+    custom.setConfig(config)
+    custom.hass = hass;
+
+    document.body.appendChild(custom);
+</script>
+</body>
+</html>
