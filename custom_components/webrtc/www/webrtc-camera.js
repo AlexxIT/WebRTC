@@ -69,7 +69,7 @@ class WebRTCCamera extends HTMLElement {
         }
 
         pc.ontrack = (ev) => {
-            const video = this.getElementsByTagName('video')[0];
+            const video = this.querySelector('#video');
             if (video.srcObject === null) {
                 video.srcObject = ev.streams[0];
             } else {
@@ -109,15 +109,16 @@ class WebRTCCamera extends HTMLElement {
     }
 
     set status(value) {
-        const header = this.getElementsByClassName("header")[0];
+        const header = this.querySelector('.header');
         header.innerText = value;
         header.style.display = value ? 'block' : 'none';
     }
 
     renderCustomGUI(card) {
-        const video = this.getElementsByTagName('video')[0];
+        const video = this.querySelector('#video');
         video.controls = false;
         video.style.pointerEvents = 'none';
+        video.style.opacity = 0;
 
         const spinner = document.createElement('ha-circular-progress');
         spinner.active = true;
@@ -171,6 +172,7 @@ class WebRTCCamera extends HTMLElement {
                 };
             }
             pause.style.display = 'block';
+            video.style.opacity = 1;
         });
         video.onpause = () => {
             pause.icon = 'mdi:play';
@@ -191,11 +193,14 @@ class WebRTCCamera extends HTMLElement {
         style.textContent = `
             ha-card {
                 display: flex;
+                justify-content: center;
+                flex-direction: column;
                 margin: auto;
                 overflow: hidden;
                 width: 100%;
+                height: 100%;
             }
-            video, .fix-safari {
+            #video, .fix-safari {
                 width: 100%;
                 display: block;
             }
@@ -259,7 +264,7 @@ class WebRTCCamera extends HTMLElement {
         `;
         this.appendChild(card);
 
-        const video = this.getElementsByTagName('video')[0];
+        const video = this.querySelector('#video');
 
         video.onstalled = video.onerror = () => {
             video.srcObject = new MediaStream(video.srcObject.getTracks());
