@@ -99,10 +99,27 @@ entity: camera.generic_stream  # change to your camera entity_id
 ```yaml
 type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
+
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 intersection: 0.75  # auto pause stream when less than 75% of video element is in the screen, 50% by default
 ui: true  # custom video controls, default false
+
+ptz:  # optional PTZ controls
+  opacity: 0.4  # optional default contols opacity
+  service: sonoff.send_command  # service for control PTZ (check Hass docs to your camera)
+  data_left:  # service data for each direction
+    device: '048123'
+    cmd: left
+  data_right:
+    device: '048123'
+    cmd: right
+  data_up:
+    device: '048123'
+    cmd: up
+  data_down:
+    device: '048123'
+    cmd: down
 ```
 
 ## Known work clients
