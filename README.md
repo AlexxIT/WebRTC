@@ -122,6 +122,12 @@ ptz:  # optional PTZ controls
     cmd: down
 ```
 
+## Cast or share stream
+
+Component support streaming to [Google Cast](https://www.home-assistant.io/integrations/cast/) Chromecast devices (including Android TV and Google Smart Screen). Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
+
+Also component support creating a temporary or permanent link to a stream without sharing access to you Home Assistant. Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
+
 ## Known work clients
 
 - Google Chrome (macOS, Windows, Android)
