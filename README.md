@@ -99,11 +99,34 @@ entity: camera.generic_stream  # change to your camera entity_id
 ```yaml
 type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
+
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 intersection: 0.75  # auto pause stream when less than 75% of video element is in the screen, 50% by default
 ui: true  # custom video controls, default false
+
+ptz:  # optional PTZ controls
+  opacity: 0.4  # optional default contols opacity
+  service: sonoff.send_command  # service for control PTZ (check Hass docs to your camera)
+  data_left:  # service data for each direction
+    device: '048123'
+    cmd: left
+  data_right:
+    device: '048123'
+    cmd: right
+  data_up:
+    device: '048123'
+    cmd: up
+  data_down:
+    device: '048123'
+    cmd: down
 ```
+
+## Cast or share stream
+
+Component support streaming to [Google Cast](https://www.home-assistant.io/integrations/cast/) Chromecast devices (including Android TV and Google Smart Screen). Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
+
+Also component support creating a temporary or permanent link to a stream without sharing access to you Home Assistant. Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
 
 ## Known work clients
 
@@ -123,7 +146,7 @@ Dahua | DH-IPC-HDPW1431FP-AS-0280B | support sound
 EZVIZ | C3S | `rtsp://admin:pass@192.168.1.123:554/h264/ch01/main/av_stream` and `/h264/ch01/sub/av_stream`
 Hikvision | DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS | `rtsp://user:pass@192.168.1.123:554/ISAPI/Streaming/Channels/102`
 Reolink | RLC-410, RLC-410W, E1 Pro, 4505MP |
-Sonoff | GK-200MP2-B | support sound, `rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0` and `/av_stream/ch1`
+Sonoff | GK-200MP2-B | support sound and [PTZ](https://github.com/AlexxIT/SonoffLAN#sonoff-gk-200mp2-b-camera), `rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0` and `/av_stream/ch1`
 TP-Link | Tapo C200 |
 Wyze | Cam v2 | support sound
 Xiaomi | Dafang | [with hack](https://github.com/EliasKotlyar/Xiaomi-Dafang-Hacks), `rtsp://192.168.1.123:8554/unicast` <br> Video: H264, size: 1920x1080, bitrate: 1000, format: VBR, frame rate: 10 <br> Audio: PCMU, rate in: 8000, rate out: 44100
