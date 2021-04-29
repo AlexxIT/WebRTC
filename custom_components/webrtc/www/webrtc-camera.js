@@ -192,14 +192,26 @@ class WebRTCCamera extends HTMLElement {
 
     renderPTZ(card, hass) {
         const ptz = document.createElement('div');
-        ptz.className = 'ptz'
+        ptz.className = 'ptz';
         ptz.style.opacity = this.config.ptz.opacity || '0.4';
-        ptz.innerHTML = `
+        const ptzMove = document.createElement('div');
+        ptzMove.className = 'ptz-move';
+        ptzMove.innerHTML = `
             <ha-icon class="right" icon="mdi:arrow-right"></ha-icon>
             <ha-icon class="left" icon="mdi:arrow-left"></ha-icon>
             <ha-icon class="up" icon="mdi:arrow-up"></ha-icon>
             <ha-icon class="down" icon="mdi:arrow-down"></ha-icon>
         `;
+        ptz.appendChild(ptzMove);
+        if (this.config.ptz.data_inc && this.config.ptz.data_dec) {
+            const ptzZoom = document.createElement('div');
+            ptzZoom.className = 'ptz-zoom';
+            ptzZoom.innerHTML = `
+                <ha-icon class="inc" icon="mdi:plus"></ha-icon>
+                <ha-icon class="dec" icon="mdi:minus"></ha-icon>
+            `;
+            ptz.appendChild(ptzZoom);
+        }
         card.appendChild(ptz);
 
         const handlePTZ = (ev) => {
@@ -276,13 +288,24 @@ class WebRTCCamera extends HTMLElement {
                 top: 50%;
                 right: 10px;
                 transform: translateY(-50%);
-                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
                 transition: opacity .3s ease-in-out;
                 display: none;
                 z-index: 10;
+            }
+            .ptz-move {
+                position: relative;
+                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
                 border-radius: 50%;
                 width: 80px;
                 height: 80px;
+            }
+            .ptz-zoom {
+                position: relative;
+                margin-top: 10px;
+                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+                border-radius: 4px;
+                width: 80px;
+                height: 40px;
             }
             .show {
                 display: block;
@@ -306,6 +329,16 @@ class WebRTCCamera extends HTMLElement {
                 transform: translateY(-50%);
             }
             .right {
+                right: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .dec {
+                left: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .inc {
                 right: 5px;
                 top: 50%;
                 transform: translateY(-50%);
@@ -393,7 +426,7 @@ class WebRTCCamera extends HTMLElement {
                 ptz.classList.add('show');
             } else {
                 ptz.classList.remove('show');
-            }
+            }Buttons
         }
     }
 

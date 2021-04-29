@@ -7,9 +7,9 @@
 Home Assistant custom component for viewing IP cameras [RTSP](https://en.wikipedia.org/wiki/Real_Time_Streaming_Protocol) stream in real time using [WebRTC](https://en.wikipedia.org/wiki/WebRTC) technology.
 
 Based on:
- - [Pion](https://github.com/pion/webrtc) - pure Go implementation of WebRTC 
+ - [Pion](https://github.com/pion/webrtc) - pure Go implementation of WebRTC
  - [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC) - Go app by [@deepch](https://github.com/deepch) and [@vdalex25](https://github.com/vdalex25)
- 
+
 Why WebRTC:
 - works in any modern browser, even on mobiles
 - the only browser technology with minimal camera stream delays (0.5 seconds and below)
@@ -19,7 +19,7 @@ Why WebRTC:
 
 ## FAQ
 
-**Q. I can't see video stream**  
+**Q. I can't see video stream**
 A.
 - If your camera works with another integration - it **doesn’t mean** it will work with this integration
 - If your camera works in VLC - it **doesn’t mean** it will work with this integration
@@ -40,12 +40,12 @@ url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
 
 PS. Some mobile browsers can't show stream without HTTPS. There are also problems with the stream in the Firefox browser.
 
-**Q. Error: Custom element doesn't exist: webrtc-camera.**  
+**Q. Error: Custom element doesn't exist: webrtc-camera.**
 A. Component automatically adds custom card `/webrtc/webrtc-camera.js` to your resources.
 
 Check if you install component in "Integrations" page. And try to clear your browser cache. Also, you can try to add this card to your resources manually.
 
-**Q. Exernal access to streams doesn't work**  
+**Q. Exernal access to streams doesn't work**
 A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses a random UDP port to connect. And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
 
 At each start of the streaming, a random UDP port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
@@ -54,10 +54,10 @@ If your stream does not start with an external connection (stuck on status `Tryi
 
 For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
 
-**Q. Some streams are not loaded when there are many cameras on the page.**  
+**Q. Some streams are not loaded when there are many cameras on the page.**
 A. The default settings only support 10 simultaneous streams (from Hass server to app or browser). Go to "Configuration > Integrations > WebRTC Camera > Options" and increase port range. You also need forward new port range on your router if you want external access to cameras.
 
-**Q. Which codecs are supported?**  
+**Q. Which codecs are supported?**
 A. WebRTC [supported](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/WebRTC_codecs): `AVC/H.264` for video and `G.711 PCM (A-law)`, `G.711 PCM (µ-law)` for audio.
 
 WebRTC technology doesn't support `HEVC/H.265` for video and `AAC` for audio.
@@ -66,7 +66,7 @@ WebRTC technology doesn't support `HEVC/H.265` for video and `AAC` for audio.
 
 You can install component with [HACS](https://hacs.xyz/) custom repo: HACS > Integrations > 3 dots (upper top corner) > Custom repositories > URL: `AlexxIT/WebRTC` > Category: Integration
 
-Or manually copy `webrtc` folder from [latest release](https://github.com/AlexxIT/WebRTC/releases/latest) to `custom_components` folder in your config folder. 
+Or manually copy `webrtc` folder from [latest release](https://github.com/AlexxIT/WebRTC/releases/latest) to `custom_components` folder in your config folder.
 
 ## Config
 
@@ -120,6 +120,12 @@ ptz:  # optional PTZ controls
   data_down:
     device: '048123'
     cmd: down
+  data_inc: # optional, for zoom increase
+    device: '048123'
+    cmd: inc
+  data_dec: # optional, for zoom decrease
+    device: '048123'
+    cmd: dev
 ```
 
 ## Cast or share stream
@@ -139,7 +145,7 @@ Also component support creating a temporary or permanent link to a stream withou
 
 Brand | Models | Comment
 ------|--------|--------
-ActiveCam | AC-D2121IR3 | 
+ActiveCam | AC-D2121IR3 |
 ActiveCam | AC-D7121IR1W | support sound
 Android | [IP Webcam Pro](https://play.google.com/store/apps/details?id=com.pas.webcam.pro) | support sound, `rtsp://192.168.1.123:8080/h264_ulaw.sdp`
 Dahua | DH-IPC-HDPW1431FP-AS-0280B | support sound
