@@ -205,12 +205,12 @@ class WebRTCCamera extends HTMLElement {
             <ha-icon class="down" icon="mdi:arrow-down"></ha-icon>
         `;
         ptz.appendChild(ptzMove);
-        if (this.config.ptz.data_inc && this.config.ptz.data_dec) {
+        if (this.config.ptz.data_zoom_in && this.config.ptz.data_zoom_out) {
             const ptzZoom = document.createElement('div');
             ptzZoom.className = 'ptz-zoom';
             ptzZoom.innerHTML = `
-                <ha-icon class="inc" icon="mdi:plus"></ha-icon>
-                <ha-icon class="dec" icon="mdi:minus"></ha-icon>
+                <ha-icon class="zoom_in" icon="mdi:plus"></ha-icon>
+                <ha-icon class="zoom_out" icon="mdi:minus"></ha-icon>
             `;
             ptz.appendChild(ptzZoom);
         }
@@ -338,12 +338,12 @@ class WebRTCCamera extends HTMLElement {
                 top: 50%;
                 transform: translateY(-50%);
             }
-            .dec {
+            .zoom_out {
                 left: 5px;
                 top: 50%;
                 transform: translateY(-50%);
             }
-            .inc {
+            .zoom_in {
                 right: 5px;
                 top: 50%;
                 transform: translateY(-50%);
@@ -431,7 +431,7 @@ class WebRTCCamera extends HTMLElement {
                 ptz.classList.add('show');
             } else {
                 ptz.classList.remove('show');
-            }Buttons
+            }
         }
     }
 

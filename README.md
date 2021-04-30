@@ -20,7 +20,7 @@ Why WebRTC:
 ## FAQ
 
 **Q. I can't see video stream**
-A.
+
 - If your camera works with another integration - it **doesn’t mean** it will work with this integration
 - If your camera works in VLC - it **doesn’t mean** it will work with this integration
 - If your camera works remotely with another integration - it **doesn’t mean** it will work remotely with this integration
@@ -41,11 +41,13 @@ url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
 PS. Some mobile browsers can't show stream without HTTPS. There are also problems with the stream in the Firefox browser.
 
 **Q. Error: Custom element doesn't exist: webrtc-camera.**
+
 A. Component automatically adds custom card `/webrtc/webrtc-camera.js` to your resources.
 
 Check if you install component in "Integrations" page. And try to clear your browser cache. Also, you can try to add this card to your resources manually.
 
 **Q. Exernal access to streams doesn't work**
+
 A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses a random UDP port to connect. And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
 
 At each start of the streaming, a random UDP port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
@@ -55,9 +57,11 @@ If your stream does not start with an external connection (stuck on status `Tryi
 For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
 
 **Q. Some streams are not loaded when there are many cameras on the page.**
+
 A. The default settings only support 10 simultaneous streams (from Hass server to app or browser). Go to "Configuration > Integrations > WebRTC Camera > Options" and increase port range. You also need forward new port range on your router if you want external access to cameras.
 
 **Q. Which codecs are supported?**
+
 A. WebRTC [supported](https://developer.mozilla.org/en-US/docs/Web/Media/Formats/WebRTC_codecs): `AVC/H.264` for video and `G.711 PCM (A-law)`, `G.711 PCM (µ-law)` for audio.
 
 WebRTC technology doesn't support `HEVC/H.265` for video and `AAC` for audio.
@@ -120,12 +124,12 @@ ptz:  # optional PTZ controls
   data_down:
     device: '048123'
     cmd: down
-  data_inc: # optional, for zoom increase
+  data_zoom_in: # optional, for zoom increase
     device: '048123'
-    cmd: inc
-  data_dec: # optional, for zoom decrease
+    cmd: zoom_in
+  data_zoom_out: # optional, for zoom decrease
     device: '048123'
-    cmd: dev
+    cmd: zoom_out
 ```
 
 ## Cast or share stream
