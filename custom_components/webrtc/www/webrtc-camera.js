@@ -212,8 +212,8 @@ class WebRTCCamera extends HTMLElement {
             }
         }
 
-        const buttons = ptz.getElementsByTagName('ha-icon');
-        Array.from(buttons).forEach(function (el) {
+        const buttons = ptz.querySelectorAll('ha-icon');
+        buttons.forEach(function (el) {
             el.addEventListener('click', handlePTZ);
         });
     }
@@ -392,7 +392,7 @@ class WebRTCCamera extends HTMLElement {
     }
 
     setPTZVisibility(show) {
-        const ptz = this.getElementsByClassName('ptz')[0];
+        const ptz = this.querySelector('.ptz');
         if (ptz) {
             if (show) {
                 ptz.classList.add('show');
