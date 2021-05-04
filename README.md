@@ -173,6 +173,18 @@ Xiaomi | Dafang | [with hack](https://github.com/EliasKotlyar/Xiaomi-Dafang-Hack
 Yi | Hi3518e Chipset | [with hack](https://github.com/alienatedsec/yi-hack-v5)
 Yi | MStar Infinity Chipset | [with hack](https://github.com/roleoroleo/yi-hack-MStar)
 
+## Status Icons
+
+icon | description
+-----|------------
+![](https://api.iconify.design/mdi-download-network-outline.svg?height=24) | starting connection (MSE)  
+![](https://api.iconify.design/mdi-play-network-outline.svg?height=24) | stream is played with MSE  
+![](https://api.iconify.design/mdi-lan-pending.svg?height=24) | starting connection (WebRTC)  
+![](https://api.iconify.design/mdi-lan-connect.svg?height=24) | connecting to remote (WebRTC)  
+![](https://api.iconify.design/mdi-lan-check.svg?height=24) | loading video (WebRTC)  
+![](https://api.iconify.design/mdi-lan-disconnect.svg?height=24) | restarting connection (WebRTC)  
+![](https://api.iconify.design/mdi-webrtc.svg?height=24) | stream is played with WebRTC
+
 ## Debug
 
 Add to your `configuration.yaml`:
