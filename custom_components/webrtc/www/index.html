@@ -19,20 +19,19 @@
 </head>
 <body>
 <script>
+    const url = document.referrer ? new URL(document.referrer) : window.location;
+
     const hass = {}
-    hass.callWS = async (data) => {
-        const body = new FormData();
-        body.append('link_id', data['url'])
-        body.append('sdp64', data['sdp64'])
-        const response = await fetch('/api/webrtc/stream', {
-            method: 'POST', body: body
-        });
-        return response.json();
+    hass.callWS = () => '';
+    hass.hassUrl = () => url.origin + '/api/webrtc/ws?embed=1';
+
+    const config = Object.fromEntries(new URLSearchParams(url.search));
+    for (const [k, v] of Object.entries(config)) {
+        if (v === 'true') config[k] = true;
+        if (v === 'false') config[k] = false;
     }
 
-    const config = Object.fromEntries(new URLSearchParams(location.search));
     const element = customElements.get('webrtc-camera');
-
     const custom = new element();
     custom.setConfig(config)
     custom.hass = hass;

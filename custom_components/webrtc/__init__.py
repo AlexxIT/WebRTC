@@ -1,14 +1,15 @@
+import asyncio
 import logging
 import os
 import time
 import uuid
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
-from homeassistant.components import websocket_api
+from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView, KEY_AUTHENTICATED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID
@@ -22,7 +23,7 @@ from .utils import DOMAIN, Server
 
 _LOGGER = logging.getLogger(__name__)
 
-BINARY_VERSION = 'v3'
+BINARY_VERSION = 'v4'
 
 CREATE_LINK_SCHEMA = vol.Schema(
     {
@@ -81,17 +82,14 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software
-    websocket_api.async_register_command(hass, websocket_webrtc_stream)
-    hass.http.register_view(WebRTCStreamView)
+    hass.http.register_view(WebSocketView)
 
     async def create_link(call: ServiceCallType):
         link_id = call.data['link_id']
         ttl = call.data['time_to_live']
         LINKS[link_id] = {
-            'data': {
-                'url': call.data.get('url'),
-                'entity': call.data.get('entity')
-            },
+            'url': call.data.get('url'),
+            'entity': call.data.get('entity'),
             'limit': call.data['open_limit'],
             'ts': time.time() + ttl if ttl else 0
         }
@@ -99,11 +97,9 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     async def dash_cast(call: ServiceCallType):
         link_id = uuid.uuid4().hex
         LINKS[link_id] = {
-            'data': {
-                'url': call.data.get('url'),
-                'entity': call.data.get('entity')
-            },
-            'limit': 3,  # 3 attempts
+            'url': call.data.get('url'),
+            'entity': call.data.get('entity'),
+            'limit': 1,  # 1 attempt
             'ts': time.time() + 30  # for 30 seconds
         }
 
@@ -144,56 +140,14 @@ async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def start_stream(hass: HomeAssistantType, sdp64: str, url: str = None,
-                       entity: str = None, **kwargs):
-    try:
-        if entity:
-            url = await utils.get_stream_source(hass, entity)
-            assert url, f"Can't get URL for {entity}"
-
-        # also check if url valid, e.g. wrong chars in password
-        assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
-
-        server = hass.data[DOMAIN]
-        assert server.available, "WebRTC server not available"
-
-        session = async_get_clientsession(hass)
-        r = await session.post(f"http://localhost:{server.port}/stream", data={
-            'url': url, 'sdp64': sdp64
-        })
-        raw = await r.json()
-
-        _LOGGER.debug(f"New stream to url: {url}")
-        return raw
-
-    except Exception as e:
-        return {'error': str(e)}
-
-
-@websocket_api.websocket_command({
-    vol.Required('type'): 'webrtc/stream',
-    vol.Optional('url'): vol.Any(cv.string, None),
-    vol.Optional('entity'): vol.Any(cv.entity_id, None),
-    vol.Required('sdp64'): str
-})
-@websocket_api.async_response
-async def websocket_webrtc_stream(hass: HomeAssistantType, connection, msg):
-    result = await start_stream(hass, **msg)
-    connection.send_result(msg['id'], result)
-
-
-class WebRTCStreamView(HomeAssistantView):
-    url = '/api/webrtc/stream'
-    name = 'api:webrtc:stream'
+class WebSocketView(HomeAssistantView):
+    url = '/api/webrtc/ws'
+    name = 'api:webrtc:ws'
     requires_auth = False
 
-    async def post(self, request: web.Request):
-        """Must be authorized or url must be in the streams list."""
-        data = await request.post()
-
-        # with link_id without auth
-        if 'link_id' in data:
-            link_id = data['link_id']
+    async def get(self, request: web.Request):
+        if request.query.get('embed'):
+            link_id = request.query.get('url')
             if link_id not in LINKS:
                 raise HTTPNotFound()
 
@@ -207,12 +161,47 @@ class WebRTCStreamView(HomeAssistantView):
                 if link['limit'] == 0:
                     LINKS.pop(link_id)
 
-            data = {**link['data'], 'sdp64': data['sdp64']}
+            entity = link['entity']
+            url = link['url']
 
         elif not request.get(KEY_AUTHENTICATED, False):
             # you shall not pass
             raise HTTPUnauthorized()
 
-        hass = request.app['hass']
-        result = await start_stream(hass, **data)
-        return web.json_response(result)
+        else:
+            entity = request.query.get('entity')
+            url = request.query.get('url')
+
+        ws_server = web.WebSocketResponse(autoclose=False, autoping=False)
+        await ws_server.prepare(request)
+
+        try:
+            hass = request.app['hass']
+
+            if entity:
+                url = await utils.get_stream_source(hass, entity)
+                assert url, f"Can't get URL for {entity}"
+
+            # also check if url valid, e.g. wrong chars in password
+            assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
+
+            server = hass.data[DOMAIN]
+            assert server.available, "WebRTC server not available"
+
+            query = urlencode({'url': url})
+            url = f"ws://localhost:{server.port}/ws?{query}"
+
+            session = async_get_clientsession(hass)
+            async with session.ws_connect(
+                    url, autoclose=False, autoping=False
+            ) as ws_client:
+                # Proxy requests
+                await asyncio.wait([
+                    _websocket_forward(ws_server, ws_client),
+                    _websocket_forward(ws_client, ws_server),
+                ], return_when=asyncio.FIRST_COMPLETED)
+
+        except Exception as e:
+            await ws_server.send_json({'error': str(e)})
+
+        return ws_server

@@ -1,46 +1,108 @@
 class WebRTCCamera extends HTMLElement {
-    async exchangeSDP(hass, pc) {
-        let data;
-        try {
-            data = await hass.callWS({
-                type: 'webrtc/stream',
-                url: this.config.url || null,
-                entity: this.config.entity || null,
-                sdp64: btoa(pc.localDescription.sdp)
-            });
-        } catch (e) {
-            data = {error: JSON.stringify(e)}
+    async initMSE(hass) {
+        const data = await hass.callWS({
+            type: 'auth/sign_path',
+            path: '/api/webrtc/ws'
+        });
+
+        let url = 'ws' + hass.hassUrl(data.path).substr(4);
+        if (this.config.url) url += '&url=' + encodeURI(this.config.url);
+        if (this.config.entity) url += '&entity=' + this.config.entity;
+
+        const video = this.querySelector('#video');
+        const ws = new WebSocket(url);
+        ws.binaryType = 'arraybuffer';
+
+        let mediaSource, sourceBuffer, peerConnection;
+
+        ws.onopen = () => {
+            this.readyState = 'websocket';
+
+            if ('MediaSource' in window) {
+                mediaSource = new MediaSource();
+                video.src = URL.createObjectURL(mediaSource);
+                video.srcObject = null;
+
+                mediaSource.onsourceopen = () => {
+                    ws.send(JSON.stringify({type: 'mse'}));
+                }
+            } else {
+                console.warn("MediaSource doesn't supported")
+            }
+
+            if (this.config.webrtc !== false && !this.isOpera) {
+                this.readyState = 'webrtc-pending';
+                peerConnection = this.initWebRTC(hass, ws);
+            }
         }
+        ws.onmessage = ev => {
+            if (typeof ev.data === 'string') {
+                const data = JSON.parse(ev.data);
+                if (data.type === 'mse') {
+                    console.debug("Received MSE codecs");
 
-        if (typeof data.sdp64 !== 'undefined') {
-            // remove docker IP-address
-            const sdp = atob(data.sdp64).replace(
-                /a=candidate.+? 172\.\d+\.\d+\.1 .+?\r\n/g, ''
-            );
+                    try {
+                        sourceBuffer = mediaSource.addSourceBuffer(
+                            `video/mp4; codecs="${data.codecs}"`);
+                        this.readyState = 'mse';
+                    } catch (e) {
+                        this.status = `ERROR: ${e}`;
+                    }
+                } else if (data.type === 'webrtc') {
+                    console.debug("Received WebRTC SDP");
 
-            await pc.setRemoteDescription(new RTCSessionDescription({
-                type: 'answer',
-                sdp: sdp
-            }));
-
-            // check external IP-address
-            this.status = (sdp.indexOf(' typ srflx ') > 0)
-                ? "Trying to connect"
-                : "Trying to connect over LAN";
-        } else {
-            this.status = (typeof data.error !== 'undefined')
-                ? `ERROR: ${data.error}`
-                : "ERROR: Empty response from Hass";
+                    // remove docker IP-address
+                    const sdp = data.sdp.replace(
+                        /a=candidate.+? 172\.\d+\.\d+\.1 .+?\r\n/g, ''
+                    );
+                    peerConnection.setRemoteDescription(
+                        new RTCSessionDescription({
+                            type: 'answer', sdp: sdp
+                        })
+                    );
+                } else if (data.error) {
+                    this.status = `ERROR: ${data.error}`;
+                }
+            } else if (sourceBuffer) {
+                try {
+                    sourceBuffer.appendBuffer(ev.data);
+                } catch (e) {
+                    console.warn(e);
+                }
+                // all the magic is here
+                if (!video.paused && video.seekable.length) {
+                    if (video.seekable.end(0) - video.currentTime > 0.5) {
+                        console.debug("Auto seek to livetime");
+                        video.currentTime = video.seekable.end(0);
+                    }
+                }
+            }
+        }
+        ws.onclose = () => {
+            if (video.srcObject) return;
 
             setTimeout(async () => {
                 this.status = "Restart connection";
-
-                await this.exchangeSDP(hass, pc);
-            }, 10000);
+                await this.initMSE(hass)
+            }, 15000);
         }
     }
 
-    async initConnection(hass) {
+    initWebRTC(hass, ws) {
+        const video = document.createElement('video');
+        video.onloadeddata = () => {
+            if (video.readyState >= 1) {
+                console.debug("Switch to WebRTC")
+
+                const mainVideo = this.querySelector('#video');
+                mainVideo.srcObject = video.srcObject;
+
+                ws.close();
+
+                this.readyState = 'webrtc';
+            }
+        }
+
         const pc = new RTCPeerConnection({
             iceServers: [{
                 urls: ['stun:stun.l.google.com:19302']
@@ -57,19 +119,28 @@ class WebRTCCamera extends HTMLElement {
                 iceTransport.onselectedcandidatepairchange = () => {
                     const pair = iceTransport.getSelectedCandidatePair();
                     const type = pair.remote.type === 'host' ? 'LAN' : 'WAN';
-                    this.status = `Connecting over ${type}`;
+
+                    this.readyState = 'webrtc-connecting';
+                    // this.status = `Connecting over ${type}`;
+                    console.debug(`Connecting over ${type}`);
                 }
             } catch (e) {
                 // Hi to Safari and Firefox...
             }
 
-            this.status = "Trying to start stream";
+            // this.status = "Trying to start stream";
 
-            await this.exchangeSDP(hass, pc);
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'webrtc',
+                    sdp: pc.localDescription.sdp
+                }));
+            } else {
+                this.initMSE(hass);
+            }
         }
 
         pc.ontrack = (ev) => {
-            const video = this.querySelector('#video');
             if (video.srcObject === null) {
                 video.srcObject = ev.streams[0];
             } else {
@@ -81,13 +152,18 @@ class WebRTCCamera extends HTMLElement {
             // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
             // console.debug("Connection state:", pc.connectionState);
             if (pc.connectionState === 'failed') {
-                // if we have not started a second connection
-                this.status = "Restart connection";
+                if (ws.readyState === WebSocket.OPEN) {
+                    this.readyState = 'webrtc-restart';
+                    // this.status = "Restart connection";
 
-                const offer = await pc.createOffer({iceRestart: true})
-                await pc.setLocalDescription(offer);
+                    const offer = await pc.createOffer({iceRestart: true})
+                    await pc.setLocalDescription(offer);
+                } else {
+                    this.initMSE(hass);
+                }
             } else if (pc.connectionState === 'connected') {
-                this.status = "Connected";
+                this.readyState = 'webrtc-loading';
+                // this.status = "Loading video";
             }
         }
 
@@ -105,13 +181,9 @@ class WebRTCCamera extends HTMLElement {
             pc.addTransceiver('audio', {'direction': direction});
         }
 
-        await pc.setLocalDescription(await pc.createOffer());
-    }
+        pc.createOffer().then(value => pc.setLocalDescription(value));
 
-    set status(value) {
-        const header = this.querySelector('.header');
-        header.innerText = value;
-        header.style.display = value ? 'block' : 'none';
+        return pc;
     }
 
     renderCustomGUI(card) {
@@ -245,6 +317,7 @@ class WebRTCCamera extends HTMLElement {
             }
             #video, .fix-safari {
                 width: 100%;
+                background: black;
                 display: block;
                 z-index: 0;
             }
@@ -254,12 +327,12 @@ class WebRTCCamera extends HTMLElement {
                 right: 0px;
                 top: 0px;
                 background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+                pointer-events: none;
             }
             .header {
                 color: var(--ha-picture-card-text-color, white);
                 margin: 14px 16px;
                 font-size: 16px;
-                font-weight: 500;
                 line-height: 20px;
                 word-wrap: break-word;
             }
@@ -348,6 +421,12 @@ class WebRTCCamera extends HTMLElement {
                 top: 50%;
                 transform: translateY(-50%);
             }
+            .state {
+                right: 12px;
+                top: 12px;
+                cursor: default;
+                opacity: 0.4;
+            }
         `;
         this.appendChild(style);
 
@@ -365,24 +444,26 @@ class WebRTCCamera extends HTMLElement {
             <div class="box">
                 <div class="header"></div>
             </div>
+            <ha-icon class="state"></ha-icon>
         `;
         this.appendChild(card);
 
         const video = this.querySelector('#video');
 
-        video.onstalled = video.onerror = () => {
-            video.srcObject = new MediaStream(video.srcObject.getTracks());
-            video.play().then(() => null, () => null);
-        };
+        // video.onstalled = video.onerror = () => {
+        //     video.srcObject = new MediaStream(video.srcObject.getTracks());
+        //     video.play().then(() => null, () => null);
+        // };
 
-        video.onloadeddata = () => {
+        video.addEventListener('playing', () => {
             if (video.readyState >= 1) {
                 this.status = this.config.title || '';
                 this.setPTZVisibility(true);
-            } else {
-                this.setPTZVisibility(false);
             }
-        }
+        });
+        video.addEventListener('waiting', () => {
+            this.setPTZVisibility(false);
+        });
 
         video.onpause = () => {
             this.setPTZVisibility(false);
@@ -391,6 +472,11 @@ class WebRTCCamera extends HTMLElement {
         video.onplay = () => {
             this.setPTZVisibility(true);
         };
+        // fix MSE in Safari
+        video.addEventListener('ended', () => {
+            console.debug("Auto resume on ended");
+            video.play().then(() => null, () => null);
+        });
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -408,6 +494,21 @@ class WebRTCCamera extends HTMLElement {
 
         if (this.config.ui) {
             this.renderCustomGUI(card);
+        } else {
+            // fix Chrome blinking while loading MSE
+            // let mouseover = false;
+            // video.onwaiting = () => {
+            //     if (!mouseover) video.controls = false;
+            // }
+            // video.onplaying = () => {
+            //     if (!mouseover) video.controls = true;
+            // }
+            // video.onmouseover = () => {
+            //     mouseover = true;
+            // }
+            // video.onmouseout = () => {
+            //     mouseover = false;
+            // }
         }
 
         if (this.config.ptz) {
@@ -415,12 +516,45 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
+    set status(value) {
+        const header = this.querySelector('.header');
+        header.innerText = value;
+        header.style.display = value ? 'block' : 'none';
+    }
+
+    set readyState(value) {
+        const state = this.querySelector('.state');
+        switch (value) {
+            case 'websocket':
+                state.icon = 'mdi:download-network-outline';
+                break;
+            case 'mse':
+                state.icon = 'mdi:play-network-outline';
+                break;
+
+            case 'webrtc-pending':  // init WebRTC
+                state.icon = 'mdi:lan-pending';
+                break;
+            case 'webrtc-connecting':  // connect to LAN or WAN IP
+                state.icon = 'mdi:lan-connect';
+                break;
+            case 'webrtc-loading':  // load video stream
+                state.icon = 'mdi:lan-check';
+                break;
+            case 'webrtc-restart':  // restart WebRTC
+                state.icon = 'mdi:lan-disconnect';
+                break;
+            case 'webrtc':  // video stream switched to WebRTC
+                state.icon = 'mdi:webrtc';
+                break;
+        }
+    }
+
     set hass(hass) {
         if (this.firstChild || typeof this.config === 'undefined') return;
 
         this.renderGUI(hass).then(async () => {
-            this.status = "Init connection";
-            await this.initConnection(hass);
+            await this.initMSE(hass);
         });
     }
 
@@ -439,19 +573,17 @@ class WebRTCCamera extends HTMLElement {
         if (typeof config.url !== 'string' && typeof config.entity !== 'string') {
             throw new Error('Missing `url` or `entity`');
         }
-
-        // this integraion https://github.com/thomasloven/hass-fontawesome
-        // breaks the `!!window.opera` check in all browsers
-        const isOpera = (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
-        if (isOpera) {
-            throw new Error("Opera doesn't supported");
-        }
-
         if (config.ptz && !config.ptz.service) {
             throw new Error("Missing `service` for `ptz`");
         }
 
         this.config = config;
+    }
+
+    get isOpera() {
+        // this integraion https://github.com/thomasloven/hass-fontawesome
+        // breaks the `!!window.opera` check in all browsers
+        return (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
     }
 
     getCardSize() {

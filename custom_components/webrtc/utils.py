@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import random
@@ -127,23 +128,29 @@ class Server(Thread):
     def __init__(self, options: dict):
         super().__init__(name=DOMAIN, daemon=True)
         self.process = None
-        self.args = [
-            self.filepath, '--ice_server', 'stun:stun.l.google.com:19302'
-        ]
+        self.config = {
+            'ice_servers': ['stun:stun.l.google.com:19302']
+        }
         if options.get('udp_min', 0) or options.get('udp_max', 0):
-            self.args += [
-                '--udp_min', str(options['udp_min']),
-                '--udp_max', str(options['udp_max'])
-            ]
+            self.config['webrtc_port_min'] = options['udp_min']
+            self.config['webrtc_port_max'] = options['udp_max']
 
     @property
     def available(self):
         return self.process.poll() is None if self.process else False
 
     def run(self):
-        while self.args:
+        while self.config:
+            arg = json.dumps({
+                'server': {
+                    'http_port': f"localhost:{self.port}",
+                    **self.config
+                },
+                'streams': {}
+            }, separators=(',', ':'))
+
             self.process = subprocess.Popen(
-                self.args + ['--listen', f"localhost:{self.port}"],
+                [self.filepath, arg],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT
             )
@@ -162,5 +169,5 @@ class Server(Thread):
                 break
 
     def stop(self, *args):
-        self.args = None
+        self.config = None
         self.process.terminate()
