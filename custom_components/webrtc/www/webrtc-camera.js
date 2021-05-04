@@ -31,10 +31,8 @@ class WebRTCCamera extends HTMLElement {
             }
 
             if (this.config.webrtc !== false && !this.isOpera) {
-                setTimeout(() => {
-                    this.readyState = 'webrtc-pending';
-                    peerConnection = this.initWebRTC(hass, ws);
-                }, 10000);
+                this.readyState = 'webrtc-pending';
+                peerConnection = this.initWebRTC(hass, ws);
             }
         }
         ws.onmessage = ev => {
