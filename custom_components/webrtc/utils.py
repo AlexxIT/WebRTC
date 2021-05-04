@@ -72,7 +72,7 @@ def register_static_path(app: web.Application, url_path: str, path: str):
     app['allow_cors'](route)
 
 
-async def init_resource(hass: HomeAssistantType, url: str) -> bool:
+async def init_resource(hass: HomeAssistantType, url: str, ver: str) -> bool:
     """Add extra JS module for lovelace mode YAML and new lovelace resource
     for mode GUI. It's better to add extra JS for all modes, because it has
     random url to avoid problems with the cache. But chromecast don't support
@@ -82,16 +82,34 @@ async def init_resource(hass: HomeAssistantType, url: str) -> bool:
     # force load storage
     await resources.async_get_info()
 
+    url2 = f"{url}?{ver}"
+
     for item in resources.async_items():
-        if item['url'] == url:
+        if not item['url'].startswith(url):
+            continue
+
+        # no need to update
+        if item['url'].endswith(ver):
             return False
 
+        _LOGGER.debug(f"Update lovelace resource to: {url2}")
+
+        if isinstance(resources, ResourceStorageCollection):
+            await resources.async_update_item(item['id'], {
+                'res_type': 'module', 'url': url2
+            })
+        else:
+            # not the best solution, but what else can we do
+            item['url'] = url2
+
+        return True
+
     if isinstance(resources, ResourceStorageCollection):
-        _LOGGER.debug(f"Add new lovelace resource: {url}")
-        await resources.async_create_item({'res_type': 'module', 'url': url})
+        _LOGGER.debug(f"Add new lovelace resource: {url2}")
+        await resources.async_create_item({'res_type': 'module', 'url': url2})
     else:
-        _LOGGER.debug(f"Add extra JS module: {url}")
-        add_extra_js_url(hass, f"{url}?{random.random()}")
+        _LOGGER.debug(f"Add extra JS module: {url2}")
+        add_extra_js_url(hass, url2)
 
     return True
 

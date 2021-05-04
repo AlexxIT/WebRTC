@@ -73,8 +73,10 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     path = hass.config.path('custom_components/webrtc/www/webrtc-camera.js')
     utils.register_static_path(hass.http.app, url_path, path)
 
+    version = hass.data['integrations'][DOMAIN].version
+
     # remove lovelace card from previous version
-    await utils.init_resource(hass, url_path)
+    await utils.init_resource(hass, url_path, str(version))
 
     # serve html page
     path = hass.config.path('custom_components/webrtc/www/index.html')
