@@ -31,8 +31,10 @@ class WebRTCCamera extends HTMLElement {
             }
 
             if (this.config.webrtc !== false && !this.isOpera) {
-                this.readyState = 'webrtc-pending';
-                peerConnection = this.initWebRTC(hass, ws);
+                setTimeout(() => {
+                    this.readyState = 'webrtc-pending';
+                    peerConnection = this.initWebRTC(hass, ws);
+                }, 10000);
             }
         }
         ws.onmessage = ev => {
@@ -209,6 +211,18 @@ class WebRTCCamera extends HTMLElement {
         };
         card.appendChild(pause);
 
+        const volume = document.createElement('ha-icon');
+        volume.className = 'volume';
+        volume.icon = 'mdi:volume-mute';
+        volume.onclick = () => {
+            video.muted = !video.muted;
+        };
+        card.appendChild(volume);
+
+        video.onvolumechange = () => {
+            volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
+        };
+
         const fullscreen = document.createElement('ha-icon');
         fullscreen.className = 'fullscreen';
         fullscreen.icon = 'mdi:fullscreen';
@@ -230,19 +244,11 @@ class WebRTCCamera extends HTMLElement {
         };
 
         video.addEventListener('loadeddata', () => {
-            if (video.srcObject.getAudioTracks().length) {
-                const volume = document.createElement('ha-icon');
-                volume.className = 'volume';
-                volume.icon = 'mdi:volume-mute';
-                volume.onclick = () => {
-                    video.muted = !video.muted;
-                };
-                card.appendChild(volume);
-
-                video.onvolumechange = () => {
-                    volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
-                };
-            }
+            const hasAudio =
+                (video.srcObject && video.srcObject.getAudioTracks().length) ||
+                video.mozHasAudio || video.webkitAudioDecodedByteCount ||
+                (video.audioTracks && video.audioTracks.length);
+            volume.style.display = hasAudio ? 'block' : 'none';
             pause.style.display = 'block';
             video.style.opacity = 1;
         });
@@ -360,6 +366,7 @@ class WebRTCCamera extends HTMLElement {
             .volume {
                 right: 35px;
                 bottom: 5px;
+                display: none;
             }
             .ptz {
                 position: absolute;
