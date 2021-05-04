@@ -53,11 +53,34 @@ type: 'custom:webrtc-camera'
 url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
 ```
 
+If you are using an iPhone - also read the **Why is WebRTC not working?**, because your phone does not support MSE technology.
+
 **Q. Error: Custom element doesn't exist: webrtc-camera.**
 
 A. Component automatically adds custom card `/webrtc/webrtc-camera.js` to your resources.
 
 Check if you install component in "Integrations" page. And try to clear your browser cache. Also, you can try to add this card to your resources manually.
+
+**Q. Why is WebRTC not working?**
+
+- Check the **I can't see video stream**
+- Check that you are on the same network as your Hass server
+- Check that you don't setup Hass server with forward only 8123 port (users with Virtual Machine or Docker installation or firewall), because WebRTC using random UDP ports for video streaming
+
+**Q. Exernal access with WebRTC doesn't work**
+
+A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses a random UDP port to connect. And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
+
+At each start of the streaming, a random UDP port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
+
+If your stream does not start with an external connection, you may be behind a [symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation#Symmetric_NAT).
+
+If you have [public IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), you can:
+- go to "Configuration > Integrations > WebRTC Camera > Options" and select the list of ports as you like
+- you also need forward this port range on your router
+- it is recommended to use at least 10 ports per camera
+
+For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
 
 ## Install
 
@@ -149,28 +172,6 @@ Wyze | Cam v2 | support sound
 Xiaomi | Dafang | [with hack](https://github.com/EliasKotlyar/Xiaomi-Dafang-Hacks), `rtsp://192.168.1.123:8554/unicast` <br> Video: H264, size: 1920x1080, bitrate: 1000, format: VBR, frame rate: 10 <br> Audio: PCMU, rate in: 8000, rate out: 44100
 Yi | Hi3518e Chipset | [with hack](https://github.com/alienatedsec/yi-hack-v5)
 Yi | MStar Infinity Chipset | [with hack](https://github.com/roleoroleo/yi-hack-MStar)
-
-## WebRTC FAQ
-
-**Q. Why is WebRTC not working?**
-
-- Check the main FAQ above
-- Check that you are on the same network as your Hass server
-- Check that you don't setup Hass server with forward only 8123 port (users with Virtual Machine or Docker installation or firewall), because WebRTC using random UDP ports for video streaming
-
-**Q. Exernal access to streams doesn't work**
-
-A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses a random UDP port to connect. And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
-
-At each start of the streaming, a random UDP port is occupied. The port is released when the streaming ends. The data should theoretically be encrypted, but I haven't tested :)
-
-If your stream does not start with an external connection, you may be behind a [symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation#Symmetric_NAT). Some users are helped by UDP port forwarding on the router. You can customize the range of ports in the integration options. It is recommended to use at least 10 ports per camera.
-
-For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
-
-**Q. Some streams are not loaded when there are many cameras on the page.**
-
-A. The default settings only support 10 simultaneous streams (from Hass server to app or browser). Go to "Configuration > Integrations > WebRTC Camera > Options" and increase port range. You also need forward new port range on your router if you want external access to cameras.
 
 ## Debug
 
