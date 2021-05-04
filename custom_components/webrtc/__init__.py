@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import logging
 import os
 import time
@@ -85,6 +86,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software
     hass.http.register_view(WebSocketView)
+    hass.http.register_view(WebRTCStreamView)
 
     async def create_link(call: ServiceCallType):
         link_id = call.data['link_id']
@@ -142,12 +144,32 @@ async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
 
 
+async def ws_connect(hass: HomeAssistantType, params):
+    entity = params.get('entity')
+    if entity:
+        url = await utils.get_stream_source(hass, entity)
+        assert url, f"Can't get URL for {entity}"
+    else:
+        url = params.get('url')
+
+    # also check if url valid, e.g. wrong chars in password
+    assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
+
+    server = hass.data[DOMAIN]
+    assert server.available, "WebRTC server not available"
+
+    query = urlencode({'url': url})
+    return f"ws://localhost:{server.port}/ws?{query}"
+
+
 class WebSocketView(HomeAssistantView):
     url = '/api/webrtc/ws'
     name = 'api:webrtc:ws'
     requires_auth = False
 
     async def get(self, request: web.Request):
+        params = request.query
+
         if request.query.get('embed'):
             link_id = request.query.get('url')
             if link_id not in LINKS:
@@ -163,38 +185,19 @@ class WebSocketView(HomeAssistantView):
                 if link['limit'] == 0:
                     LINKS.pop(link_id)
 
-            entity = link['entity']
-            url = link['url']
+            params = link
 
         elif not request.get(KEY_AUTHENTICATED, False):
             # you shall not pass
             raise HTTPUnauthorized()
-
-        else:
-            entity = request.query.get('entity')
-            url = request.query.get('url')
 
         ws_server = web.WebSocketResponse(autoclose=False, autoping=False)
         await ws_server.prepare(request)
 
         try:
             hass = request.app['hass']
-
-            if entity:
-                url = await utils.get_stream_source(hass, entity)
-                assert url, f"Can't get URL for {entity}"
-
-            # also check if url valid, e.g. wrong chars in password
-            assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
-
-            server = hass.data[DOMAIN]
-            assert server.available, "WebRTC server not available"
-
-            query = urlencode({'url': url})
-            url = f"ws://localhost:{server.port}/ws?{query}"
-
-            session = async_get_clientsession(hass)
-            async with session.ws_connect(
+            url = await ws_connect(hass, params)
+            async with async_get_clientsession(hass).ws_connect(
                     url, autoclose=False, autoping=False
             ) as ws_client:
                 # Proxy requests
@@ -207,3 +210,23 @@ class WebSocketView(HomeAssistantView):
             await ws_server.send_json({'error': str(e)})
 
         return ws_server
+
+
+class WebRTCStreamView(HomeAssistantView):
+    url = '/api/webrtc/stream'
+    name = 'api:webrtc:stream'
+    requires_auth = True
+
+    async def post(self, request: web.Request):
+        try:
+            hass = request.app['hass']
+            params = await request.post()
+            url = await ws_connect(hass, params)
+            async with async_get_clientsession(hass).ws_connect(url) as ws:
+                await ws.send_json({'type': 'webrtc', 'sdp': params['sdp']})
+                resp = await ws.receive_json(timeout=15)
+
+        except Exception as e:
+            resp = {'error': str(e)}
+
+        return web.json_response(resp)
