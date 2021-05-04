@@ -6,7 +6,7 @@ class WebRTCCamera extends HTMLElement {
         });
 
         let url = 'ws' + hass.hassUrl(data.path).substr(4);
-        if (this.config.url) url += '&url=' + encodeURI(this.config.url);
+        if (this.config.url) url += '&url=' + encodeURIComponent(this.config.url);
         if (this.config.entity) url += '&entity=' + this.config.entity;
 
         const video = this.querySelector('#video');
