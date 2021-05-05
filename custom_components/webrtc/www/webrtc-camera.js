@@ -114,8 +114,8 @@ class WebRTCCamera extends HTMLElement {
         }
 
         const pc = new RTCPeerConnection({
-            iceServers: [{
-                urls: ['stun:stun.l.google.com:19302']
+            iceServers: this.config.ice_servers || [{
+                urls: 'stun:stun.l.google.com:19302'
             }],
             iceCandidatePoolSize: 20
         });
