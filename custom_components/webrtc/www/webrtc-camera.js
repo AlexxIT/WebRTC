@@ -1,5 +1,7 @@
 class WebRTCCamera extends HTMLElement {
     async initMSE(hass, pc = null) {
+        const ts = Date.now();
+
         const data = await hass.callWS({
             type: 'auth/sign_path',
             path: '/api/webrtc/ws'
@@ -83,10 +85,14 @@ class WebRTCCamera extends HTMLElement {
             }
         }
         ws.onclose = () => {
+            // reconnect no more than once every 15 seconds
+            const delay = 15000 - Math.min(Date.now() - ts, 15000);
+            console.debug(`Reconnect in ${delay} ms`);
+
             setTimeout(() => {
                 this.status = "Restart connection";
-                this.initMSE(hass);
-            }, 15000);
+                this.initMSE(hass, pc);
+            }, delay);
         }
     }
 
