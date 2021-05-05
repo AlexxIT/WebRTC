@@ -220,7 +220,7 @@ class WebRTCCamera extends HTMLElement {
 
         const volume = document.createElement('ha-icon');
         volume.className = 'volume';
-        volume.icon = 'mdi:volume-mute';
+        volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
         volume.onclick = () => {
             video.muted = !video.muted;
         };
@@ -346,6 +346,7 @@ class WebRTCCamera extends HTMLElement {
             .header {
                 color: var(--ha-picture-card-text-color, white);
                 margin: 14px 16px;
+                display: none;
                 font-size: 16px;
                 line-height: 20px;
                 word-wrap: break-word;
@@ -448,13 +449,7 @@ class WebRTCCamera extends HTMLElement {
         const card = document.createElement('ha-card');
         card.innerHTML = `
             <div class="fix-safari">
-                <video id="video"
-                    autoplay="true"
-                    controls="true"
-                    muted="true"
-                    playsinline="true"
-                    poster="${this.config.poster || ''}">
-                </video>
+                <video id="video" autoplay controls playsinline></video>
             </div>
             <div class="box">
                 <div class="header"></div>
@@ -464,6 +459,8 @@ class WebRTCCamera extends HTMLElement {
         this.appendChild(card);
 
         const video = this.querySelector('#video');
+        video.muted = this.config.muted !== false;
+        video.poster = this.config.poster || '';
 
         // video.onstalled = video.onerror = () => {
         //     video.srcObject = new MediaStream(video.srcObject.getTracks());
@@ -496,6 +493,7 @@ class WebRTCCamera extends HTMLElement {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
+                    // console.debug("Video integsects:", entry.isIntersecting);
                     if (entry.isIntersecting) {
                         video.play().then(() => null, () => null);
                     } else {
