@@ -43,7 +43,7 @@ class WebRTCCamera extends HTMLElement {
             if (typeof ev.data === 'string') {
                 const data = JSON.parse(ev.data);
                 if (data.type === 'mse') {
-                    console.debug("Received MSE codecs");
+                    console.debug("Received MSE codecs:", data.codecs);
 
                     try {
                         sourceBuffer = mediaSource.addSourceBuffer(
@@ -99,6 +99,7 @@ class WebRTCCamera extends HTMLElement {
                 const mainVideo = this.querySelector('#video');
                 mainVideo.srcObject = video.srcObject;
 
+                // disable autorestart ws connection
                 this.ws.onclose = null;
                 this.ws.close();
 
@@ -153,7 +154,7 @@ class WebRTCCamera extends HTMLElement {
 
         pc.onconnectionstatechange = async (ev) => {
             // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
-            // console.debug("Connection state:", pc.connectionState);
+            console.debug("WebRTC state:", pc.connectionState);
             if (pc.connectionState === 'failed') {
                 if (this.ws.readyState === WebSocket.OPEN) {
                     this.readyState = 'webrtc-restart';
