@@ -1,5 +1,5 @@
 class WebRTCCamera extends HTMLElement {
-    async initMSE(hass) {
+    async initMSE(hass, pc = null) {
         const data = await hass.callWS({
             type: 'auth/sign_path',
             path: '/api/webrtc/ws'
@@ -10,12 +10,12 @@ class WebRTCCamera extends HTMLElement {
         if (this.config.entity) url += '&entity=' + this.config.entity;
 
         const video = this.querySelector('#video');
-        const ws = new WebSocket(url);
+        const ws = this.ws = new WebSocket(url);
         ws.binaryType = 'arraybuffer';
 
-        let mediaSource, sourceBuffer, peerConnection;
+        let mediaSource, sourceBuffer;
 
-        ws.onopen = () => {
+        ws.onopen = async () => {
             this.readyState = 'websocket';
 
             if ('MediaSource' in window) {
@@ -32,7 +32,11 @@ class WebRTCCamera extends HTMLElement {
 
             if (this.config.webrtc !== false && !this.isOpera) {
                 this.readyState = 'webrtc-pending';
-                peerConnection = this.initWebRTC(hass, ws);
+
+                if (!pc) pc = this.initWebRTC(hass);
+
+                const offer = await pc.createOffer({iceRestart: true})
+                await pc.setLocalDescription(offer);
             }
         }
         ws.onmessage = ev => {
@@ -55,7 +59,7 @@ class WebRTCCamera extends HTMLElement {
                     const sdp = data.sdp.replace(
                         /a=candidate.+? 172\.\d+\.\d+\.1 .+?\r\n/g, ''
                     );
-                    peerConnection.setRemoteDescription(
+                    pc.setRemoteDescription(
                         new RTCSessionDescription({
                             type: 'answer', sdp: sdp
                         })
@@ -79,16 +83,14 @@ class WebRTCCamera extends HTMLElement {
             }
         }
         ws.onclose = () => {
-            if (video.srcObject) return;
-
-            setTimeout(async () => {
+            setTimeout(() => {
                 this.status = "Restart connection";
-                await this.initMSE(hass)
+                this.initMSE(hass);
             }, 15000);
         }
     }
 
-    initWebRTC(hass, ws) {
+    initWebRTC(hass) {
         const video = document.createElement('video');
         video.onloadeddata = () => {
             if (video.readyState >= 1) {
@@ -97,7 +99,8 @@ class WebRTCCamera extends HTMLElement {
                 const mainVideo = this.querySelector('#video');
                 mainVideo.srcObject = video.srcObject;
 
-                ws.close();
+                this.ws.onclose = null;
+                this.ws.close();
 
                 this.readyState = 'webrtc';
             }
@@ -130,13 +133,13 @@ class WebRTCCamera extends HTMLElement {
 
             // this.status = "Trying to start stream";
 
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
+            try {
+                this.ws.send(JSON.stringify({
                     type: 'webrtc',
                     sdp: pc.localDescription.sdp
                 }));
-            } else {
-                this.initMSE(hass);
+            } catch (e) {
+                console.warn(e);
             }
         }
 
@@ -152,14 +155,15 @@ class WebRTCCamera extends HTMLElement {
             // https://developer.mozilla.org/en-US/docs/Web/API/RTCOfferOptions/iceRestart
             // console.debug("Connection state:", pc.connectionState);
             if (pc.connectionState === 'failed') {
-                if (ws.readyState === WebSocket.OPEN) {
+                if (this.ws.readyState === WebSocket.OPEN) {
                     this.readyState = 'webrtc-restart';
                     // this.status = "Restart connection";
 
                     const offer = await pc.createOffer({iceRestart: true})
                     await pc.setLocalDescription(offer);
                 } else {
-                    this.initMSE(hass);
+                    video.src = '';
+                    this.initMSE(hass, pc);
                 }
             } else if (pc.connectionState === 'connected') {
                 this.readyState = 'webrtc-loading';
@@ -180,8 +184,6 @@ class WebRTCCamera extends HTMLElement {
         if (this.config.audio !== false) {
             pc.addTransceiver('audio', {'direction': direction});
         }
-
-        pc.createOffer().then(value => pc.setLocalDescription(value));
 
         return pc;
     }
