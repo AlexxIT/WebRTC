@@ -131,9 +131,11 @@ poster: https://home-assistant.io/images/cast/splash.png  # still image when str
 intersection: 0.75  # auto pause stream when less than 75% of video element is in the screen, 50% by default
 muted: false  # disable sound, default true
 ui: true  # custom video controls, default false
-webrtc: false  # leave only MSE
 
 ptz:  # check full examples in wiki
+
+mse: false  # disable MSE mode, if you want save NabuCasa traffic 
+webrtc: false  # disable WebRTC mode, if you want stream with AAC sound
 ```
 
 Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRTC/wiki/PTZ-Config-Examples).
