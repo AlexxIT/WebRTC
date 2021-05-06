@@ -31,7 +31,7 @@ Opera PC                    | doesn't supported                  | video: H264<b
 
 - Home Assistant Mobile App for Android and iOS - has the same capabilities as the main mobile browser
 - H264: AVC/H.264
-- H265: HEVC/H.265
+- H265: HEVC/H.265 - not tested
 - PCMA: G.711 PCM (A-law)
 - PCMU: G.711 PCM (µ-law)
 
@@ -55,6 +55,15 @@ url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
 
 If you are using an iPhone - also read the **Why is WebRTC not working?**, because your phone does not support MSE technology.
 
+**Q. How to use secrets?**
+
+A. You can't use `secrets.yaml` in lovelace card setting. But you can config [Generic](https://www.home-assistant.io/integrations/generic/) or [FFmpeg](https://www.home-assistant.io/integrations/camera.ffmpeg/) or [ONVIF](https://www.home-assistant.io/integrations/onvif/) or any [other camera](https://www.home-assistant.io/integrations/#camera). And use its entity in card config:
+
+```yaml
+type: 'custom:webrtc-camera'
+entity: camera.generic_stream  # change to your camera entity_id
+```
+
 **Q. Error: Custom element doesn't exist: webrtc-camera.**
 
 A. Component automatically adds custom card `/webrtc/webrtc-camera.js` to your resources.
@@ -75,10 +84,7 @@ At each start of the streaming, a random UDP port is occupied. The port is relea
 
 If your stream does not start with an external connection, you may be behind a [symmetric NAT](https://en.wikipedia.org/wiki/Network_address_translation#Symmetric_NAT).
 
-If you have [public IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), you can:
-- go to "Configuration > Integrations > WebRTC Camera > Options" and select the list of ports as you like
-- you also need forward this port range on your router
-- it is recommended to use at least 10 ports per camera
+Read how to [fix this](#webrtc-external-access).
 
 For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UDP hole punching](https://en.wikipedia.org/wiki/UDP_hole_punching).
 
@@ -98,7 +104,7 @@ With GUI. Configuration > Integration > Add Integration > WebRTC Camera.
 
 If the integration is not in the list, you need to clear the browser cache.
 
-Component **doesn't create devices/entities/services**. It creates only lovelace custom card:
+Component **doesn't create devices and entities**. It creates only two services and lovelace custom card:
 
 **Minimal**
 
@@ -127,28 +133,10 @@ muted: false  # disable sound, default true
 ui: true  # custom video controls, default false
 webrtc: false  # leave only MSE
 
-ptz:  # optional PTZ controls
-  opacity: 0.4  # optional default contols opacity
-  service: sonoff.send_command  # service for control PTZ (check Hass docs to your camera)
-  data_left:  # service data for each direction
-    device: '048123'
-    cmd: left
-  data_right:
-    device: '048123'
-    cmd: right
-  data_up:
-    device: '048123'
-    cmd: up
-  data_down:
-    device: '048123'
-    cmd: down
-  data_zoom_in: # optional, for zoom increase
-    device: '048123'
-    cmd: zoom_in
-  data_zoom_out: # optional, for zoom decrease
-    device: '048123'
-    cmd: zoom_out
+ptz:  # check full examples in wiki
 ```
+
+Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRTC/wiki/PTZ-Config-Examples).
 
 ## Cast or share stream
 
@@ -174,6 +162,41 @@ Wyze | Cam v2 | support sound
 Xiaomi | Dafang | [with hack](https://github.com/EliasKotlyar/Xiaomi-Dafang-Hacks), `rtsp://192.168.1.123:8554/unicast` <br> Video: H264, size: 1920x1080, bitrate: 1000, format: VBR, frame rate: 10 <br> Audio: PCMU, rate in: 8000, rate out: 44100
 Yi | Hi3518e Chipset | [with hack](https://github.com/alienatedsec/yi-hack-v5)
 Yi | MStar Infinity Chipset | [with hack](https://github.com/roleoroleo/yi-hack-MStar)
+
+## WebRTC external access
+
+How to fix external access if it doesn't works?
+
+**1. Easy tech way**
+
+Don't do anything. The component will automatically use MSE technology instead of WebRTC. It will definitely work with external access. But it doesn't work on iPhones.
+
+**2. Medium tech way**
+
+If you have [public IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), you can:
+
+- go to "Configuration > Integrations > WebRTC Camera > Options" and select the list of ports as you like (e.g. 50000-51000)
+- you also need forward this **UDP port range** on your router
+- it is recommended to use at least 10 ports per camera
+
+**3. Hard tech way**
+
+If you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789) and your own [VPS](https://en.wikipedia.org/wiki/Virtual_private_server), you can:
+
+- install TURN server (e.g. [coturn](https://github.com/coturn/coturn), config [example](https://github.com/AlexxIT/WebRTC/wiki/Coturn-Example))
+- add config to your cameras:
+
+```yaml
+type: 'custom:webrtc-camera'
+entity: ...
+ice_servers:
+  - urls: 'stun:stun.l.google.com:19302'  # optional change to your STUN if you want
+  - urls: 'turn:123.123.123.123:3478'  # change to your VPS IP and port
+    username: your_user  # change to your username
+    credential: your_pass  # change to your password
+```
+
+You need to use both TURN and STUN servers in your config.
 
 ## Status Icons
 
