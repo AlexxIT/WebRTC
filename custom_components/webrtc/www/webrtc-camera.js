@@ -233,22 +233,30 @@ class WebRTCCamera extends HTMLElement {
         const fullscreen = document.createElement('ha-icon');
         fullscreen.className = 'fullscreen';
         fullscreen.icon = 'mdi:fullscreen';
-        fullscreen.onclick = () => {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                this.requestFullscreen();
-            }
-        };
-        card.appendChild(fullscreen);
 
-        this.onfullscreenchange = () => {
-            if (document.fullscreenElement) {
-                fullscreen.icon = 'mdi:fullscreen-exit';
-            } else {
-                fullscreen.icon = 'mdi:fullscreen';
+        // https://stackoverflow.com/questions/43024394/ios10-fullscreen-safari-javascript
+        if (this.requestFullscreen) {  // normal browser
+            fullscreen.onclick = () => {
+                document.fullscreenElement
+                    ? document.exitFullscreen() : this.requestFullScreen();
             }
-        };
+            this.onfullscreenchange = () => {
+                fullscreen.icon = document.fullscreenElement
+                    ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
+            }
+        } else {  // Apple Safari...
+            fullscreen.onclick = () => {
+                document.webkitFullscreenElement
+                    ? document.webkitExitFullscreen()
+                    : this.webkitRequestFullScreen();
+            }
+            this.onwebkitfullscreenchange = () => {
+                fullscreen.icon = document.webkitFullscreenElement
+                    ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
+            }
+        }
+        // iPhone doesn't support fullscreen
+        if (navigator.platform !== 'iPhone') card.appendChild(fullscreen);
 
         video.addEventListener('loadeddata', () => {
             const hasAudio =
