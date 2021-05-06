@@ -1,5 +1,4 @@
 import asyncio
-import base64
 import logging
 import os
 import time
@@ -74,7 +73,8 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     path = hass.config.path('custom_components/webrtc/www/webrtc-camera.js')
     utils.register_static_path(hass.http.app, url_path, path)
 
-    version = hass.data['integrations'][DOMAIN].version
+    # version supported only after 2021.3.0
+    version = getattr(hass.data['integrations'][DOMAIN], 'version', 0)
 
     # remove lovelace card from previous version
     await utils.init_resource(hass, url_path, str(version))
