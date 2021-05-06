@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import stat
 import time
 import uuid
 from urllib.parse import urlparse, urlencode
@@ -64,7 +65,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
         r = await session.get(url)
         raw = await r.read()
         open(filepath, 'wb').write(raw)
-        os.chmod(filepath, 744)
+        os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
 
     Server.filepath = filepath
 

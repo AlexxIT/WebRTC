@@ -1,7 +1,6 @@
 import json
 import logging
-import os
-import random
+import platform
 import subprocess
 from threading import Thread
 from typing import Optional
@@ -19,26 +18,29 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'webrtc'
 
-ARCH = {
-    'armv7l': 'armv7',
-    'armv8l': 'armv7',  # https://github.com/AlexxIT/WebRTC/issues/18
-    'aarch64': 'aarch64',
-    'x86_64': 'amd64',
-    'i386': 'i386',
-    'i486': 'i386',
-    'i586': 'i386',
-    'i686': 'i386',
+SYSTEM = {
+    'Windows': 'amd64.exe',
+    'Darwin': 'darwin',
+    'FreeBSD': 'freebsd',
+    'Linux': {
+        'armv7l': 'armv7',
+        'armv8l': 'armv7',  # https://github.com/AlexxIT/WebRTC/issues/18
+        'aarch64': 'aarch64',
+        'x86_64': 'amd64',
+        'i386': 'i386',
+        'i486': 'i386',
+        'i586': 'i386',
+        'i686': 'i386',
+    }
 }
 
 
 def get_arch() -> Optional[str]:
-    uname = ('Windows',) if os.name == 'nt' else os.uname()
-    if uname[0] == 'Windows':
-        return 'amd64.exe'
-    elif uname[0] == 'Darwin':
-        return 'darwin'
-    elif uname[0] == 'Linux' and uname[4] in ARCH:
-        return ARCH[uname[4]]
+    system = SYSTEM.get(platform.system())
+    if isinstance(system, dict):
+        return system.get(platform.machine())
+    elif system:
+        return system
     return None
 
 

@@ -1,4 +1,4 @@
-import os
+import platform
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, OptionsFlow, ConfigEntry
@@ -14,7 +14,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title="WebRTC Camera", data={})
 
         return self.async_abort(reason='arch', description_placeholders={
-            'uname': os.uname() if os.name != 'nt' else os.name
+            'uname': str(platform.uname())
         })
 
     @staticmethod
