@@ -70,10 +70,8 @@ class WebRTCCamera extends HTMLElement {
                     this.status = `ERROR: ${data.error}`;
                 }
             } else if (sourceBuffer) {
-                try {
+                if (!sourceBuffer.updating) {
                     sourceBuffer.appendBuffer(ev.data);
-                } catch (e) {
-                    console.warn(e);
                 }
                 // all the magic is here
                 if (!video.paused && video.seekable.length) {
