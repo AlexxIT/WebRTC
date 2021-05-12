@@ -2,7 +2,8 @@
   "config": {
     "abort": {
       "arch": "Unsupported OS architecture: {uname}"
-    }
+    },
+    "step": {}
   },
   "options": {
     "step": {
