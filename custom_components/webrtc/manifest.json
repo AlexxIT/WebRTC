@@ -5,7 +5,7 @@
   "documentation": "https://github.com/AlexxIT/WebRTC",
   "issue_tracker": "https://github.com/AlexxIT/WebRTC/issues",
   "requirements": [],
-  "dependencies": ["lovelace"],
+  "dependencies": ["http", "lovelace"],
   "codeowners": ["@AlexxIT"],
   "version": "v2.0.2"
 }
