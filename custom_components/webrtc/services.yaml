@@ -29,6 +29,7 @@ create_link:
       selector:
         number:
           min: 0
+          max: 100
           unit_of_measurement: times
 
     time_to_live:
@@ -38,6 +39,7 @@ create_link:
       selector:
         number:
           min: 0
+          max: 100000
           unit_of_measurement: seconds
 
 dash_cast:
