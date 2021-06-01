@@ -577,11 +577,6 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
-    set hass(hass) {
-        if (this.firstChild || typeof this.config === 'undefined') return;
-        this.hass = hass;
-    }
-
     setPTZVisibility(show) {
         const ptz = this.querySelector('.ptz');
         if (ptz) {
@@ -621,6 +616,7 @@ class WebRTCCamera extends HTMLElement {
     }
 
     async connectedCallback() {
+        if (this.firstChild || typeof this.config === 'undefined') return;
         await this.renderGUI(hass);
         await this.initMSE(hass);
     }
