@@ -579,10 +579,7 @@ class WebRTCCamera extends HTMLElement {
 
     set hass(hass) {
         if (this.firstChild || typeof this.config === 'undefined') return;
-
-        this.renderGUI(hass).then(async () => {
-            await this.initMSE(hass);
-        });
+        this.hass = hass;
     }
 
     setPTZVisibility(show) {
@@ -621,6 +618,11 @@ class WebRTCCamera extends HTMLElement {
         return {
             url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
         }
+    }
+
+    async connectedCallback() {
+        await this.renderGUI(hass);
+        await this.initMSE(hass);
     }
 
     disconnectedCallback(){
