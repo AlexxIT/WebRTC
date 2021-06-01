@@ -92,7 +92,7 @@ class WebRTCCamera extends HTMLElement {
             console.debug(`Reconnect in ${delay} ms`);
 
             setTimeout(() => {
-                if (!this.isConnected) {
+                if (this.isConnected) {
                     this.status = "Restart connection";
                     this.initMSE(hass, pc);
                 }
@@ -175,8 +175,10 @@ class WebRTCCamera extends HTMLElement {
                     const offer = await pc.createOffer({iceRestart: true})
                     await pc.setLocalDescription(offer);
                 } else {
-                    video.src = '';
-                    this.initMSE(hass, pc);
+                    if (this.isConnected) {
+                        video.src = '';
+                        this.initMSE(hass, pc);
+                    }
                 }
             } else if (pc.connectionState === 'connected') {
                 this.readyState = 'webrtc-loading';
