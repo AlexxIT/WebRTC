@@ -1,7 +1,5 @@
 class WebRTCCamera extends HTMLElement {
-    constructor() {
-        this.subscriptions = [];
-    }
+    subscriptions = [];
 
     async initMSE(hass, pc = null) {
         const ts = Date.now();
