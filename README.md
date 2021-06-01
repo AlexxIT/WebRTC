@@ -131,6 +131,7 @@ poster: https://home-assistant.io/images/cast/splash.png  # still image when str
 intersection: 0.75  # auto pause stream when less than 75% of video element is in the screen, 50% by default
 muted: false  # disable sound, default true
 ui: true  # custom video controls, default false
+should_run_in_background: true # makes the component run when not displayed (ex. for quick video loading), default false
 
 ptz:  # check full examples in wiki
 

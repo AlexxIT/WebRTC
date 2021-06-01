@@ -1,5 +1,6 @@
 class WebRTCCamera extends HTMLElement {
     subscriptions = [];
+    rendered = false;
 
     async initMSE(hass, pc = null) {
         const ts = Date.now();
@@ -618,13 +619,23 @@ class WebRTCCamera extends HTMLElement {
     }
 
     async connectedCallback() {
-        if (typeof this.config === 'undefined') return;
-        await this.renderGUI(this.hass);
-        await this.initMSE(this.hass);
+        if (!this.config) return;
+
+        if (!this.rendered) {
+            await this.renderGUI(this.hass);
+            this.rendered = true;
+        }
+
+        if (!this.ws || this.ws.CLOSED || this.ws.CLOSING) {
+            await this.initMSE(this.hass);
+        }
     }
 
     disconnectedCallback(){
-        this.subscriptions.forEach(callback => callback());
+        if (this.config.should_run_in_background !== true) {
+            this.subscriptions.forEach(callback => callback());
+            this.subscriptions = [];
+        }
     }
 }
 
