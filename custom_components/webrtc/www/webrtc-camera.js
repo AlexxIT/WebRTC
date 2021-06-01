@@ -617,8 +617,8 @@ class WebRTCCamera extends HTMLElement {
 
     async connectedCallback() {
         if (this.firstChild || typeof this.config === 'undefined') return;
-        await this.renderGUI(hass);
-        await this.initMSE(hass);
+        await this.renderGUI(this.hass);
+        await this.initMSE(this.hass);
     }
 
     disconnectedCallback(){
