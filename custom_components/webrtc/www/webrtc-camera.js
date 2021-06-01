@@ -1,4 +1,8 @@
 class WebRTCCamera extends HTMLElement {
+    constructor() {
+        this.subscriptions = [];
+    }
+
     async initMSE(hass, pc = null) {
         const ts = Date.now();
 
@@ -16,6 +20,8 @@ class WebRTCCamera extends HTMLElement {
         ws.binaryType = 'arraybuffer';
 
         let mediaSource, sourceBuffer;
+        
+        this.subscriptions.push(() => this.ws && this.ws.close());
 
         ws.onopen = async () => {
             this.readyState = 'websocket';
@@ -88,8 +94,10 @@ class WebRTCCamera extends HTMLElement {
             console.debug(`Reconnect in ${delay} ms`);
 
             setTimeout(() => {
-                this.status = "Restart connection";
-                this.initMSE(hass, pc);
+                if (!this.isConnected) {
+                    this.status = "Restart connection";
+                    this.initMSE(hass, pc);
+                }
             }, delay);
         }
     }
@@ -117,6 +125,8 @@ class WebRTCCamera extends HTMLElement {
             }],
             iceCandidatePoolSize: 20
         });
+
+        this.subscriptions.push(() => pc.close());
 
         pc.onicecandidate = async (ev) => {
             if (ev.candidate) return;
@@ -613,6 +623,10 @@ class WebRTCCamera extends HTMLElement {
         return {
             url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
         }
+    }
+
+    disconnectedCallback(){
+        this.subscriptions.forEach(callback => callback());
     }
 }
 
