@@ -631,6 +631,8 @@ class WebRTCCamera extends HTMLElement {
             await this.renderGUI(this.hass);
             this.rendered = true;
         }
+        
+        if (this.ws && this.config.should_run_in_background === true) return;
 
         if (!this.ws || [this.ws.CLOSING, this.ws.CLOSED].includes(this.ws.readyState)) {
             await this.initMSE(this.hass);
