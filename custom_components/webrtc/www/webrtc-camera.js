@@ -20,7 +20,11 @@ class WebRTCCamera extends HTMLElement {
 
         let mediaSource, sourceBuffer;
         
-        this.subscriptions.push(() => this.ws && this.ws.close());
+        this.subscriptions.push(() => {
+            this.ws.onclose = null;
+            this.ws.close();
+            this.ws = null;
+        });
 
         ws.onopen = async () => {
             this.readyState = 'websocket';
@@ -44,6 +48,7 @@ class WebRTCCamera extends HTMLElement {
 
                 const offer = await pc.createOffer({iceRestart: true})
                 await pc.setLocalDescription(offer);
+                this.subscriptions.push(() => pc.close());
             }
         }
         ws.onmessage = ev => {
@@ -124,8 +129,6 @@ class WebRTCCamera extends HTMLElement {
             }],
             iceCandidatePoolSize: 20
         });
-
-        this.subscriptions.push(() => pc.close());
 
         pc.onicecandidate = async (ev) => {
             if (ev.candidate) return;
@@ -626,7 +629,7 @@ class WebRTCCamera extends HTMLElement {
             this.rendered = true;
         }
 
-        if (!this.ws || this.readyState === this.ws.CLOSED || this.readyState === this.ws.CLOSING) {
+        if (!this.ws) {
             await this.initMSE(this.hass);
         }
     }
