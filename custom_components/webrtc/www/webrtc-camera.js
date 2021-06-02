@@ -632,7 +632,7 @@ class WebRTCCamera extends HTMLElement {
             this.rendered = true;
         }
 
-        if (!this.ws) {
+        if ([this.ws.CLOSING, this.ws.CLOSED].includes(this.ws.readyState)) {
             await this.initMSE(this.hass);
         }
     }
