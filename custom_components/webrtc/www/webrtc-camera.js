@@ -23,7 +23,7 @@ class WebRTCCamera extends HTMLElement {
         this.subscriptions.push(() => {
             this.ws.onclose = null;
             this.ws.close();
-            this.ws = null;
+            console.debug("Closing websocket");
         });
 
         ws.onopen = async () => {
@@ -48,7 +48,10 @@ class WebRTCCamera extends HTMLElement {
 
                 const offer = await pc.createOffer({iceRestart: true})
                 await pc.setLocalDescription(offer);
-                this.subscriptions.push(() => pc.close());
+                this.subscriptions.push(() => {
+                    pc.close();
+                    console.debug("Closing RTCPeerConnection");
+                });
             }
         }
         ws.onmessage = ev => {
