@@ -639,9 +639,9 @@ class WebRTCCamera extends HTMLElement {
             visibilityChange = "webkitvisibilitychange";
         }
 
-        document.addEventListener(visibilityChange, async () => {
+        document.addEventListener(visibilityChange, () => {
             if (!document[hidden] && this.isConnected) {
-                await this.connectedCallback();
+                this.connectedCallback();
             } else {
                 this.disconnectedCallback();
             }
