@@ -513,6 +513,8 @@ class WebRTCCamera extends HTMLElement {
             video.play().then(() => null, () => null);
         });
 
+        this.initPageVisibilityListener();
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
@@ -622,6 +624,28 @@ class WebRTCCamera extends HTMLElement {
         return {
             url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
         }
+    }
+
+    initPageVisibilityListener() {
+        var hidden, visibilityChange;
+        if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support
+            hidden = "hidden";
+            visibilityChange = "visibilitychange";
+        } else if (typeof document.msHidden !== "undefined") {
+            hidden = "msHidden";
+            visibilityChange = "msvisibilitychange";
+        } else if (typeof document.webkitHidden !== "undefined") {
+            hidden = "webkitHidden";
+            visibilityChange = "webkitvisibilitychange";
+        }
+
+        document.addEventListener(visibilityChange, async () => {
+            if (!document[hidden] && this.isConnected) {
+                await this.connectedCallback();
+            } else {
+                this.disconnectedCallback();
+            }
+        }, false);
     }
 
     async connectedCallback() {
