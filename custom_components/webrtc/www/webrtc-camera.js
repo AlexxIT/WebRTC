@@ -50,6 +50,7 @@ class WebRTCCamera extends HTMLElement {
                 await pc.setLocalDescription(offer);
                 this.subscriptions.push(() => {
                     pc.close();
+                    pc = null;
                     console.debug("Closing RTCPeerConnection");
                 });
             }
