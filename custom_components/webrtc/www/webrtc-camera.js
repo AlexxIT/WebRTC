@@ -657,7 +657,7 @@ class WebRTCCamera extends HTMLElement {
             this.rendered = true;
         }
         
-        if (this.ws && this.config.should_run_in_background === true) return;
+        if (this.ws && this.config.background === true) return;
 
         if (!this.ws || [this.ws.CLOSING, this.ws.CLOSED].includes(this.ws.readyState)) {
             await this.initMSE(this.hass);
@@ -665,7 +665,7 @@ class WebRTCCamera extends HTMLElement {
     }
 
     disconnectedCallback(){
-        if (this.config.should_run_in_background !== true) {
+        if (this.config.background !== true) {
             this.subscriptions.forEach(callback => callback());
             this.subscriptions = [];
         }
