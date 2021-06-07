@@ -1,4 +1,7 @@
 class WebRTCCamera extends HTMLElement {
+    subscriptions = [];
+    rendered = false;
+
     async initMSE(hass, pc = null) {
         const ts = Date.now();
 
@@ -16,6 +19,12 @@ class WebRTCCamera extends HTMLElement {
         ws.binaryType = 'arraybuffer';
 
         let mediaSource, sourceBuffer;
+        
+        this.subscriptions.push(() => {
+            this.ws.onclose = null;
+            this.ws.close();
+            console.debug("Closing websocket");
+        });
 
         ws.onopen = async () => {
             this.readyState = 'websocket';
@@ -39,6 +48,11 @@ class WebRTCCamera extends HTMLElement {
 
                 const offer = await pc.createOffer({iceRestart: true})
                 await pc.setLocalDescription(offer);
+                this.subscriptions.push(() => {
+                    pc.close();
+                    pc = null;
+                    console.debug("Closing RTCPeerConnection");
+                });
             }
         }
         ws.onmessage = ev => {
@@ -88,8 +102,10 @@ class WebRTCCamera extends HTMLElement {
             console.debug(`Reconnect in ${delay} ms`);
 
             setTimeout(() => {
-                this.status = "Restart connection";
-                this.initMSE(hass, pc);
+                if (this.isConnected) {
+                    this.status = "Restart connection";
+                    this.initMSE(hass, pc);
+                }
             }, delay);
         }
     }
@@ -167,8 +183,10 @@ class WebRTCCamera extends HTMLElement {
                     const offer = await pc.createOffer({iceRestart: true})
                     await pc.setLocalDescription(offer);
                 } else {
-                    video.src = '';
-                    this.initMSE(hass, pc);
+                    if (this.isConnected) {
+                        video.src = '';
+                        this.initMSE(hass, pc);
+                    }
                 }
             } else if (pc.connectionState === 'connected') {
                 this.readyState = 'webrtc-loading';
@@ -496,6 +514,8 @@ class WebRTCCamera extends HTMLElement {
             video.play().then(() => null, () => null);
         });
 
+        this.initPageVisibilityListener();
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
@@ -569,14 +589,6 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
-    set hass(hass) {
-        if (this.firstChild || typeof this.config === 'undefined') return;
-
-        this.renderGUI(hass).then(async () => {
-            await this.initMSE(hass);
-        });
-    }
-
     setPTZVisibility(show) {
         const ptz = this.querySelector('.ptz');
         if (ptz) {
@@ -612,6 +624,50 @@ class WebRTCCamera extends HTMLElement {
     static getStubConfig() {
         return {
             url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
+        }
+    }
+
+    initPageVisibilityListener() {
+        var hidden, visibilityChange;
+        if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support
+            hidden = "hidden";
+            visibilityChange = "visibilitychange";
+        } else if (typeof document.msHidden !== "undefined") {
+            hidden = "msHidden";
+            visibilityChange = "msvisibilitychange";
+        } else if (typeof document.webkitHidden !== "undefined") {
+            hidden = "webkitHidden";
+            visibilityChange = "webkitvisibilitychange";
+        }
+
+        document.addEventListener(visibilityChange, () => {
+            if (!document[hidden] && this.isConnected) {
+                this.connectedCallback();
+            } else {
+                this.disconnectedCallback();
+            }
+        }, false);
+    }
+
+    async connectedCallback() {
+        if (!this.config) return;
+
+        if (!this.rendered) {
+            await this.renderGUI(this.hass);
+            this.rendered = true;
+        }
+        
+        if (this.ws && this.config.should_run_in_background === true) return;
+
+        if (!this.ws || [this.ws.CLOSING, this.ws.CLOSED].includes(this.ws.readyState)) {
+            await this.initMSE(this.hass);
+        }
+    }
+
+    disconnectedCallback(){
+        if (this.config.should_run_in_background !== true) {
+            this.subscriptions.forEach(callback => callback());
+            this.subscriptions = [];
         }
     }
 }
