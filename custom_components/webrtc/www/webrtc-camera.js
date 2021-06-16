@@ -254,7 +254,7 @@ class WebRTCCamera extends HTMLElement {
         if (this.requestFullscreen) {  // normal browser
             fullscreen.onclick = () => {
                 document.fullscreenElement
-                    ? document.exitFullscreen() : this.requestFullScreen();
+                    ? document.exitFullscreen() : this.requestFullscreen();
             }
             this.onfullscreenchange = () => {
                 fullscreen.icon = document.fullscreenElement
@@ -264,7 +264,7 @@ class WebRTCCamera extends HTMLElement {
             fullscreen.onclick = () => {
                 document.webkitFullscreenElement
                     ? document.webkitExitFullscreen()
-                    : this.webkitRequestFullScreen();
+                    : this.webkitRequestFullscreen();
             }
             this.onwebkitfullscreenchange = () => {
                 fullscreen.icon = document.webkitFullscreenElement
