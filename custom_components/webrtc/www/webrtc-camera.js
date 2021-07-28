@@ -634,6 +634,9 @@ class WebRTCCamera extends HTMLElement {
         if (config.ptz && !config.ptz.service) {
             throw new Error("Missing `service` for `ptz`");
         }
+        if (!('RTCPeerConnection' in window)) {
+            throw new Error("Unsupported browser"); // macOS Desktop app
+        }
 
         this.config = config;
     }
