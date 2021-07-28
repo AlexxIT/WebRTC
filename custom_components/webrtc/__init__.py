@@ -24,7 +24,7 @@ from .utils import DOMAIN, Server
 
 _LOGGER = logging.getLogger(__name__)
 
-BINARY_VERSION = 'v4'
+BINARY_VERSION = 'v5'
 
 CREATE_LINK_SCHEMA = vol.Schema(
     {
