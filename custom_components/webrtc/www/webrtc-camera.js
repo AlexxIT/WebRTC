@@ -1,6 +1,51 @@
 class WebRTCCamera extends HTMLElement {
     subscriptions = [];
     rendered = false;
+    set status(value) {
+        const header = this.querySelector('.header');
+        header.innerText = value;
+        header.style.display = value ? 'block' : 'none';
+    }
+
+    set readyState(value) {
+        const state = this.querySelector('.state');
+        switch (value) {
+            case 'websocket':
+                state.icon = 'mdi:download-network-outline';
+                break;
+            case 'mse':
+                state.icon = 'mdi:play-network-outline';
+                break;
+
+            case 'webrtc-pending':  // init WebRTC
+                state.icon = 'mdi:lan-pending';
+                break;
+            case 'webrtc-connecting':  // connect to LAN or WAN IP
+                state.icon = 'mdi:lan-connect';
+                break;
+            case 'webrtc-loading':  // load video stream
+                state.icon = 'mdi:lan-check';
+                break;
+            case 'webrtc-restart':  // restart WebRTC
+                state.icon = 'mdi:lan-disconnect';
+                break;
+            case 'webrtc':  // video stream switched to WebRTC
+                state.icon = 'mdi:webrtc';
+                break;
+        }
+    }
+
+    get isOpera() {
+        // this integraion https://github.com/thomasloven/hass-fontawesome
+        // breaks the `!!window.opera` check in all browsers
+        return (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
+    }
+
+    static getStubConfig() {
+        return {
+            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
+        }
+    }
 
     async initMSE(hass, pc = null) {
         const ts = Date.now();
@@ -19,7 +64,7 @@ class WebRTCCamera extends HTMLElement {
         ws.binaryType = 'arraybuffer';
 
         let mediaSource, sourceBuffer;
-        
+
         this.subscriptions.push(() => {
             this.ws.onclose = null;
             this.ws.close();
@@ -555,40 +600,6 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
-    set status(value) {
-        const header = this.querySelector('.header');
-        header.innerText = value;
-        header.style.display = value ? 'block' : 'none';
-    }
-
-    set readyState(value) {
-        const state = this.querySelector('.state');
-        switch (value) {
-            case 'websocket':
-                state.icon = 'mdi:download-network-outline';
-                break;
-            case 'mse':
-                state.icon = 'mdi:play-network-outline';
-                break;
-
-            case 'webrtc-pending':  // init WebRTC
-                state.icon = 'mdi:lan-pending';
-                break;
-            case 'webrtc-connecting':  // connect to LAN or WAN IP
-                state.icon = 'mdi:lan-connect';
-                break;
-            case 'webrtc-loading':  // load video stream
-                state.icon = 'mdi:lan-check';
-                break;
-            case 'webrtc-restart':  // restart WebRTC
-                state.icon = 'mdi:lan-disconnect';
-                break;
-            case 'webrtc':  // video stream switched to WebRTC
-                state.icon = 'mdi:webrtc';
-                break;
-        }
-    }
-
     setPTZVisibility(show) {
         const ptz = this.querySelector('.ptz');
         if (ptz) {
@@ -611,20 +622,8 @@ class WebRTCCamera extends HTMLElement {
         this.config = config;
     }
 
-    get isOpera() {
-        // this integraion https://github.com/thomasloven/hass-fontawesome
-        // breaks the `!!window.opera` check in all browsers
-        return (!!window.opr && !!opr.addons) || navigator.userAgent.indexOf(' OPR/') >= 0;
-    }
-
     getCardSize() {
         return 5;
-    }
-
-    static getStubConfig() {
-        return {
-            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
-        }
     }
 
     initPageVisibilityListener() {
@@ -664,7 +663,7 @@ class WebRTCCamera extends HTMLElement {
         }
     }
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         if (this.config.background !== true) {
             this.subscriptions.forEach(callback => callback());
             this.subscriptions = [];
