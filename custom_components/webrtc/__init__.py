@@ -4,6 +4,7 @@ import os
 import stat
 import time
 import uuid
+from pathlib import Path
 from urllib.parse import urlparse, urlencode
 
 import homeassistant.helpers.config_validation as cv
@@ -71,7 +72,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     # serve lovelace card
     url_path = '/webrtc/webrtc-camera.js'
-    path = hass.config.path('custom_components/webrtc/www/webrtc-camera.js')
+    path = Path(__file__).parent / 'www/webrtc-camera.js'
     utils.register_static_path(hass.http.app, url_path, path)
 
     # version supported only after 2021.3.0
@@ -81,7 +82,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     await utils.init_resource(hass, url_path, str(version))
 
     # serve html page
-    path = hass.config.path('custom_components/webrtc/www/index.html')
+    path = Path(__file__).parent / 'www/index.html'
     utils.register_static_path(hass.http.app, '/webrtc/embed', path)
 
     # component uses websocket, but some users can use REST API for integrate

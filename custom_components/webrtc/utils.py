@@ -64,7 +64,7 @@ async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
         return None
 
 
-def register_static_path(app: web.Application, url_path: str, path: str):
+def register_static_path(app: web.Application, url_path: str, path):
     """Register static path with CORS for Chromecast"""
 
     async def serve_file(request):
