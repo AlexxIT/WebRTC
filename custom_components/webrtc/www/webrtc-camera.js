@@ -1,6 +1,17 @@
+/**
+ * - IntersectionObserver - iOS 12.2+
+ *   https://caniuse.com/?search=IntersectionObserver
+ * - WebRTC Unified Plan SDP - iOS 12.2+ (iOS 11 supports only Plan B)
+ *   https://webkit.org/blog/8672/on-the-road-to-webrtc-1-0-including-vp8/
+ * - MediaSource - iPad OS 13+
+ *   https://caniuse.com/?search=MediaSource
+ */
 class WebRTCCamera extends HTMLElement {
-    subscriptions = [];
-    rendered = false;
+    constructor() {
+        super();
+        this.subscriptions = [];
+    }
+
     set status(value) {
         const header = this.querySelector('.header');
         header.innerText = value;
@@ -654,11 +665,10 @@ class WebRTCCamera extends HTMLElement {
     async connectedCallback() {
         if (!this.config) return;
 
-        if (!this.rendered) {
+        if (this.childElementCount === 0) {
             await this.renderGUI(this.hass);
-            this.rendered = true;
         }
-        
+
         if (this.ws && this.config.background === true) return;
 
         if (!this.ws || [this.ws.CLOSING, this.ws.CLOSED].includes(this.ws.readyState)) {
