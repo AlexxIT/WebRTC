@@ -85,16 +85,18 @@ class WebRTCCamera extends HTMLElement {
         ws.onopen = async () => {
             this.readyState = 'websocket';
 
-            if (this.config.mse !== false && 'MediaSource' in window) {
-                mediaSource = new MediaSource();
-                video.src = URL.createObjectURL(mediaSource);
-                video.srcObject = null;
+            if (this.config.mse !== false) {
+                if ('MediaSource' in window) {
+                    mediaSource = new MediaSource();
+                    video.src = URL.createObjectURL(mediaSource);
+                    video.srcObject = null;
 
-                mediaSource.onsourceopen = () => {
-                    ws.send(JSON.stringify({type: 'mse'}));
+                    mediaSource.onsourceopen = () => {
+                        ws.send(JSON.stringify({type: 'mse'}));
+                    }
+                } else {
+                    console.warn("MediaSource doesn't supported");
                 }
-            } else {
-                console.warn("MediaSource doesn't supported")
             }
 
             if (this.config.webrtc !== false && !this.isOpera) {
