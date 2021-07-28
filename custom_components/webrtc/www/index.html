@@ -19,16 +19,16 @@
 </head>
 <body>
 <script>
-    const url = document.referrer ? new URL(document.referrer) : window.location;
-
     const hass = {}
     hass.callWS = () => '';
-    hass.hassUrl = () => url.origin + '/api/webrtc/ws?embed=1';
+    hass.hassUrl = () => location.origin + '/api/webrtc/ws?embed=1';
 
-    const config = Object.fromEntries(new URLSearchParams(url.search));
-    for (const [k, v] of Object.entries(config)) {
+    const config = {}
+    // Object.fromEntries iOS 12.2+
+    for (const [k, v] of new URLSearchParams(location.search)) {
         if (v === 'true') config[k] = true;
-        if (v === 'false') config[k] = false;
+        else if (v === 'false') config[k] = false;
+        else config[k] = v;
     }
 
     const element = customElements.get('webrtc-camera');
