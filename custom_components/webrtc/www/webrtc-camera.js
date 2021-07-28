@@ -562,20 +562,22 @@ class WebRTCCamera extends HTMLElement {
 
         this.initPageVisibilityListener();
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    // console.debug("Video integsects:", entry.isIntersecting);
-                    if (entry.isIntersecting) {
-                        video.play().then(() => null, () => null);
-                    } else {
-                        video.pause();
-                    }
-                });
-            },
-            {threshold: this.config.intersection || 0.5}
-        );
-        observer.observe(video);
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        // console.debug("Video integsects:", entry.isIntersecting);
+                        if (entry.isIntersecting) {
+                            video.play().then(() => null, () => null);
+                        } else {
+                            video.pause();
+                        }
+                    });
+                },
+                {threshold: this.config.intersection || 0.5}
+            );
+            observer.observe(video);
+        }
 
         if (this.config.ui) {
             this.renderCustomGUI(card);
