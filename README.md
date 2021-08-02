@@ -28,6 +28,9 @@ Chrome, Firefox, Chromecast | video: H264<br />audio: PCMA, PCMU | video: H264<b
 Safari PC, iPadOS 13+       | video: H264<br />audio: PCMA, PCMU | video: H264, H265<br />audio: AAC
 Safari iOS                  | video: H264<br />audio: PCMA, PCMU | doesn't supported
 Opera PC                    | doesn't supported                  | video: H264<br />audio: AAC
+[macOS app]                 | doesn't supported                  | doesn't supported
+
+[macOS app]: https://apps.apple.com/us/app/home-assistant/id1099568401
 
 - Home Assistant Mobile App for Android and iOS - has the same capabilities as the main mobile browser
 - H264: AVC/H.264
