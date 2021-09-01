@@ -388,7 +388,7 @@ class WebRTCCamera extends HTMLElement {
             const [domain, service] = this.config.ptz.service.split('.', 2);
             const data = this.config.ptz['data_' + ev.target.className];
             if (data) {
-                hass.callService(domain, service, data);
+                this.hass.callService(domain, service, data);
             }
         }
 
