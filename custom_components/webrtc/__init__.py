@@ -5,7 +5,8 @@ import stat
 import time
 import uuid
 from pathlib import Path
-from urllib.parse import urlparse, urlencode
+from typing import Final
+from urllib.parse import urlencode, urlparse
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -13,7 +14,7 @@ from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView, KEY_AUTHENTICATED
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
@@ -49,6 +50,43 @@ DASH_CAST_SCHEMA = vol.Schema(
 
 LINKS = {}  # 2 3 4
 
+CONF_UDP_MIN: Final = "udp_min"
+CONF_UDP_MAX: Final = "udp_max"
+
+DEFAULT_UDP_MIN: Final = 0
+DEFAULT_UDP_MAX: Final = 0
+
+ZERO_PORT_VALIDATOR = vol.All(vol.Coerce(int),
+                              vol.Range(min=0, max=65535, min_included=True, max_included=True))
+
+
+def max_less_or_equal_to_min(mapping: dict):
+    udp_min, udp_max = mapping[CONF_UDP_MIN], mapping[CONF_UDP_MAX]
+    if udp_max != 0 and udp_min > udp_max:
+        raise vol.Invalid("min cannot be greater than max if max != 0", path=[CONF_UDP_MIN])
+    return mapping
+
+
+CONFIG_ENTRY_VALIDATOR: Final = vol.All(vol.Schema(
+    {
+        vol.Optional(CONF_UDP_MIN, default=DEFAULT_UDP_MIN): ZERO_PORT_VALIDATOR,
+        vol.Optional(CONF_UDP_MAX, default=DEFAULT_UDP_MAX): ZERO_PORT_VALIDATOR,
+    },
+), max_less_or_equal_to_min)
+
+
+def ingest(value):
+    print(value)
+    return value
+
+
+CONFIG_SCHEMA: Final = vol.Schema(
+    {
+        vol.Optional(DOMAIN): CONFIG_ENTRY_VALIDATOR,
+    },
+    extra=vol.ALLOW_EXTRA,
+)
+
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
     # check and download file if needed
@@ -72,7 +110,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     # serve lovelace card
     url_path = '/webrtc/webrtc-camera.js'
-    path = Path(__file__).parent / 'www/webrtc-camera.js'
+    path = Path(__file__).parent / 'www' / 'webrtc-camera.js'
     utils.register_static_path(hass.http.app, url_path, path)
 
     # version supported only after 2021.3.0
@@ -82,13 +120,13 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     await utils.init_resource(hass, url_path, str(version))
 
     # serve html page
-    path = Path(__file__).parent / 'www/index.html'
+    path = Path(__file__).parent / 'www' / 'index.html'
     utils.register_static_path(hass.http.app, '/webrtc/embed', path)
 
     # component uses websocket, but some users can use REST API for integrate
     # WebRTC to their software
-    hass.http.register_view(WebSocketView)
-    hass.http.register_view(WebRTCStreamView)
+    hass.http.register_view(WebSocketView())
+    hass.http.register_view(WebRTCStreamView())
 
     async def create_link(call: ServiceCallType):
         link_id = call.data['link_id']
@@ -120,6 +158,15 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     hass.services.async_register(DOMAIN, 'dash_cast', dash_cast,
                                  DASH_CAST_SCHEMA)
 
+    # create configuration entry from YAML
+    domain_config = config.get(DOMAIN)
+    if domain_config and not hass.config_entries.async_entries(DOMAIN):
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": SOURCE_IMPORT}, data=domain_config
+            )
+        )
+
     return True
 
 
@@ -144,6 +191,26 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
 
 async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_migrate_entry(hass: HomeAssistantType, entry: ConfigEntry):
+    unique_id = entry.unique_id
+    options = dict(entry.options)
+
+    if entry.version < 2:
+        # force unique id
+        entry.version = 2
+        unique_id = DOMAIN
+        options.setdefault(CONF_UDP_MIN, DEFAULT_UDP_MIN)
+        options.setdefault(CONF_UDP_MAX, DEFAULT_UDP_MAX)
+
+    hass.config_entries.async_update_entry(
+        entry,
+        unique_id=unique_id,
+        options=options,
+    )
+
+    return True
 
 
 async def ws_connect(hass: HomeAssistantType, params):
