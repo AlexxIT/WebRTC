@@ -75,11 +75,6 @@ CONFIG_ENTRY_VALIDATOR: Final = vol.All(vol.Schema(
 ), max_less_or_equal_to_min)
 
 
-def ingest(value):
-    print(value)
-    return value
-
-
 CONFIG_SCHEMA: Final = vol.Schema(
     {
         vol.Optional(DOMAIN): CONFIG_ENTRY_VALIDATOR,
