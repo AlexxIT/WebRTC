@@ -163,7 +163,7 @@ Dahua | DH-IPC-HDPW1431FP-AS-0280B | support sound
 EZVIZ | C3S | `rtsp://admin:pass@192.168.1.123:554/h264/ch01/main/av_stream` and `/h264/ch01/sub/av_stream`
 Foscam | C1 | `rtsp://user:pass@192.168.1.123:554/videoMain`
 Hikvision | DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS | `rtsp://user:pass@192.168.1.123:554/ISAPI/Streaming/Channels/102`
-Reolink | RLC-410, RLC-410W, E1 Pro, 4505MP |
+Reolink | RLC-410, RLC-410W, RLC-510WA, E1 Pro, E1 Zoom, 4505MP | RLC-510WA support sound, E1 Zoom support sound, PTZ and zoom
 Sonoff | GK-200MP2-B | support sound and [PTZ](https://github.com/AlexxIT/SonoffLAN#sonoff-gk-200mp2-b-camera), `rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0` and `/av_stream/ch1`
 TP-Link | Tapo C100/C200 | `rtsp://user:pass@192.168.1.123:554/stream1` and `/stream2`
 Wyze | Cam v2 | support sound
