@@ -358,6 +358,31 @@ class WebRTCCamera extends HTMLElement {
             spinner.style.display = 'none';
             this.setPTZVisibility(true);
         };
+
+        if (this.config.shortcuts && this.config.shortcuts.length > 0) {
+            this.renderShortcuts(card, this.config.shortcuts);
+        }
+    }
+
+    renderShortcuts(card, elements) {
+        const shortcuts = document.createElement('div');
+        shortcuts.className = 'shortcuts';
+
+        for (var i = 0; i < elements.length; i++) {
+            const element = elements[i];
+
+            const shortcut = document.createElement('ha-icon');
+            shortcut.className = 'shortcut shortcut-' + i;
+            shortcut.setAttribute('title', element.name);
+            shortcut.icon = element.icon;
+            shortcut.onclick = () => {
+                const [domain, name] = element.service.split('.');
+                this.hass.callService(domain, name, element.service_data || {});
+            };
+            shortcuts.appendChild(shortcut);
+        }
+
+        card.appendChild(shortcuts);
     }
 
     renderPTZ(card, hass) {
@@ -525,6 +550,17 @@ class WebRTCCamera extends HTMLElement {
                 top: 12px;
                 cursor: default;
                 opacity: 0.4;
+            }
+            .shortcuts {
+                position: absolute;
+                top: 12px;
+                left: 0px;
+            }
+            .shortcuts > .shortcut {
+                margin-left: 12px;
+                position: relative;
+                display: inline-block;
+                opacity: .9;
             }
         `;
         this.appendChild(style);
