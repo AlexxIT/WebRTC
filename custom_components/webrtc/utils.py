@@ -71,7 +71,10 @@ def register_static_path(app: web.Application, url_path: str, path):
         return web.FileResponse(path)
 
     route = app.router.add_route("GET", url_path, serve_file)
-    app['allow_all_cors'](route)
+    if 'allow_all_cors' in app:
+        app['allow_all_cors'](route)
+    elif 'allow_cors' in app:
+        app['allow_cors'](route)
 
 
 async def init_resource(hass: HomeAssistantType, url: str, ver: str) -> bool:
