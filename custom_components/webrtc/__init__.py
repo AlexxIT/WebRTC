@@ -155,7 +155,7 @@ async def ws_connect(hass: HomeAssistantType, params):
         url = params.get('url')
 
     # also check if url valid, e.g. wrong chars in password
-    assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
+    assert urlparse(url).scheme in ('rtsp', 'rtsps'), "Support only RTSP-stream"
 
     server = hass.data[DOMAIN]
     assert server.available, "WebRTC server not available"
