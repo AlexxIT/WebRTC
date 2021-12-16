@@ -435,7 +435,6 @@ class WebRTCCamera extends HTMLElement {
                 width: 100%;
                 height: 100%;
                 position: relative;
-                background: black;
             }
             #video, .fix-safari {
                 width: 100%;
