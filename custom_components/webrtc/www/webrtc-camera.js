@@ -359,8 +359,8 @@ class WebRTCCamera extends HTMLElement {
             this.setPTZVisibility(true);
         };
 
-        if (this.config.shortcuts && this.config.shortcuts.length > 0) {
-            this.renderShortcuts(card, this.config.shortcuts);
+        if (this.config.shortcuts && this.config.shortcuts.services && this.config.shortcuts.services.length > 0) {
+            this.renderShortcuts(card, this.config.shortcuts.services);
         }
     }
 
@@ -551,18 +551,35 @@ class WebRTCCamera extends HTMLElement {
                 cursor: default;
                 opacity: 0.4;
             }
-            .shortcuts {
-                position: absolute;
-                top: 12px;
-                left: 0px;
-            }
-            .shortcuts > .shortcut {
-                margin-left: 12px;
-                position: relative;
-                display: inline-block;
-                opacity: .9;
-            }
         `;
+
+        if (this.config.shortcuts && this.config.shortcuts.services && this.config.shortcuts.services.length > 0) {
+            const config = this.config.shortcuts;
+            const map = {
+                "horizontal": "left",
+                "vertical": "top"
+            };
+
+            const orientation = config.orientation && config.orientation in map ? map[config.orientation] : 'left';
+
+            style.textContent += `
+                .shortcuts {
+                    position: absolute;
+                    top: ` + (12 + (config.top ? parseInt(config.top) : 0)) +`px;
+                    left: ` + (12 + (config.left ? parseInt(config.left) : 0)) +`px;
+                }
+                .shortcuts > .shortcut {
+                    margin-` + orientation + `: 12px;
+                    position: relative;
+                    display: ` + (orientation == 'left' ? 'inline-' : '') + `block;
+                    opacity: .9;
+                }
+                .shortcuts > .shortcut:first-child {
+                    margin-` + orientation + `: 0px;
+                }
+            `;
+        }
+
         this.appendChild(style);
 
         const card = document.createElement('ha-card');

@@ -137,11 +137,15 @@ intersection: 0.75  # auto pause stream when less than 75% of video element is i
 muted: false  # disable sound, default true
 ui: true  # custom video controls, default false
 shortcuts: # custom shortcuts, default none
-  - name: Record
-    icon: mdi:record-circle-outline
-    service: switch.toggle
-    service_data:
-      entity_id: switch.camera_record
+  top: 0 # top margin in pixels, default 0
+  left: 0 # left margin in pixels, default 0
+  orientation: vertical # orientation (horizontal or vertical), default horizontal
+  services:
+      - name: Record
+        icon: mdi:record-circle-outline
+        service: switch.toggle
+        service_data:
+          entity_id: switch.camera_record
 
 background: true  # run stream when not displayed (ex. for quick video loading), default false
 
