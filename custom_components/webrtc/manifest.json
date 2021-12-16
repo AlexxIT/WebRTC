@@ -7,6 +7,6 @@
   "codeowners": ["@AlexxIT"],
   "dependencies": ["http", "lovelace"],
   "requirements": [],
-  "version": "v2.0.2",
+  "version": "v2.2.0",
   "iot_class": "calculated"
 }
