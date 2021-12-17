@@ -407,6 +407,14 @@ class WebRTCCamera extends HTMLElement {
             `;
             ptz.appendChild(ptzZoom);
         }
+        if (this.config.ptz.data_home) {
+            const ptzHome = document.createElement('div');
+            ptzHome.className = 'ptz-home';
+            ptzHome.innerHTML = `
+                <ha-icon class="home" icon="mdi:home"></ha-icon>
+            `;
+            ptz.appendChild(ptzHome);
+        }
         card.appendChild(ptz);
 
         const handlePTZ = (ev) => {
@@ -501,12 +509,12 @@ class WebRTCCamera extends HTMLElement {
                 width: 80px;
                 height: 80px;
             }
-            .ptz-zoom {
+            .ptz-zoom, .ptz-home {
                 position: relative;
                 margin-top: 10px;
                 background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
                 border-radius: 4px;
-                width: 80px;
+                width: 40px;
                 height: 40px;
             }
             .show {
