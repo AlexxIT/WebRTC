@@ -420,6 +420,7 @@ class WebRTCCamera extends HTMLElement {
         const buttons = ptz.querySelectorAll('ha-icon');
         buttons.forEach(function (el) {
             el.addEventListener('click', handlePTZ);
+            el.addEventListener('touchstart', handlePTZ);
         });
     }
 
