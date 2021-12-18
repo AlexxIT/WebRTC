@@ -284,21 +284,25 @@ class WebRTCCamera extends HTMLElement {
         const pause = document.createElement('ha-icon');
         pause.className = 'pause';
         pause.icon = 'mdi:pause';
-        pause.onclick = () => {
+        const pauseCallback = () => {
             if (video.paused) {
                 video.play().then(() => null, () => null);
             } else {
                 video.pause();
             }
         };
+        pause.addEventListener('click', pauseCallback);
+        pause.addEventListener('touchstart', pauseCallback);
         card.appendChild(pause);
 
         const volume = document.createElement('ha-icon');
         volume.className = 'volume';
         volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
-        volume.onclick = () => {
+        const volumeCallback = () => {
             video.muted = !video.muted;
         };
+        volume.addEventListener('click', volumeCallback);
+        volume.addEventListener('touchstart', volumeCallback);
         card.appendChild(volume);
 
         video.onvolumechange = () => {
@@ -311,20 +315,24 @@ class WebRTCCamera extends HTMLElement {
 
         // https://stackoverflow.com/questions/43024394/ios10-fullscreen-safari-javascript
         if (this.requestFullscreen) {  // normal browser
-            fullscreen.onclick = () => {
+            const fullscreenCallback = () => {
                 document.fullscreenElement
                     ? document.exitFullscreen() : this.requestFullscreen();
             }
+            fullscreen.addEventListener('click', fullscreenCallback);
+            fullscreen.addEventListener('touchstart', fullscreenCallback);
             this.onfullscreenchange = () => {
                 fullscreen.icon = document.fullscreenElement
                     ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
             }
         } else {  // Apple Safari...
-            fullscreen.onclick = () => {
+            const fullscreenCallback = () => {
                 document.webkitFullscreenElement
                     ? document.webkitExitFullscreen()
                     : this.webkitRequestFullscreen();
             }
+            fullscreen.addEventListener('click', fullscreenCallback);
+            fullscreen.addEventListener('touchstart', fullscreenCallback);
             this.onwebkitfullscreenchange = () => {
                 fullscreen.icon = document.webkitFullscreenElement
                     ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
@@ -375,10 +383,12 @@ class WebRTCCamera extends HTMLElement {
             shortcut.className = 'shortcut shortcut-' + i;
             shortcut.setAttribute('title', element.name);
             shortcut.icon = element.icon;
-            shortcut.onclick = () => {
+            const shortcutCallback = () => {
                 const [domain, name] = element.service.split('.');
                 this.hass.callService(domain, name, element.service_data || {});
             };
+            shortcut.addEventListener('click', shortcutCallback);
+            shortcut.addEventListener('touchstart', shortcutCallback);
             shortcuts.appendChild(shortcut);
         }
 
@@ -428,6 +438,7 @@ class WebRTCCamera extends HTMLElement {
         const buttons = ptz.querySelectorAll('ha-icon');
         buttons.forEach(function (el) {
             el.addEventListener('click', handlePTZ);
+            el.addEventListener('touchstart', handlePTZ);
         });
     }
 
