@@ -562,9 +562,13 @@ class WebRTCCamera extends HTMLElement {
                 transform: translateY(-50%);
             }
             .home {
-                left: 50%;
                 top: 50%;
-                transform: translate(-50%);
+                transform: translateY(-50%);
+                margin-left: auto;
+                margin-right: auto;
+                left: 0;
+                right: 0;
+                text-align: center;
             }
             .state {
                 right: 12px;
