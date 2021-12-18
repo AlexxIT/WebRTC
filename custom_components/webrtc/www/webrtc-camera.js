@@ -524,6 +524,7 @@ class WebRTCCamera extends HTMLElement {
                 border-radius: 4px;
                 width: 40px;
                 height: 40px;
+                left: 20px;
             }
             .show {
                 display: block;
