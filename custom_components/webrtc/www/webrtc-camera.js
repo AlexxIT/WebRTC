@@ -509,7 +509,15 @@ class WebRTCCamera extends HTMLElement {
                 width: 80px;
                 height: 80px;
             }
-            .ptz-zoom, .ptz-home {
+            .ptz-zoom {
+                position: relative;
+                margin-top: 10px;
+                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+                border-radius: 4px;
+                width: 80px;
+                height: 40px;
+            }
+            .ptz-home {
                 position: relative;
                 margin-top: 10px;
                 background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
@@ -552,6 +560,11 @@ class WebRTCCamera extends HTMLElement {
                 right: 5px;
                 top: 50%;
                 transform: translateY(-50%);
+            }
+            .home {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%);
             }
             .state {
                 right: 12px;
