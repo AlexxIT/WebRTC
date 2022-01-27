@@ -10,6 +10,7 @@ class WebRTCCamera extends HTMLElement {
     constructor() {
         super();
         this.subscriptions = [];
+        this.unique_shortcuts_key = null;
     }
 
     set status(value) {
@@ -752,6 +753,10 @@ class WebRTCCamera extends HTMLElement {
     }
 
     getUniqueShortcutsKey() {
+        if (this.unique_shortcuts_key !== null) {
+            return this.unique_shortcuts_key;
+        }
+
         const cyrb = function(str, seed = 0) {
             let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
             for (let i = 0, ch; i < str.length; i++) {
@@ -765,7 +770,9 @@ class WebRTCCamera extends HTMLElement {
             return 4294967296 * (2097151 & h2) + (h1>>>0);
         };
 
-        return cyrb(JSON.stringify(this.config.shortcuts));
+        this.unique_shortcuts_key = cyrb(JSON.stringify(this.config.shortcuts));
+
+        return this.unique_shortcuts_key;
     }
 
     prepareMargin(margin) {
