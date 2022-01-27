@@ -374,7 +374,7 @@ class WebRTCCamera extends HTMLElement {
 
     renderShortcuts(card, elements) {
         const shortcuts = document.createElement('div');
-        shortcuts.className = 'shortcuts';
+        shortcuts.className = 'shortcuts-' + this.getUniqueShortcutsKey();
 
         for (var i = 0; i < elements.length; i++) {
             const element = elements[i];
@@ -572,20 +572,19 @@ class WebRTCCamera extends HTMLElement {
             };
 
             const orientation = config.orientation && config.orientation in map ? map[config.orientation] : 'left';
-
             style.textContent += `
-                .shortcuts {
+                .shortcuts-` + this.getUniqueShortcutsKey() + ` {
                     position: absolute;
-                    top: ` + (12 + (config.top ? parseInt(config.top) : 0)) +`px;
-                    left: ` + (12 + (config.left ? parseInt(config.left) : 0)) +`px;
+                    top: calc(12px + ` + (config.top ? this.prepareMargin(config.top) : '0px') +`);
+                    left: calc(12px + ` + (config.left ? this.prepareMargin(config.left) : '0px') +`);
                 }
-                .shortcuts > .shortcut {
+                .shortcuts-` + this.getUniqueShortcutsKey() + ` > .shortcut {
                     margin-` + orientation + `: 12px;
                     position: relative;
-                    display: ` + (orientation == 'left' ? 'inline-' : '') + `block;
+                    display: ` + (orientation === 'left' ? 'inline-' : '') + `block;
                     opacity: .9;
                 }
-                .shortcuts > .shortcut:first-child {
+                .shortcuts-` + this.getUniqueShortcutsKey() + ` > .shortcut:first-child {
                     margin-` + orientation + `: 0px;
                 }
             `;
@@ -750,6 +749,27 @@ class WebRTCCamera extends HTMLElement {
             this.subscriptions.forEach(callback => callback());
             this.subscriptions = [];
         }
+    }
+
+    getUniqueShortcutsKey() {
+        const cyrb = function(str, seed = 0) {
+            let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+            for (let i = 0, ch; i < str.length; i++) {
+                ch = str.charCodeAt(i);
+                h1 = Math.imul(h1 ^ ch, 2654435761);
+                h2 = Math.imul(h2 ^ ch, 1597334677);
+            }
+            h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+            h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+
+            return 4294967296 * (2097151 & h2) + (h1>>>0);
+        };
+
+        return cyrb(JSON.stringify(this.config.shortcuts));
+    }
+
+    prepareMargin(margin) {
+        return !isNaN(parseFloat(margin)) && isFinite(margin) ? margin + 'px' : margin;
     }
 }
 
