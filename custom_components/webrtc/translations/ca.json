@@ -10,8 +10,8 @@
       "init": {
         "title": "Opcions de WebRTC camera",
         "data": {
-          "udp_min": "Port WebRTC UDP mín",
-          "udp_max": "Port WebRTC UDP màx"
+          "udp_min": "Port UDP mínim per a WebRTC",
+          "udp_max": "Port UDP màxim per a WebRTC"
         }
       }
     }
