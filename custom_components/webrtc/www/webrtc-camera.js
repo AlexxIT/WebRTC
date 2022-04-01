@@ -454,6 +454,7 @@ class WebRTCCamera extends HTMLElement {
                 height: 100%;
                 display: block;
                 z-index: 0;
+                border-radius: var(--ha-card-border-radius, 4px);
             }
             .box {
                 position: absolute;
