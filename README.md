@@ -179,6 +179,7 @@ GW Security | GW5088IP | 'rtsp://192.168.1.123:554/mpeg4cif?username=admin&passw
 GW Security | GW5078IP | 'rtsp://192.168.1.123:554/stream0?username=admin&password=123456'
 GW Security | GW5071IP | Not working yet, something similar to 'rtsp://admin:123456@192.168.0.207:554/live/main' or 'rtsp://192.168.0.207:554/live/main?username=admin&password=123456'
 Hikvision | DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS | `rtsp://user:pass@192.168.1.123:554/ISAPI/Streaming/Channels/102`
+Hikvision | IPC-HDW3849H-AS-PV, IPC-EW5531-AS | wired to nvr DHI-NVR2108HS-8P-I. Integrated to HA using HACS [rroller Dahua repo](https://github.com/rroller/dahua)
 Raspberry Pi | PiCam | [read more](https://github.com/AlexxIT/WebRTC/issues/261)
 Reolink | RLC-410, RLC-410W, RLC-510WA, E1 Pro, E1 Zoom, 4505MP | RLC-510WA support sound, E1 Zoom support sound, PTZ and zoom
 Reolink | E1 | `rtsp://admin:password@192.168.1.123:554/h264Preview_01_main`
