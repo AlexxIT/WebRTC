@@ -55,7 +55,7 @@ class WebRTCCamera extends HTMLElement {
 
     static getStubConfig() {
         return {
-            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
+            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4'
         }
     }
 

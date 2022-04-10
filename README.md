@@ -53,7 +53,7 @@ In case of any problems, check:
 
 ```yaml
 type: 'custom:webrtc-camera'
-url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
+url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4'
 ```
 
 If you are using an iPhone - also read the **Why is WebRTC not working?**, because your phone does not support MSE technology.
