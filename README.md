@@ -170,7 +170,8 @@ Brand | Models | Comment
 ActiveCam | AC-D2121IR3 |
 ActiveCam | AC-D7121IR1W | support sound
 Android | [IP Webcam Pro](https://play.google.com/store/apps/details?id=com.pas.webcam.pro) | support sound, `rtsp://192.168.1.123:8080/h264_ulaw.sdp`
-Dahua | DH-IPC-HDPW1431FP-AS-0280B, VTO2211G-P, VTO2202F-P-S2 | support sound (for VTO2202F-P-S2, check [here](https://github.com/blakeblackshear/frigate/discussions/2572))
+Dahua | DH-IPC-HDPW1431FP-AS-0280B, VTO2211G-P | support sound
+Dahua | VTO2202F-P-S2 | [read more](https://github.com/blakeblackshear/frigate/discussions/2572)
 EZVIZ | C3S | `rtsp://admin:pass@192.168.1.123:554/h264/ch01/main/av_stream` and `/h264/ch01/sub/av_stream`
 EZVIZ | C6CN |
 Foscam | C1 | `rtsp://user:pass@192.168.1.123:554/videoMain`
