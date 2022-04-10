@@ -461,6 +461,7 @@ class WebRTCCamera extends HTMLElement {
                 height: 100%;
                 display: block;
                 z-index: 0;
+                background: black;
             }
             .box {
                 position: absolute;
