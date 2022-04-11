@@ -173,7 +173,7 @@ Android | [IP Webcam Pro](https://play.google.com/store/apps/details?id=com.pas.
 Dahua | DH-IPC-HDPW1431FP-AS-0280B, VTO2211G-P | support sound
 Dahua | VTO2202F-P-S2 | [read more](https://github.com/blakeblackshear/frigate/discussions/2572)
 EZVIZ | C3S | `rtsp://admin:pass@192.168.1.123:554/h264/ch01/main/av_stream` and `/h264/ch01/sub/av_stream`
-EZVIZ | C6CN |
+EZVIZ | C3W, C3WN, C6CN, C6T | `rtsp://admin:pass@192.168.1.123:554/h264_stream`
 Foscam | C1 | `rtsp://user:pass@192.168.1.123:554/videoMain`
 GW Security | GW5088IP | 'rtsp://192.168.1.123:554/mpeg4cif?username=admin&password=123456'
 GW Security | GW5078IP | 'rtsp://192.168.1.123:554/stream0?username=admin&password=123456'
