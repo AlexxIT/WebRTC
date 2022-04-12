@@ -55,7 +55,7 @@ class WebRTCCamera extends HTMLElement {
 
     static getStubConfig() {
         return {
-            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov'
+            url: 'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4'
         }
     }
 
@@ -418,6 +418,14 @@ class WebRTCCamera extends HTMLElement {
             `;
             ptz.appendChild(ptzZoom);
         }
+        if (this.config.ptz.data_home) {
+            const ptzHome = document.createElement('div');
+            ptzHome.className = 'ptz-home';
+            ptzHome.innerHTML = `
+                <ha-icon class="home" icon="mdi:home"></ha-icon>
+            `;
+            ptz.appendChild(ptzHome);
+        }
         card.appendChild(ptz);
 
         const handlePTZ = (ev) => {
@@ -447,13 +455,13 @@ class WebRTCCamera extends HTMLElement {
                 width: 100%;
                 height: 100%;
                 position: relative;
-                background: black;
             }
             #video, .fix-safari {
                 width: 100%;
                 height: 100%;
                 display: block;
                 z-index: 0;
+                background: black;
                 border-radius: var(--ha-card-border-radius, 4px);
             }
             .box {
@@ -522,6 +530,15 @@ class WebRTCCamera extends HTMLElement {
                 width: 80px;
                 height: 40px;
             }
+            .ptz-home {
+                position: relative;
+                margin-top: 10px;
+                background-color: var( --ha-picture-card-background-color, rgba(0, 0, 0, 0.3) );
+                border-radius: 4px;
+                width: 40px;
+                height: 40px;
+                left: 20px;
+            }
             .show {
                 display: block;
             }
@@ -557,6 +574,15 @@ class WebRTCCamera extends HTMLElement {
                 right: 5px;
                 top: 50%;
                 transform: translateY(-50%);
+            }
+            .home {
+                top: 50%;
+                transform: translateY(-50%);
+                margin-left: auto;
+                margin-right: auto;
+                left: 0;
+                right: 0;
+                text-align: center;
             }
             .state {
                 right: 12px;
