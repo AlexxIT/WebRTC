@@ -175,6 +175,7 @@ Dahua | VTO2202F-P-S2 | [read more](https://github.com/blakeblackshear/frigate/d
 EZVIZ | C3S | `rtsp://admin:pass@192.168.1.123:554/h264/ch01/main/av_stream` and `/h264/ch01/sub/av_stream`
 EZVIZ | C3W, C3WN, C6CN, C6T | `rtsp://admin:pass@192.168.1.123:554/h264_stream`
 Foscam | C1 | `rtsp://user:pass@192.168.1.123:554/videoMain`
+Foscam | C2M, R2M | `rtsp://user:pass@192.168.1.123:88/videoMain`
 GW Security | GW5088IP | 'rtsp://192.168.1.123:554/mpeg4cif?username=admin&password=123456'
 GW Security | GW5078IP | 'rtsp://192.168.1.123:554/stream0?username=admin&password=123456'
 GW Security | GW5071IP | Not working yet, something similar to 'rtsp://admin:123456@192.168.0.207:554/live/main' or 'rtsp://192.168.0.207:554/live/main?username=admin&password=123456'
