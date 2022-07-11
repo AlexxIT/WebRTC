@@ -64,7 +64,7 @@ class WebRTCCamera extends HTMLElement {
 
         let unsignedPath = '/api/webrtc/ws'
 
-        const needsParameterSigning = (this.hass.connection.haVersion >= '2022.7.0b0')
+        const needsParameterSigning = (hass.connection && hass.connection.haVersion >= '2022.7.0b0');
         if(needsParameterSigning) {
             unsignedPath += '?'
             if (this.config.url) unsignedPath += '&url=' + encodeURIComponent(this.config.url);
