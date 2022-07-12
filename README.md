@@ -47,8 +47,8 @@ Opera PC                    | doesn't supported                  | video: H264<b
 
 In case of any problems, check:
 
-1. Check that you have installed the integration on the "Configuration > Integrations" page
-2. Check that you don't have any erros in "Configuration > Logs" page
+1. Check that you have installed the integration on the "Settings > Devices & Services" page
+2. Check that you don't have any erros in "Settings > System > Logs" page
 3. Check if default video with Bunny works:
 
 ```yaml
@@ -105,7 +105,7 @@ For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UD
 
 [![WebRTC Camera real time streaming component for Home Assistant](https://img.youtube.com/vi/2otE2dc6OAA/mqdefault.jpg)](https://www.youtube.com/watch?v=2otE2dc6OAA)
 
-> Configuration > Integrations > Add Integration > **WebRTC**
+> Settings > Devices & Services > Add Integration > **WebRTC**
 
 If the integration is not in the list, you need to clear the browser cache.
 
