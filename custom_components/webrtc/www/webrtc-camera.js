@@ -62,25 +62,14 @@ class WebRTCCamera extends HTMLElement {
     async initMSE(hass, pc = null) {
         const ts = Date.now();
 
-        let unsignedPath = '/api/webrtc/ws'
-
-        const needsParameterSigning = (hass.connection && hass.connection.haVersion >= '2022.7.0b0');
-        if(needsParameterSigning) {
-            unsignedPath += '?'
-            if (this.config.url) unsignedPath += '&url=' + encodeURIComponent(this.config.url);
-            if (this.config.entity) unsignedPath += '&entity=' + this.config.entity;
-        }
-
         const data = await hass.callWS({
             type: 'auth/sign_path',
-            path: unsignedPath
+            path: '/api/webrtc/ws'
         });
 
         let url = 'ws' + hass.hassUrl(data.path).substr(4);
-        if(!needsParameterSigning) {
-            if (this.config.url) url += '&url=' + encodeURIComponent(this.config.url);
-            if (this.config.entity) url += '&entity=' + this.config.entity;
-        }
+        if (this.config.url) url += '&url=' + encodeURIComponent(this.config.url);
+        if (this.config.entity) url += '&entity=' + this.config.entity;
 
         const video = this.querySelector('#video');
         const ws = this.ws = new WebSocket(url);
