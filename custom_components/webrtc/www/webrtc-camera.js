@@ -130,9 +130,9 @@ class WebRTCCamera extends HTMLElement {
                 } else if (data.type === 'webrtc') {
                     console.debug("Received WebRTC SDP");
 
-                    // remove docker IP-address
-                    const sdp = data.sdp.replace(
-                        /a=candidate.+? 172\.\d+\.\d+\.1 .+?\r\n/g, ''
+                    // remove docker IP-address (hopefully)
+                    const sdp = data.sdp.replaceAll(
+                        /^a=candidate.+? 172\.\d{1,3}\.\d{1,3}\.\d{1,3} .+(\r\n|\n)?/gm, ''
                     );
                     pc.setRemoteDescription(
                         new RTCSessionDescription({

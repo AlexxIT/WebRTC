@@ -1,7 +1,5 @@
 import asyncio
 import logging
-import os
-import stat
 import time
 import uuid
 from pathlib import Path
@@ -14,14 +12,14 @@ from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView, KEY_AUTHENTICATED
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID, CONF_URL
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.typing import HomeAssistantType, ConfigType, \
     ServiceCallType
 
 from . import utils
-from .utils import DOMAIN, Server
+from .utils import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,25 +49,6 @@ LINKS = {}  # 2 3 4
 
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
-    # check and download file if needed
-    filepath = hass.config.path(utils.get_binary_name(BINARY_VERSION))
-    if not os.path.isfile(filepath):
-        for file in os.listdir(hass.config.config_dir):
-            if file.startswith('rtsp2webrtc_'):
-                _LOGGER.debug(f"Remove old binary: {file}")
-                os.remove(hass.config.path(file))
-
-        url = utils.get_binary_url(BINARY_VERSION)
-        _LOGGER.debug(f"Download new binary: {url}")
-
-        session = async_get_clientsession(hass)
-        r = await session.get(url)
-        raw = await r.read()
-        open(filepath, 'wb').write(raw)
-        os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
-
-    Server.filepath = filepath
-
     # serve lovelace card
     url_path = '/webrtc/webrtc-camera.js'
     path = Path(__file__).parent / 'www/webrtc-camera.js'
@@ -124,10 +103,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
 
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
-    hass.data[DOMAIN] = server = Server(entry.options)
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, server.stop)
-
-    server.start()
+    hass.data[DOMAIN] = entry.data;
 
     # add options handler
     if not entry.update_listeners:
@@ -137,8 +113,6 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
 
 
 async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
-    server = hass.data[DOMAIN]
-    server.stop()
     return True
 
 
@@ -157,11 +131,9 @@ async def ws_connect(hass: HomeAssistantType, params):
     # also check if url valid, e.g. wrong chars in password
     assert urlparse(url).scheme in ('rtsp', 'rtsps'), "Support only RTSP-stream"
 
-    server = hass.data[DOMAIN]
-    assert server.available, "WebRTC server not available"
-
+    server_url = hass.data[DOMAIN][CONF_URL]
     query = urlencode({'url': url})
-    return f"ws://localhost:{server.port}/ws?{query}"
+    return f"{server_url}/ws?{query}"
 
 
 class WebSocketView(HomeAssistantView):
