@@ -1,19 +1,31 @@
 {
   "config": {
-    "abort": {
-      "arch": "Unsupported OS architecture: {uname}"
+    "step": {
+      "user": {
+        "title": "WebRTC Camera Options",
+        "data": {
+          "url": "RTSPtoWebRTC websocket address and port"
+        }
+      }
     },
-    "step": {}
+    "error": {
+      "invalid_url": "Invalid URL"
+    },
+    "abort": {
+      "already_configured": "Integration is already configured"
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "WebRTC Camera Options",
         "data": {
-          "udp_min": "WebRTC UDP port min",
-          "udp_max": "WebRTC UDP port max"
+          "url": "RTSPtoWebRTC websocket address and port"
         }
       }
+    },
+      "error": {
+        "invalid_url": "Invalid URL"
     }
   }
 }

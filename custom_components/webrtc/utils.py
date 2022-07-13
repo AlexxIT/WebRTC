@@ -1,7 +1,5 @@
 import json
 import logging
-import platform
-import subprocess
 from threading import Thread
 from typing import Optional
 
@@ -20,41 +18,6 @@ from homeassistant.helpers.typing import HomeAssistantType
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = 'webrtc'
-
-SYSTEM = {
-    'Windows': 'amd64.exe',
-    'Darwin': 'darwin',
-    'FreeBSD': 'freebsd',
-    'Linux': {
-        'armv7l': 'armv7',
-        'armv8l': 'armv7',  # https://github.com/AlexxIT/WebRTC/issues/18
-        'aarch64': 'aarch64',
-        'x86_64': 'amd64',
-        'i386': 'i386',
-        'i486': 'i386',
-        'i586': 'i386',
-        'i686': 'i386',
-    }
-}
-
-
-def get_arch() -> Optional[str]:
-    system = SYSTEM.get(platform.system())
-    if isinstance(system, dict):
-        return system.get(platform.machine())
-    elif system:
-        return system
-    return None
-
-
-def get_binary_name(version: str) -> str:
-    return f"rtsp2webrtc_{version}_{get_arch()}"
-
-
-def get_binary_url(version: str) -> str:
-    return "https://github.com/AlexxIT/RTSPtoWebRTC/releases/download/" \
-           f"{version}/rtsp2webrtc_{get_arch()}"
-
 
 # noinspection PyTypeChecker
 async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
@@ -156,55 +119,3 @@ def validate_signed_request(request: web.Request) -> bool:
         return claims["path"] == request.path
     except Exception:
         return False
-
-
-class Server(Thread):
-    filepath = None
-    port = 8083
-
-    def __init__(self, options: dict):
-        super().__init__(name=DOMAIN, daemon=True)
-        self.process = None
-        self.config = {
-            'ice_servers': ['stun:stun.l.google.com:19302']
-        }
-        if options.get('udp_min', 0) or options.get('udp_max', 0):
-            self.config['webrtc_port_min'] = options['udp_min']
-            self.config['webrtc_port_max'] = options['udp_max']
-
-    @property
-    def available(self):
-        return self.process.poll() is None if self.process else False
-
-    def run(self):
-        while self.config:
-            arg = json.dumps({
-                'server': {
-                    'http_port': f"localhost:{self.port}",
-                    **self.config
-                },
-                'streams': {}
-            }, separators=(',', ':'))
-
-            self.process = subprocess.Popen(
-                [self.filepath, arg],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT
-            )
-
-            # check alive
-            while self.process.poll() is None:
-                line = self.process.stdout.readline()
-                if line == b'':
-                    break
-                _LOGGER.debug(line[:-1].decode())
-
-            # increase port number on each next try
-            self.port += 1
-            if self.port > 10000:
-                _LOGGER.exception("Can't run WebRTC server")
-                break
-
-    def stop(self, *args):
-        self.config = None
-        self.process.terminate()
