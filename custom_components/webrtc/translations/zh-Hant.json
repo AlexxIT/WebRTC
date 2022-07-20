@@ -1,11 +1,15 @@
 {
   "config": {
     "abort": {
-      "arch": "\u4e0d\u652f\u63f4\u7684\u4f5c\u696d\u7cfb\u7d71\u67b6\u69cb: {uname}"
+      "arch": "\u4e0d\u652f\u63f4\u7684\u4f5c\u696d\u7cfb\u7d71\u67b6\u69cb: {uname}",
+      "already_configured": "WebRTC \u5df2\u7d93\u914d\u7f6e"
     },
     "step": {}
   },
   "options": {
+    "errors": {
+      "above_max": "\u9ad8\u65bc\u6700\u5927\u503c\u7684\u503c"
+    },
     "step": {
       "init": {
         "title": "WebRTC \u651d\u5f71\u6a5f\u9078\u9805",
