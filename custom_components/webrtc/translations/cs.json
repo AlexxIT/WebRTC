@@ -1,0 +1,19 @@
+{
+  "config": {
+    "abort": {
+      "arch": "Nepodporovaná architektura operačního systému: {uname}"
+    },
+    "step": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti kamery WebRTC",
+        "data": {
+          "udp_min": "Port WebRTC UDP min",
+          "udp_max": "Port WebRTC UDP max"
+        }
+      }
+    }
+  }
+}

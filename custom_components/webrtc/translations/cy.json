@@ -1,0 +1,19 @@
+{
+  "config": {
+    "abort": {
+      "arch": "Pensaernïaeth AO na chefnogir: {uname}"
+    },
+    "step": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opsiynau Camera WebRTC",
+        "data": {
+          "udp_min": "WebRTC UDP min porthladd",
+          "udp_max": "WebRTC UDP porthladd uchafswm"
+        }
+      }
+    }
+  }
+}
