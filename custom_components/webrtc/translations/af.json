@@ -1,0 +1,19 @@
+{
+  "config": {
+    "abort": {
+      "arch": "Nie-ondersteunde OS-argitektuur: {uname}"
+    },
+    "step": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WebRTC Kamera Opsies",
+        "data": {
+          "udp_min": "WebRTC UDP poort min",
+          "udp_max": "WebRTC UDP poort max"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "config": {
+    "abort": {
+      "arch": "অসমর্থিত OS আর্কিটেকচার: {uname}"
+    },
+    "step": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WebRTC ক্যামেরা অপশন",
+        "data": {
+          "udp_min": "WebRTC UDP পোর্ট মিন",
+          "udp_max": "WebRTC UDP পোর্ট সর্বোচ্চ"
+        }
+      }
+    }
+  }
+}
