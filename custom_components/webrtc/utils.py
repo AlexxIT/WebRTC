@@ -5,9 +5,12 @@ import subprocess
 from threading import Thread
 from typing import Optional
 
+import jwt
 from aiohttp import web
 from homeassistant.components.camera import Camera
 from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http.auth import DATA_SIGN_SECRET, \
+    SIGN_QUERY_PARAM
 from homeassistant.components.lovelace.resources import \
     ResourceStorageCollection
 from homeassistant.helpers.entity_component import EntityComponent, \
@@ -142,6 +145,17 @@ def dash_cast(hass: HomeAssistantType, cast_entities: list, url: str):
 
     except:
         _LOGGER.exception(f"Can't DashCast to {cast_entities}")
+
+
+def validate_signed_request(request: web.Request) -> bool:
+    try:
+        hass = request.app['hass']
+        secret = hass.data.get(DATA_SIGN_SECRET)
+        signature = request.query.get(SIGN_QUERY_PARAM)
+        claims = jwt.decode(signature, secret, algorithms=["HS256"])
+        return claims["path"] == request.path
+    except Exception:
+        return False
 
 
 class Server(Thread):

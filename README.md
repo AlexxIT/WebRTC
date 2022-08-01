@@ -1,6 +1,6 @@
 # WebRTC Camera
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 [![Donate](https://img.shields.io/badge/donate-BuyMeCoffee-yellow.svg)](https://www.buymeacoffee.com/AlexxIT)
 [![Donate](https://img.shields.io/badge/donate-YooMoney-8C3FFD.svg)](https://yoomoney.ru/to/41001428278477)
 
@@ -47,8 +47,8 @@ Opera PC                    | doesn't supported                  | video: H264<b
 
 In case of any problems, check:
 
-1. Check that you have installed the integration on the "Configuration > Integrations" page
-2. Check that you don't have any erros in "Configuration > Logs" page
+1. Check that you have installed the integration on the "Settings > Devices & Services" page
+2. Check that you don't have any erros in "Settings > System > Logs" page
 3. Check if default video with Bunny works:
 
 ```yaml
@@ -105,7 +105,7 @@ For more tech info read about [STUN](https://en.wikipedia.org/wiki/STUN) and [UD
 
 [![WebRTC Camera real time streaming component for Home Assistant](https://img.youtube.com/vi/2otE2dc6OAA/mqdefault.jpg)](https://www.youtube.com/watch?v=2otE2dc6OAA)
 
-> Configuration > Integrations > Add Integration > **WebRTC**
+> Settings > Devices & Services > Add Integration > **WebRTC**
 
 If the integration is not in the list, you need to clear the browser cache.
 
@@ -176,11 +176,12 @@ EZVIZ | C3S | `rtsp://admin:pass@192.168.1.123:554/h264/ch01/main/av_stream` and
 EZVIZ | C3W, C3WN, C6CN, C6T | `rtsp://admin:pass@192.168.1.123:554/h264_stream`
 Foscam | C1 | `rtsp://user:pass@192.168.1.123:554/videoMain`
 Foscam | C2M, R2M | `rtsp://user:pass@192.168.1.123:88/videoMain`
-GW Security | GW5088IP | 'rtsp://192.168.1.123:554/mpeg4cif?username=admin&password=123456'
-GW Security | GW5078IP | 'rtsp://192.168.1.123:554/stream0?username=admin&password=123456'
-GW Security | GW5071IP | Not working yet, something similar to 'rtsp://admin:123456@192.168.0.207:554/live/main' or 'rtsp://192.168.0.207:554/live/main?username=admin&password=123456'
+GW Security | GW5088IP | `rtsp://192.168.1.123:554/mpeg4cif?username=admin&password=123456`
+GW Security | GW5078IP | `rtsp://192.168.1.123:554/stream0?username=admin&password=123456`
+GW Security | GW5071IP | Not working yet, something similar to `rtsp://admin:123456@192.168.0.207:554/live/main` or `rtsp://192.168.0.207:554/live/main?username=admin&password=123456`
 Hikvision | DS-2CD2T47G1-L, DS-2CD1321-I, DS-2CD2143G0-IS | `rtsp://user:pass@192.168.1.123:554/ISAPI/Streaming/Channels/102`
 Hikvision | IPC-HDW3849H-AS-PV, IPC-EW5531-AS | wired to nvr DHI-NVR2108HS-8P-I using [custom component](https://github.com/rroller/dahua)
+QNAP | QUSBCam2 | `rtsp://username:password@192.168.1.123:554/channel1` [docs](https://www.qnap.com/en/how-to/faq/article/what-is-the-qusbcam2-rtsp-url-format)
 Raspberry Pi | PiCam | [read more](https://github.com/AlexxIT/WebRTC/issues/261)
 Reolink | RLC-410, RLC-410W, RLC-510WA, E1 Pro, E1 Zoom, 4505MP | RLC-510WA support sound, E1 Zoom support sound, PTZ and zoom
 Reolink | E1 | `rtsp://admin:password@192.168.1.123:554/h264Preview_01_main`

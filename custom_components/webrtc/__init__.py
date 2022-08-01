@@ -189,7 +189,8 @@ class WebSocketView(HomeAssistantView):
 
             params = link
 
-        elif not request.get(KEY_AUTHENTICATED, False):
+        # fix for https://github.com/AlexxIT/WebRTC/pull/320
+        elif not utils.validate_signed_request(request):
             # you shall not pass
             raise HTTPUnauthorized()
 
