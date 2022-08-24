@@ -748,13 +748,15 @@ class WebRTCCamera extends HTMLElement {
             visibilityChange = "webkitvisibilitychange";
         }
 
-        document.addEventListener(visibilityChange, () => {
-            if (!document[hidden] && this.isConnected) {
-                this.connectedCallback();
-            } else {
-                this.disconnectedCallback();
-            }
-        }, false);
+        if(this.config.disable_visibility_listener != true) {
+            document.addEventListener(visibilityChange, () => {
+                if (!document[hidden] && this.isConnected) {
+                    this.connectedCallback();
+                } else {
+                    this.disconnectedCallback();
+                }
+            }, false);
+        }
     }
 
     async connectedCallback() {
