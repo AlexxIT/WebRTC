@@ -26,9 +26,9 @@ Pros                        | best delay                         | good delay
 Cons                        | complicated external access        | jumps over frames
 Chrome, Firefox, Chromecast | video: H264<br />audio: PCMA, PCMU | video: H264<br />audio: AAC
 Safari PC, iPadOS 13+       | video: H264<br />audio: PCMA, PCMU | video: H264, H265<br />audio: AAC
-Safari iOS                  | video: H264<br />audio: PCMA, PCMU | doesn't supported
-Opera PC                    | doesn't supported                  | video: H264<br />audio: AAC
-[macOS app]                 | doesn't supported                  | doesn't supported
+Safari iOS                  | video: H264<br />audio: PCMA, PCMU | not supported
+Opera PC                    | not supported                  | video: H264<br />audio: AAC
+[macOS app]                 | not supported                  | not supported
 
 [macOS app]: https://apps.apple.com/us/app/home-assistant/id1099568401
 
