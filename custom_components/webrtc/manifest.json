@@ -4,8 +4,13 @@
   "config_flow": true,
   "documentation": "https://github.com/AlexxIT/WebRTC",
   "issue_tracker": "https://github.com/AlexxIT/WebRTC/issues",
-  "codeowners": ["@AlexxIT"],
-  "dependencies": ["http", "lovelace"],
+  "codeowners": [
+    "@AlexxIT"
+  ],
+  "dependencies": [
+    "http",
+    "lovelace"
+  ],
   "requirements": [],
   "version": "v2.3.1",
   "iot_class": "calculated"
