@@ -400,15 +400,18 @@ class WebRTCCamera extends HTMLElement {
         const ptz = document.createElement('div');
         ptz.className = 'ptz';
         ptz.style.opacity = this.config.ptz.opacity || '0.4';
-        const ptzMove = document.createElement('div');
-        ptzMove.className = 'ptz-move';
-        ptzMove.innerHTML = `
-            <ha-icon class="right" icon="mdi:arrow-right"></ha-icon>
-            <ha-icon class="left" icon="mdi:arrow-left"></ha-icon>
-            <ha-icon class="up" icon="mdi:arrow-up"></ha-icon>
-            <ha-icon class="down" icon="mdi:arrow-down"></ha-icon>
-        `;
-        ptz.appendChild(ptzMove);
+        if (this.config.ptz.data_right && this.config.ptz.data_left && 
+            this.config.ptz.data_up && this.config.ptz.data_down) {
+            const ptzMove = document.createElement('div');
+            ptzMove.className = 'ptz-move';
+            ptzMove.innerHTML = `
+                <ha-icon class="right" icon="mdi:arrow-right"></ha-icon>
+                <ha-icon class="left" icon="mdi:arrow-left"></ha-icon>
+                <ha-icon class="up" icon="mdi:arrow-up"></ha-icon>
+                <ha-icon class="down" icon="mdi:arrow-down"></ha-icon>
+            `;
+            ptz.appendChild(ptzMove);
+        }
         if (this.config.ptz.data_zoom_in && this.config.ptz.data_zoom_out) {
             const ptzZoom = document.createElement('div');
             ptzZoom.className = 'ptz-zoom';
