@@ -48,7 +48,7 @@ Opera PC                    | not supported                  | video: H264<br />
 In case of any problems, check:
 
 1. Check that you have installed the integration on the "Settings > Devices & Services" page
-2. Check that you don't have any erros in "Settings > System > Logs" page
+2. Check that you don't have any errors in "Settings > System > Logs" page
 3. Check if default video with Bunny works:
 
 ```yaml
@@ -79,7 +79,7 @@ Check if you install component in "Integrations" page. And try to clear your bro
 - Check that you are on the same network as your Hass server
 - Check that you don't setup Hass server with forward only 8123 port (users with Virtual Machine or Docker installation or firewall), because WebRTC using random UDP ports for video streaming
 
-**Q. Exernal access with WebRTC doesn't work**
+**Q. External access with WebRTC doesn't work**
 
 A. WebRTC technology can't use your HTTP/HTTPS-access to Hass. It uses a random UDP port to connect. And it can handle access to stream even if you have [private IP-address](https://help.keenetic.com/hc/en-us/articles/213965789), but not in all cases.
 
