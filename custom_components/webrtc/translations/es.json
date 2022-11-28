@@ -1,0 +1,19 @@
+{
+  "config": {
+    "abort": {
+      "arch": "Arquitectura del sistema operativo no soportada: {uname}"
+    },
+    "step": {}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de la Cámara WebRTC",
+        "data": {
+          "udp_min": "puerto UDP minimo para WebRTC",
+          "udp_max": "puerto UDP máximo para WebRTC"
+        }
+      }
+    }
+  }
+}
