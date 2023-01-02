@@ -1,17 +1,17 @@
 {
   "config": {
     "abort": {
-      "arch": "Unsupported OS architecture: {uname}"
+      "arch": "Unsupported OS architecture: {uname}",
+      "single_instance_allowed": "Already configured. Only a single configuration possible."
     },
-    "step": {}
-  },
-  "options": {
+    "error": {
+      "connect": "Can't connect to go2rtc server"
+    },
     "step": {
-      "init": {
-        "title": "WebRTC Camera Options",
+      "user": {
+        "description": "Select [go2rtc](https://github.com/AlexxIT/go2rtc) streaming server version:\n1. Leave blank if you want the built-in go2rtc version (*basic users*)\n2. Set `http://localhost:1984` if you install go2rtc or [Frigate 12+](https://docs.frigate.video/) add-on (*advanced users*)\n3. Set custom address if you install go2rtc on another server (*hackers*)",
         "data": {
-          "udp_min": "WebRTC UDP port min",
-          "udp_max": "WebRTC UDP port max"
+          "url": "URL"
         }
       }
     }
