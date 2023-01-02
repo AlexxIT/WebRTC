@@ -4,7 +4,7 @@ import time
 import uuid
 from pathlib import Path
 from urllib.parse import urlparse, urlencode
-
+from homeassistant.helpers.template import Template
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
@@ -133,12 +133,14 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
 
 
 async def ws_connect(hass: HomeAssistantType, params) -> str:
-    entity = params.get("entity")
-    if entity:
+    if entity := params.get("entity"):
         url = await utils.get_stream_source(hass, entity)
         assert url, f"Can't get URL for {entity}"
+    elif url := params.get("url"):
+        if "{{" in url:
+            url = Template(url, hass).async_render()
     else:
-        url = params.get("url")
+        raise Exception("Missing url or entity")
 
     query = urlencode({"src": url})
 
