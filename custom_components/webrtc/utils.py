@@ -1,7 +1,10 @@
-import json
+import io
 import logging
+import os
 import platform
+import stat
 import subprocess
+import zipfile
 from threading import Thread
 from typing import Optional
 
@@ -11,57 +14,92 @@ from homeassistant.components.camera import Camera
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http.auth import DATA_SIGN_SECRET, SIGN_QUERY_PARAM
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_component import EntityComponent, DATA_INSTANCES
-from homeassistant.helpers.typing import HomeAssistantType
 
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "webrtc"
 
+BINARY_VERSION = "v0.1-rc.5"
+
 SYSTEM = {
-    "Windows": "amd64.exe",
-    "Darwin": "darwin",
-    "FreeBSD": "freebsd",
+    "Windows": {"AMD64": "go2rtc_win64.zip"},
+    "Darwin": {"x86_64": "go2rtc_mac_amd64.zip", "arm64": "go2rtc_mac_arm64.zip"},
     "Linux": {
-        "armv7l": "armv7",
-        "armv8l": "armv7",  # https://github.com/AlexxIT/WebRTC/issues/18
-        "aarch64": "aarch64",
-        "x86_64": "amd64",
-        "i386": "i386",
-        "i486": "i386",
-        "i586": "i386",
-        "i686": "i386",
+        "armv7l": "go2rtc_linux_arm",
+        "armv8l": "go2rtc_linux_arm",  # https://github.com/AlexxIT/WebRTC/issues/18
+        "aarch64": "go2rtc_linux_arm64",
+        "x86_64": "go2rtc_linux_amd64",
+        "i386": "go2rtc_linux_386",
+        "i486": "go2rtc_linux_386",
+        "i586": "go2rtc_linux_386",
+        "i686": "go2rtc_linux_386",
     },
 }
+
+DEFAULT_URL = "http://localhost:1984/"
 
 
 def get_arch() -> Optional[str]:
     system = SYSTEM.get(platform.system())
-    if isinstance(system, dict):
-        return system.get(platform.machine())
-    elif system:
-        return system
-    return None
+    if not system:
+        return None
+    return system.get(platform.machine())
 
 
-def get_binary_name(version: str) -> str:
-    return f"rtsp2webrtc_{version}_{get_arch()}"
+def unzip(content: bytes) -> bytes:
+    with zipfile.ZipFile(io.BytesIO(content)) as zf:
+        for filename in zf.namelist():
+            with zf.open(filename) as f:
+                return f.read()
 
 
-def get_binary_url(version: str) -> str:
-    return (
-        "https://github.com/AlexxIT/RTSPtoWebRTC/releases/download/"
-        f"{version}/rtsp2webrtc_{get_arch()}"
+async def validate_binary(hass: HomeAssistant) -> Optional[str]:
+    filepath = f"go2rtc_{BINARY_VERSION}"
+    if platform.system() == "Windows":
+        filepath += ".exe"
+
+    if os.path.isfile(filepath) and os.access(filepath, os.X_OK):
+        return filepath
+
+    # remove all old binaries
+    for file in os.listdir(hass.config.config_dir):
+        if file.startswith(("go2rtc_v", "rtsp2webrtc_")):
+            _LOGGER.debug(f"Remove old binary: {file}")
+            os.remove(hass.config.path(file))
+
+    # download new binary
+    url = (
+        f"https://github.com/AlexxIT/go2rtc/releases/download/"
+        f"{BINARY_VERSION}/{get_arch()}"
     )
+    _LOGGER.debug(f"Download new binary: {url}")
+    r = await async_get_clientsession(hass).get(url)
+    raw = await r.read()
+
+    # unzip binary for windows
+    if url.endswith(".zip"):
+        raw = unzip(raw)
+
+    # save binary to config folder
+    with open(filepath, "wb") as f:
+        f.write(raw)
+
+    # change binary access rights
+    os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
+
+    return filepath
 
 
 # noinspection PyTypeChecker
-async def get_stream_source(hass: HomeAssistantType, entity: str) -> str:
+async def get_stream_source(hass: HomeAssistant, entity: str) -> str:
     try:
         component: EntityComponent = hass.data["camera"]
         camera: Camera = next(e for e in component.entities if e.entity_id == entity)
         return await camera.stream_source()
-    except:
+    except Exception:
         return None
 
 
@@ -78,7 +116,7 @@ def register_static_path(app: web.Application, url_path: str, path):
         app["allow_cors"](route)
 
 
-async def init_resource(hass: HomeAssistantType, url: str, ver: str) -> bool:
+async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     """Add extra JS module for lovelace mode YAML and new lovelace resource
     for mode GUI. It's better to add extra JS for all modes, because it has
     random url to avoid problems with the cache. But chromecast don't support
@@ -121,7 +159,7 @@ async def init_resource(hass: HomeAssistantType, url: str, ver: str) -> bool:
 
 
 # noinspection PyProtectedMember
-def dash_cast(hass: HomeAssistantType, cast_entities: list, url: str):
+def dash_cast(hass: HomeAssistant, cast_entities: list, url: str):
     """Cast webpage to chromecast device via DashCast application."""
     try:
         entities = [
@@ -142,7 +180,7 @@ def dash_cast(hass: HomeAssistantType, cast_entities: list, url: str):
             _LOGGER.debug(f"DashCast to {entity.entity_id}")
             entity.dashcast.load_url(url)
 
-    except:
+    except Exception:
         _LOGGER.exception(f"Can't DashCast to {cast_entities}")
 
 
@@ -157,34 +195,29 @@ def validate_signed_request(request: web.Request) -> bool:
         return False
 
 
-class Server(Thread):
-    filepath = None
-    port = 8083
+async def check_go2rtc(hass: HomeAssistant, url: str = DEFAULT_URL) -> bool:
+    session = async_get_clientsession(hass)
+    try:
+        r = await session.head(url, timeout=1)
+        return r.ok
+    except Exception:
+        return False
 
-    def __init__(self, options: dict):
+
+class Server(Thread):
+    def __init__(self, binary: str):
         super().__init__(name=DOMAIN, daemon=True)
+        self.binary = binary
         self.process = None
-        self.config = {"ice_servers": ["stun:stun.l.google.com:19302"]}
-        if options.get("udp_min", 0) or options.get("udp_max", 0):
-            self.config["webrtc_port_min"] = options["udp_min"]
-            self.config["webrtc_port_max"] = options["udp_max"]
 
     @property
     def available(self):
         return self.process.poll() is None if self.process else False
 
     def run(self):
-        while self.config:
-            arg = json.dumps(
-                {
-                    "server": {"http_port": f"localhost:{self.port}", **self.config},
-                    "streams": {},
-                },
-                separators=(",", ":"),
-            )
-
+        while self.binary:
             self.process = subprocess.Popen(
-                [self.filepath, arg], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+                [self.binary], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
 
             # check alive
@@ -194,12 +227,6 @@ class Server(Thread):
                     break
                 _LOGGER.debug(line[:-1].decode())
 
-            # increase port number on each next try
-            self.port += 1
-            if self.port > 10000:
-                _LOGGER.exception("Can't run WebRTC server")
-                break
-
     def stop(self, *args):
-        self.config = None
+        self.binary = None
         self.process.terminate()

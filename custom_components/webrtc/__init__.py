@@ -1,7 +1,5 @@
 import asyncio
 import logging
-import os
-import stat
 import time
 import uuid
 from pathlib import Path
@@ -14,7 +12,11 @@ from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP, ATTR_ENTITY_ID
+from homeassistant.const import (
+    EVENT_HOMEASSISTANT_STOP,
+    ATTR_ENTITY_ID,
+    CONF_URL,
+)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.typing import HomeAssistantType, ConfigType, ServiceCallType
@@ -23,8 +25,6 @@ from . import utils
 from .utils import DOMAIN, Server
 
 _LOGGER = logging.getLogger(__name__)
-
-BINARY_VERSION = "v5"
 
 CREATE_LINK_SCHEMA = vol.Schema(
     {
@@ -50,44 +50,23 @@ LINKS = {}  # 2 3 4
 
 
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
-    # check and download file if needed
-    filepath = hass.config.path(utils.get_binary_name(BINARY_VERSION))
-    if not os.path.isfile(filepath):
-        for file in os.listdir(hass.config.config_dir):
-            if file.startswith("rtsp2webrtc_"):
-                _LOGGER.debug(f"Remove old binary: {file}")
-                os.remove(hass.config.path(file))
+    # 1. Serve lovelace card
+    path = Path(__file__).parent / "www"
+    for name in ("video-rtc.js", "webrtc-camera.js"):
+        utils.register_static_path(hass.http.app, "/webrtc/" + name, path / name)
 
-        url = utils.get_binary_url(BINARY_VERSION)
-        _LOGGER.debug(f"Download new binary: {url}")
-
-        session = async_get_clientsession(hass)
-        r = await session.get(url)
-        raw = await r.read()
-        open(filepath, "wb").write(raw)
-        os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
-
-    Server.filepath = filepath
-
-    # serve lovelace card
-    url_path = "/webrtc/webrtc-camera.js"
-    path = Path(__file__).parent / "www/webrtc-camera.js"
-    utils.register_static_path(hass.http.app, url_path, path)
-
-    # version supported only after 2021.3.0
+    # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
+    await utils.init_resource(hass, "/webrtc/webrtc-camera.js", str(version))
 
-    # remove lovelace card from previous version
-    await utils.init_resource(hass, url_path, str(version))
-
-    # serve html page
-    path = Path(__file__).parent / "www/index.html"
+    # 3. Serve html page
+    path = Path(__file__).parent / "www/embed.html"
     utils.register_static_path(hass.http.app, "/webrtc/embed", path)
 
-    # component uses websocket, but some users can use REST API for integrate
-    # WebRTC to their software
+    # 4. Serve WebSocket API
     hass.http.register_view(WebSocketView)
-    hass.http.register_view(WebRTCStreamView)
+
+    # 5. Register webrtc.create_link and webrtc.dash_cast services:
 
     async def create_link(call: ServiceCallType):
         link_id = call.data["link_id"]
@@ -122,29 +101,38 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
 
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
-    hass.data[DOMAIN] = server = Server(entry.options)
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, server.stop)
+    # 1. If user set custom url
+    if entry.data.get(CONF_URL):
+        url = urlparse(entry.data[CONF_URL])
+        hass.data[DOMAIN] = f"ws://{url.netloc}/api/ws"
+        return True
 
+    # 2. Check if go2rtc running on same server
+    if await utils.check_go2rtc(hass):
+        hass.data[DOMAIN] = "ws://localhost:1984/api/ws"
+        return True
+
+    # 3. Serve go2rtc binary manually
+    binary = await utils.validate_binary(hass)
+    if not binary:
+        return False
+
+    hass.data[DOMAIN] = server = Server(binary)
     server.start()
 
-    # add options handler
-    if not entry.update_listeners:
-        entry.add_update_listener(async_update_options)
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, server.stop)
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
     server = hass.data[DOMAIN]
-    server.stop()
+    if isinstance(server, Server):
+        server.stop()
     return True
 
 
-async def async_update_options(hass: HomeAssistantType, entry: ConfigEntry):
-    await hass.config_entries.async_reload(entry.entry_id)
-
-
-async def ws_connect(hass: HomeAssistantType, params):
+async def ws_connect(hass: HomeAssistantType, params) -> str:
     entity = params.get("entity")
     if entity:
         url = await utils.get_stream_source(hass, entity)
@@ -152,14 +140,14 @@ async def ws_connect(hass: HomeAssistantType, params):
     else:
         url = params.get("url")
 
-    # also check if url valid, e.g. wrong chars in password
-    assert urlparse(url).scheme in ("rtsp", "rtsps"), "Support only RTSP-stream"
+    query = urlencode({"src": url})
 
-    server = hass.data[DOMAIN]
-    assert server.available, "WebRTC server not available"
+    entry = hass.data[DOMAIN]
+    if isinstance(entry, Server):
+        assert entry.available, "WebRTC server not available"
+        return f"ws://localhost:1984/api/ws?{query}"
 
-    query = urlencode({"url": url})
-    return f"ws://localhost:{server.port}/ws?{query}"
+    return f"{entry}?{query}"
 
 
 class WebSocketView(HomeAssistantView):
@@ -211,26 +199,6 @@ class WebSocketView(HomeAssistantView):
                 )
 
         except Exception as e:
-            await ws_server.send_json({"error": str(e)})
+            await ws_server.send_json({"type": "error", "value": str(e)})
 
         return ws_server
-
-
-class WebRTCStreamView(HomeAssistantView):
-    url = "/api/webrtc/stream"
-    name = "api:webrtc:stream"
-    requires_auth = True
-
-    async def post(self, request: web.Request):
-        try:
-            hass = request.app["hass"]
-            params = await request.post()
-            url = await ws_connect(hass, params)
-            async with async_get_clientsession(hass).ws_connect(url) as ws:
-                await ws.send_json({"type": "webrtc", "sdp": params["sdp"]})
-                resp = await ws.receive_json(timeout=15)
-
-        except Exception as e:
-            resp = {"error": str(e)}
-
-        return web.json_response(resp)

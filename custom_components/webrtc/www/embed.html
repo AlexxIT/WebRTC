@@ -3,40 +3,38 @@
 <head>
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>WebRTC Camera</title>
-    <script src="/webrtc/webrtc-camera.js"></script>
     <style>
         body {
             background-color: black;
             margin: 0;
             padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
-        html, body, ha-card, video {
+        html, body, webrtc-camera {
             height: 100%;
             width: 100%;
         }
     </style>
 </head>
 <body>
-<script>
-    const hass = {}
-    hass.callWS = () => '';
-    hass.hassUrl = () => location.origin + '/api/webrtc/ws?embed=1';
-
+<script type="module" src="/webrtc/webrtc-camera.js"></script>
+<script type="module">
     const config = {}
-    // Object.fromEntries iOS 12.2+
     for (const [k, v] of new URLSearchParams(location.search)) {
         if (v === 'true') config[k] = true;
         else if (v === 'false') config[k] = false;
         else config[k] = v;
     }
 
-    const element = customElements.get('webrtc-camera');
-    const custom = new element();
-    custom.setConfig(config)
-    custom.hass = hass;
+    const card = document.createElement('webrtc-camera');
+    card.setConfig(config)
+    card.hass = {
+        callWS: () => new Promise(resolve => {resolve('')}),
+        hassUrl: () => location.origin + '/api/webrtc/ws?embed=1'
+    };
 
-    document.body.appendChild(custom);
+    document.body.appendChild(card);
 </script>
 </body>
 </html>
