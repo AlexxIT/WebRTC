@@ -57,12 +57,13 @@ def unzip(content: bytes) -> bytes:
 
 
 async def validate_binary(hass: HomeAssistant) -> Optional[str]:
-    filepath = f"go2rtc_{BINARY_VERSION}"
+    filename = f"go2rtc_{BINARY_VERSION}"
     if platform.system() == "Windows":
-        filepath += ".exe"
+        filename += ".exe"
 
-    if os.path.isfile(filepath) and os.access(filepath, os.X_OK):
-        return filepath
+    filename = hass.config.path(filename)
+    if os.path.isfile(filename) and os.access(filename, os.X_OK):
+        return filename
 
     # remove all old binaries
     for file in os.listdir(hass.config.config_dir):
@@ -84,13 +85,13 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
         raw = unzip(raw)
 
     # save binary to config folder
-    with open(filepath, "wb") as f:
+    with open(filename, "wb") as f:
         f.write(raw)
 
     # change binary access rights
-    os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
+    os.chmod(filename, os.stat(filename).st_mode | stat.S_IEXEC)
 
-    return filepath
+    return filename
 
 
 # noinspection PyTypeChecker
