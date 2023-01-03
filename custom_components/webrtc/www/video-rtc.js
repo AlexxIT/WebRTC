@@ -231,8 +231,8 @@ export class VideoRTC extends HTMLElement {
         this.appendChild(this.video);
 
         // important for second video for mode MP4
-        this.style.display = "block";
-        this.style.position = "relative";
+        // this.style.display = "block";
+        // this.style.position = "relative";
 
         this.video.style.display = "block"; // fix bottom margin 4px
         this.video.style.width = "100%";
@@ -553,6 +553,8 @@ export class VideoRTC extends HTMLElement {
     onmp4() {
         /** @type {HTMLVideoElement} */
         let video2;
+
+        if (!this.style.position) this.style.position = 'relative';
 
         this.ondata = data => {
             // first video with default position (set container size)
