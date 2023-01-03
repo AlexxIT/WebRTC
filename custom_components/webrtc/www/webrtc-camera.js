@@ -44,6 +44,12 @@ class WebRTCCamera extends VideoRTC {
         this.config = config;
     }
 
+    set hass(hass) {
+        // if card in vertical stack - `hass` property assign after `onconnect`
+        super.hass = hass;
+        this.onconnect();
+    }
+
     /**
      * Called by the Hass to calculate default card height.
      */
@@ -69,6 +75,7 @@ class WebRTCCamera extends VideoRTC {
     }
 
     onconnect() {
+        if (!this.config || !this.hass) return false;
         if (!this.isConnected || this.ws || this.pc) return false;
 
         if (this.divMode.innerText === 'loading1') return;
