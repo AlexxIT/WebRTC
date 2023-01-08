@@ -433,10 +433,13 @@ class WebRTCCamera extends VideoRTC {
 
 customElements.define('webrtc-camera', WebRTCCamera);
 
-window.customCards ||= [];
-window.customCards.push({
+const card = {
     type: 'webrtc-camera',
     name: 'WebRTC Camera',
     preview: false,
     description: 'WebRTC camera allows you to view the stream of almost any camera without delay',
-});
+};
+// Apple iOS 12 doesn't support `||=`
+if (window.customCards) window.customCards.push(card);
+else window.customCards = [card];
+
