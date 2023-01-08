@@ -2,30 +2,6 @@
 import {VideoRTC} from "./video-rtc.js";
 
 class WebRTCCamera extends VideoRTC {
-    constructor() {
-        super();
-
-        /**
-         * @type {{
-         *     url:string, entity:string, muted:boolean, poster:string, title:string,
-         *     intersection:number, ui:boolean, style:string,
-         *     ptz:{
-         *         opacity:number|string, service:string,
-         *         data_left, data_up, data_right, data_down,
-         *         data_zoom_in, data_zoom_out, data_home
-         *     },
-         *     shortcuts:Array<{name:string,icon:string}>,
-         *     mse:boolean, webrtc:boolean,
-         * }} config
-         */
-        this.config = null;
-
-        /** @type {HTMLDivElement} */
-        this.divMode = null;
-        /** @type {HTMLDivElement} */
-        this.divStatus = null;
-    }
-
     /**
      * Step 1. Called by the Hass, when config changed.
      * @param {Object} config
@@ -41,6 +17,19 @@ class WebRTCCamera extends VideoRTC {
         if (config.background) this.background = config.background;
         if (config.intersection) this.visibilityThreshold = config.intersection;
 
+        /**
+         * @type {{
+         *     url:string, entity:string, muted:boolean, poster:string, title:string,
+         *     intersection:number, ui:boolean, style:string,
+         *     ptz:{
+         *         opacity:number|string, service:string,
+         *         data_left, data_up, data_right, data_down,
+         *         data_zoom_in, data_zoom_out, data_home
+         *     },
+         *     shortcuts:Array<{name:string,icon:string}>,
+         *     mse:boolean, webrtc:boolean,
+         * }} config
+         */
         this.config = config;
     }
 
@@ -65,6 +54,14 @@ class WebRTCCamera extends VideoRTC {
         return {'url': ''}
     }
 
+    setStatus(mode, status) {
+        const divMode = this.querySelector('.mode').innerText;
+        if (mode === 'error' && divMode !== 'loading1' && divMode !== 'loading2') return;
+
+        this.querySelector('.mode').innerText = mode;
+        this.querySelector('.status').innerText = status || '';
+    }
+
     oninit() {
         super.oninit();
         this.renderMain();
@@ -78,9 +75,10 @@ class WebRTCCamera extends VideoRTC {
         if (!this.config || !this.hass) return false;
         if (!this.isConnected || this.ws || this.pc) return false;
 
-        if (this.divMode.innerText === 'loading1') return;
+        const divMode = this.querySelector('.mode').innerText;
+        if (divMode === 'loading1') return;
 
-        this.divMode.innerText = 'loading1';
+        this.setStatus('loading1');
 
         this.hass.callWS({
             type: 'auth/sign_path', path: '/api/webrtc/ws'
@@ -93,12 +91,12 @@ class WebRTCCamera extends VideoRTC {
                 this.wsURL += '&entity=' + this.config.entity;
             }
             if (super.onconnect()) {
-                this.divMode.innerText = 'loading2';
+                this.setStatus('loading2');
             } else {
-                this.divMode.innerText = 'error2';
+                this.setStatus('error', "can't connect");
             }
-        }).catch(() => {
-            this.divMode.innerText = 'error1';
+        }).catch(er => {
+            this.setStatus('error', er);
         });
     }
 
@@ -108,14 +106,12 @@ class WebRTCCamera extends VideoRTC {
         this.onmessage['stream'] = msg => {
             switch (msg.type) {
                 case 'error':
-                    this.divMode.innerText = 'error';
-                    this.divStatus.innerText = msg.value;
+                    this.setStatus('error', msg.value);
                     break;
                 case 'mse':
                 case 'mp4':
                 case 'mjpeg':
-                    this.divMode.innerText = msg.type.toUpperCase();
-                    this.divStatus.innerText = '';
+                    this.setStatus(msg.type.toUpperCase());
                     break;
             }
         }
@@ -127,8 +123,7 @@ class WebRTCCamera extends VideoRTC {
         super.onpcvideo(ev);
 
         if (this.pcState !== WebSocket.CLOSED) {
-            this.divMode.innerText = 'RTC';
-            this.divStatus.innerText = '';
+            this.setStatus('RTC');
         }
     }
 
@@ -172,9 +167,6 @@ class WebRTCCamera extends VideoRTC {
             </div>
         </ha-card>
         `;
-
-        this.divMode = this.querySelector(".mode");
-        this.divStatus = this.querySelector(".status");
 
         this.querySelector(".player").appendChild(this.video);
 
