@@ -137,7 +137,7 @@ async def ws_connect(hass: HomeAssistantType, params) -> str:
         url = await utils.get_stream_source(hass, entity)
         assert url, f"Can't get URL for {entity}"
     elif url := params.get("url"):
-        if "{{" in url:
+        if "{{" in url or "{%" in url:
             url = Template(url, hass).async_render()
     else:
         raise Exception("Missing url or entity")
