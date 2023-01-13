@@ -15,7 +15,9 @@ class WebRTCCamera extends VideoRTC {
         else if (config.webrtc === false) this.mode = 'mse';
 
         if (config.background) this.background = config.background;
-        if (config.intersection) this.visibilityThreshold = config.intersection;
+
+        if (config.intersection === 0) this.visibilityThreshold = 0;
+        else this.visibilityThreshold = config.intersection || 0.75;
 
         /**
          * @type {{
