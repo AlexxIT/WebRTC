@@ -504,6 +504,8 @@ export class VideoRTC extends HTMLElement {
      * @param ev {Event}
      */
     onpcvideo(ev) {
+        if (!this.pc) return;
+
         /** @type {HTMLVideoElement} */
         const video2 = ev.target;
         const state = this.pc.connectionState;
