@@ -189,7 +189,10 @@ class WebSocketView(HomeAssistantView):
             hass = request.app["hass"]
             url = await ws_connect(hass, params)
             async with async_get_clientsession(hass).ws_connect(
-                url, autoclose=False, autoping=False
+                url,
+                autoclose=False,
+                autoping=False,
+                headers={"User-Agent": request.headers.get("User-Agent")},
             ) as ws_client:
                 # Proxy requests
                 await asyncio.wait(
