@@ -108,6 +108,10 @@ style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-dire
 style: '.mode {display: none}'
 ```
 
+## Snapshots to Telegram
+
+[read more](https://github.com/AlexxIT/go2rtc/wiki/Snapshot-to-Telegram)
+
 ## Cast or share stream
 
 Component support streaming to [Google Cast](https://www.home-assistant.io/integrations/cast/) Chromecast devices (including Android TV and Google Smart Screen). Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
