@@ -2,6 +2,7 @@ import io
 import logging
 import os
 import platform
+import re
 import stat
 import subprocess
 import zipfile
@@ -41,6 +42,8 @@ SYSTEM = {
 
 DEFAULT_URL = "http://localhost:1984/"
 
+BINARY_NAME = re.compile(r"^(go2rtc_v0\.1-rc\.[1-9]+|rtsp2webrtc_v[1-5])(\.exe)?$")
+
 
 def get_arch() -> Optional[str]:
     system = SYSTEM.get(platform.system())
@@ -67,7 +70,7 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
 
     # remove all old binaries
     for file in os.listdir(hass.config.config_dir):
-        if file.startswith(("go2rtc_v", "rtsp2webrtc_")):
+        if BINARY_NAME.match(file):
             _LOGGER.debug(f"Remove old binary: {file}")
             os.remove(hass.config.path(file))
 
