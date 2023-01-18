@@ -322,6 +322,9 @@ class WebRTCCamera extends VideoRTC {
                 .space {
                     width: 100%;
                 }
+                .volume {
+                    display: none;
+                }
             </style>
         `);
         card.insertAdjacentHTML('beforeend', `
