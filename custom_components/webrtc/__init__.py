@@ -197,8 +197,8 @@ class WebSocketView(HomeAssistantView):
                 # Proxy requests
                 await asyncio.wait(
                     [
-                        _websocket_forward(ws_server, ws_client),
-                        _websocket_forward(ws_client, ws_server),
+                        asyncio.create_task(_websocket_forward(ws_server, ws_client)),
+                        asyncio.create_task(_websocket_forward(ws_client, ws_server)),
                     ],
                     return_when=asyncio.FIRST_COMPLETED,
                 )
