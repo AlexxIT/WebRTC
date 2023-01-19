@@ -340,17 +340,32 @@ class WebRTCCamera extends VideoRTC {
 
         const video = this.video;
 
+        if (this.requestFullscreen) {
+            this.exitFullscreen = () => document.exitFullscreen();
+            this.fullscreenElement = () => document.fullscreenElement;
+            this.fullscreenEvent = 'fullscreenchange';
+        } else if (this.webkitRequestFullscreen) {
+            this.requestFullscreen = () => this.webkitRequestFullscreen();
+            this.exitFullscreen = () => document.webkitExitFullscreen();
+            this.fullscreenElement = () => document.webkitFullscreenElement;
+            this.fullscreenEvent = 'webkitfullscreenchange';
+        } else {
+            this.querySelector('.fullscreen').style.display = 'none';
+        }
+
         const ui = this.querySelector('.ui');
         ui.addEventListener('click', ev => {
             const icon = ev.target.icon;
-            if (icon === 'mdi:volume-mute') {
+            if (icon === 'mdi:play') {
+                this.play();
+            } else if (icon === 'mdi:volume-mute') {
                 video.muted = false;
             } else if (icon === 'mdi:volume-high') {
                 video.muted = true;
             } else if (icon === 'mdi:fullscreen') {
-                this.requestFullscreen().then(); // Chrome 71
+                this.requestFullscreen(); // Chrome 71
             } else if (icon === 'mdi:fullscreen-exit') {
-                document.exitFullscreen().then();
+                this.exitFullscreen();
             }
         });
 
@@ -372,8 +387,8 @@ class WebRTCCamera extends VideoRTC {
         });
 
         const fullscreen = this.querySelector('.fullscreen');
-        this.addEventListener('fullscreenchange', () => {
-            fullscreen.icon = document.fullscreenElement
+        this.addEventListener(this.fullscreenEvent, () => {
+            fullscreen.icon = this.fullscreenElement()
                 ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
         });
     }
