@@ -146,6 +146,7 @@ class WebRTCCamera extends VideoRTC {
             .player {
                 background-color: black;
                 height: 100%;
+                position: relative; /* important for Safari */
             }
             .header {
                 position: absolute;
@@ -333,6 +334,7 @@ class WebRTCCamera extends VideoRTC {
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
                     <span class="space"></span>
+                    <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
                 </div>
             </div>
@@ -375,6 +377,14 @@ class WebRTCCamera extends VideoRTC {
         });
         video.addEventListener('playing', () => {
             spinner.style.display = 'none';
+        });
+
+        const play = this.querySelector('.play');
+        video.addEventListener('play', () => {
+            play.style.display = 'none';
+        });
+        video.addEventListener('pause', () => {
+            play.style.display = 'block';
         });
 
         const volume = this.querySelector('.volume');

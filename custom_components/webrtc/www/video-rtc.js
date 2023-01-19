@@ -11,6 +11,8 @@
  * - MediaSource for Safari iOS all
  * - Customized built-in elements (extends HTMLVideoElement) because all Safari
  * - Public class fields because old Safari (before 14.0)
+ * - Autoplay for Safari
+ * https://developer.apple.com/documentation/webkit/delivering_video_content_for_safari
  */
 export class VideoRTC extends HTMLElement {
     constructor() {
