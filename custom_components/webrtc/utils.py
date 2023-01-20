@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "webrtc"
 
-BINARY_VERSION = "v0.1-rc.9"
+BINARY_VERSION = "1.0.0"
 
 SYSTEM = {
     "Windows": {"AMD64": "go2rtc_win64.zip"},
@@ -42,7 +42,9 @@ SYSTEM = {
 
 DEFAULT_URL = "http://localhost:1984/"
 
-BINARY_NAME = re.compile(r"^(go2rtc_v0\.1-rc\.[1-9]+|rtsp2webrtc_v[1-5])(\.exe)?$")
+BINARY_NAME = re.compile(
+    r"^(go2rtc-\d\.\d\.\d+|go2rtc_v0\.1-rc\.[5-9]|rtsp2webrtc_v[1-5])(\.exe)?$"
+)
 
 
 def get_arch() -> Optional[str]:
@@ -60,7 +62,7 @@ def unzip(content: bytes) -> bytes:
 
 
 async def validate_binary(hass: HomeAssistant) -> Optional[str]:
-    filename = f"go2rtc_{BINARY_VERSION}"
+    filename = f"go2rtc-{BINARY_VERSION}"
     if platform.system() == "Windows":
         filename += ".exe"
 
@@ -77,7 +79,7 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
     # download new binary
     url = (
         f"https://github.com/AlexxIT/go2rtc/releases/download/"
-        f"{BINARY_VERSION}/{get_arch()}"
+        f"v{BINARY_VERSION}/{get_arch()}"
     )
     _LOGGER.debug(f"Download new binary: {url}")
     r = await async_get_clientsession(hass).get(url)
