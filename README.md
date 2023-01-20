@@ -6,6 +6,21 @@ Home Assistant custom component for viewing almost any camera stream in real tim
 
 **Starting with version 3** the streaming server has been changed from [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC) ([@deepch](https://github.com/deepch)) to [go2rtc](https://github.com/AlexxIT/go2rtc).
 
+---
+
+<!-- TOC -->
+* [WebRTC Camera](#webrtc-camera)
+  * [go2rtc](#go2rtc)
+  * [Installation](#installation)
+  * [Configuration](#configuration)
+  * [Custom card](#custom-card)
+  * [Snapshots to Telegram](#snapshots-to-telegram)
+  * [Cast or share stream](#cast-or-share-stream)
+  * [FAQ](#faq)
+  * [Debug](#debug)
+  * [Known work cameras](#known-work-cameras)
+<!-- TOC -->
+
 ## go2rtc
 
 This component uses the [go2rtc](https://github.com/AlexxIT/go2rtc) application as streaming server:
@@ -31,15 +46,13 @@ You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass
 
 ## Installation
 
-**Method 1.** [HACS](https://hacs.xyz/):
-
-> HACS > Integrations > Plus > **WebRTC** > Install
+**Method 1.** [HACS](https://hacs.xyz/) > Integrations > Plus > **WebRTC** > Install
 
 **Method 2.** Manually copy `webrtc` folder from [latest release](https://github.com/AlexxIT/WebRTC/releases/latest) to `/config/custom_components` folder.
 
 ## Configuration
 
-> Settings > Devices & Services > Add Integration > **WebRTC**
+Settings > Devices & Services > Add Integration > **WebRTC**
 
 If the integration is not in the list, you need to clear the browser cache.
 
@@ -47,7 +60,7 @@ Component **doesn't create devices and entities**. It creates only two services 
 
 ## Custom card
 
-As a `url` you can use any protocol supported in go2rtc or specify the stream name from the go2rtc config.
+As a `url` you can use any protocol supported in go2rtc or specify the stream name from the go2rtc config.  
 As a `entity` you can use almost any camera from Hass.
 
 **Minimal**
@@ -117,6 +130,20 @@ style: '.mode {display: none}'
 Component support streaming to [Google Cast](https://www.home-assistant.io/integrations/cast/) Chromecast devices (including Android TV and Google Smart Screen). Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
 
 Also component support creating a temporary or permanent link to a stream without sharing access to you Home Assistant. Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
+
+## FAQ
+
+**Q. Exernal access with WebRTC doesn't work**  
+A. [Read more](https://github.com/AlexxIT/WebRTC/issues/378) and don't create new issues.
+
+**Q. Audio doesn't work**  
+A. Check what audio codec your camera outputs. And what technology do you use to watch videos. Different technologies support different codecs.
+
+**Q. External access on the iPhone not in real time**  
+A. The iPhone browser does not support [modern web technologies](https://caniuse.com/mediasource). It's hard to believe, but it's true. If you haven't setup external access for WebRTC - you will get a chopped stream of keyframes in MP4 format.
+
+**Q. Stream in macOS app not in real time**  
+A. Support for modern web technologies is blocked in the macOS app. You will get a chopped stream of keyframes in MP4 format.
 
 ## Debug
 
