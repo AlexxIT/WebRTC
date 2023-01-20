@@ -9,9 +9,20 @@
     },
     "step": {
       "user": {
-        "description": "Select [go2rtc](https://github.com/AlexxIT/go2rtc) streaming server version:\n1. Leave blank if you want the built-in go2rtc version (*basic users*)\n2. Set `http://localhost:1984` if you install go2rtc or [Frigate 12+](https://docs.frigate.video/) add-on (*advanced users*)\n3. Set custom address if you install go2rtc on another server (*hackers*)",
+        "title": "go2rtc url",
+        "description": "Select [go2rtc](https://github.com/AlexxIT/go2rtc) streaming server version:\n1. Leave blank if you want the built-in go2rtc version (*basic users*)\n2. Set `http://localhost:1984` if you install [go2rtc](https://github.com/AlexxIT/go2rtc#go2rtc-home-assistant-add-on) or [Frigate 12+](https://docs.frigate.video/) add-on (*advanced users*)\n3. Set custom address if you install go2rtc on another server (*hackers*)",
         "data": {
           "url": "URL"
+        }
+      },
+      "config": {
+        "title": "go2rtc config",
+        "description": "Path: `{path}`",
+        "data": {
+          "api": "Public WebUI on port 1984",
+          "rtsp": "Public RTSP on port 8554",
+          "username": "Public Username (Web and RTSP)",
+          "password": "Public Password (Web and RTSP)"
         }
       }
     }
