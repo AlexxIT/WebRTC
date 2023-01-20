@@ -38,10 +38,15 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title="WebRTC Camera", data=user_input)
 
         # check if go2rtc already exists on same server
-        if await utils.check_go2rtc(self.hass):
-            url = "http://localhost:1984/"
-        else:
-            url = vol.UNDEFINED
+        tests = await asyncio.gather(
+            utils.check_go2rtc(self.hass),
+            # if go2rtc inside frigate addon with closed public port
+            utils.check_go2rtc(self.hass, "http://ccab4aaf-frigate:1984"),
+            utils.check_go2rtc(self.hass, "http://ccab4aaf-frigate-fa:1984"),
+            utils.check_go2rtc(self.hass, "http://ccab4aaf-frigate-beta:1984"),
+        )
+
+        url = next((url for url in tests if url), vol.UNDEFINED)
 
         return self.async_show_form(
             step_id="user",

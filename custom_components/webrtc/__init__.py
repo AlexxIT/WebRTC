@@ -4,7 +4,7 @@ import time
 import uuid
 from pathlib import Path
 from urllib.parse import urlparse, urlencode
-from homeassistant.helpers.template import Template
+
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
@@ -19,6 +19,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
+from homeassistant.helpers.template import Template
 from homeassistant.helpers.typing import HomeAssistantType, ConfigType, ServiceCallType
 
 from . import utils
@@ -102,14 +103,15 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
     # 1. If user set custom url
-    if entry.data.get(CONF_URL):
-        url = urlparse(entry.data[CONF_URL])
-        hass.data[DOMAIN] = f"ws://{url.netloc}/api/ws"
-        return True
+    url = entry.data.get(CONF_URL)
 
     # 2. Check if go2rtc running on same server
-    if await utils.check_go2rtc(hass):
-        hass.data[DOMAIN] = "ws://localhost:1984/api/ws"
+    if not url:
+        url = await utils.check_go2rtc(hass)
+
+    if url:
+        # netloc example: admin:admin@192.168.1.123:1984
+        hass.data[DOMAIN] = f"ws://{urlparse(url).netloc}/api/ws"
         return True
 
     # 3. Serve go2rtc binary manually
