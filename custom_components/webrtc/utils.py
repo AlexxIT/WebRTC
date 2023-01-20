@@ -81,6 +81,9 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
     )
     _LOGGER.debug(f"Download new binary: {url}")
     r = await async_get_clientsession(hass).get(url)
+    if not r.ok:
+        return None
+
     raw = await r.read()
 
     # unzip binary for windows
