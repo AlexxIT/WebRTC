@@ -561,6 +561,7 @@ export class VideoRTC extends HTMLElement {
         /** @type {HTMLVideoElement} */
         const video2 = document.createElement("video");
         video2.autoplay = true;
+        video2.playsInline = true;
         video2.muted = true;
 
         video2.addEventListener("loadeddata", ev => {
