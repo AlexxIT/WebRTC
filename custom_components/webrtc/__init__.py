@@ -161,6 +161,7 @@ class WebSocketView(HomeAssistantView):
 
     async def get(self, request: web.Request):
         params = request.query
+        _LOGGER.debug(f"New client: {dict(params)}")
 
         if request.query.get("embed"):
             link_id = request.query.get("url")
