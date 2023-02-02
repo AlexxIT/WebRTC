@@ -108,6 +108,16 @@ Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRT
 style: "video {aspect-ratio: 16/9; object-fit: fill;}"
 ```
 
+**Video rotation**
+
+1. On client (free CPU):
+
+```yaml
+style: 'video {transform: rotate(90deg); aspect-ratio: 1}'
+```
+
+2. On server - [FFmpeg transcoding](https://github.com/AlexxIT/go2rtc#source-ffmpeg) (high CPU cost)
+
 **Shortcuts position**
 
 ```yaml
