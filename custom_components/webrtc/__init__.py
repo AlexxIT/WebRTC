@@ -43,6 +43,7 @@ DASH_CAST_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Exclusive("url", "url"): cv.string,
         vol.Exclusive("entity", "url"): cv.entity_id,
+        vol.Optional("extra"): dict,
     },
     required=True,
 )
@@ -88,11 +89,14 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
             "ts": time.time() + 30,  # for 30 seconds
         }
 
+        query = call.data.get("extra", {})
+        query["url"] = link_id
+
         await hass.async_add_executor_job(
             utils.dash_cast,
             hass,
             call.data[ATTR_ENTITY_ID],
-            f"{get_url(hass)}/webrtc/embed?url={link_id}",
+            f"{get_url(hass)}/webrtc/embed?" + urlencode(query),
         )
 
     hass.services.async_register(DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)
