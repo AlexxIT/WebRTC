@@ -121,6 +121,12 @@ style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-dire
 style: '.mode {display: none}'
 ```
 
+**Move mode label**
+
+```yaml
+style: '.header {bottom: 6px} .mode {position: absolute; bottom: 0px}'
+```
+
 ## Snapshots to Telegram
 
 [read more](https://github.com/AlexxIT/go2rtc/wiki/Snapshot-to-Telegram)
