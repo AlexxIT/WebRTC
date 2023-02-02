@@ -115,7 +115,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
 
     if url:
         # netloc example: admin:admin@192.168.1.123:1984
-        hass.data[DOMAIN] = f"ws://{urlparse(url).netloc}/api/ws"
+        hass.data[DOMAIN] = urlparse(url).netloc
         return True
 
     # 3. Serve go2rtc binary manually
@@ -139,23 +139,34 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
 
 
 async def ws_connect(hass: HomeAssistantType, params) -> str:
+    entry = hass.data[DOMAIN]
+    if isinstance(entry, Server):
+        assert entry.available, "WebRTC server not available"
+        netloc = "localhost:1984"
+    else:
+        netloc = entry
+
     if entity := params.get("entity"):
         url = await utils.get_stream_source(hass, entity)
         assert url, f"Can't get URL for {entity}"
+
+        # adds stream to go2rtc using entity_id as name (RTSPtoWebRTC API)
+        session = async_get_clientsession(hass)
+        r = await session.post(
+            f"http://{netloc}/stream/add",
+            json={"name": entity, "channels": {"0": {"url": url}}},
+            timeout=3,
+        )
+        if r.ok:
+            url = entity
+
     elif url := params.get("url"):
         if "{{" in url or "{%" in url:
             url = Template(url, hass).async_render()
     else:
         raise Exception("Missing url or entity")
 
-    query = urlencode({"src": url})
-
-    entry = hass.data[DOMAIN]
-    if isinstance(entry, Server):
-        assert entry.available, "WebRTC server not available"
-        return f"ws://localhost:1984/api/ws?{query}"
-
-    return f"{entry}?{query}"
+    return f"ws://{netloc}/api/ws?" + urlencode({"src": url})
 
 
 class WebSocketView(HomeAssistantView):
