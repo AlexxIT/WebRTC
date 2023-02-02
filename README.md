@@ -1,10 +1,12 @@
 # WebRTC Camera
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
+![](https://img.shields.io/github/stars/AlexxIT/WebRTC?style=flat-square&logo=github) 
+![](https://img.shields.io/github/forks/AlexxIT/WebRTC?style=flat-square&logo=github) 
 
-Home Assistant custom component for viewing almost any camera stream in real time using [WebRTC](https://en.wikipedia.org/wiki/WebRTC) and other technologies.
+[Home Assistant](https://www.home-assistant.io/) custom component for viewing almost any camera stream in real time using [WebRTC](https://en.wikipedia.org/wiki/WebRTC) and other technologies.
 
-**Starting with version 3** the streaming server has been changed from [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC) ([@deepch](https://github.com/deepch)) to [go2rtc](https://github.com/AlexxIT/go2rtc).
+**Starting with version 3** the streaming server has been changed from [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC) to [go2rtc](https://github.com/AlexxIT/go2rtc).
 
 ---
 
@@ -22,6 +24,10 @@ Home Assistant custom component for viewing almost any camera stream in real tim
 
 ## go2rtc
 
+![](https://img.shields.io/github/stars/AlexxIT/go2rtc?style=flat-square&logo=github) 
+![](https://img.shields.io/docker/pulls/alexxit/go2rtc?style=flat-square&logo=docker&logoColor=white&label=pulls)
+![](https://img.shields.io/github/downloads/AlexxIT/go2rtc/total?color=blue&style=flat-square&logo=github)  
+
 This component uses the [go2rtc](https://github.com/AlexxIT/go2rtc) application as streaming server:
 
 - lowest possible streaming latency for many supported protocols
@@ -31,7 +37,7 @@ This component uses the [go2rtc](https://github.com/AlexxIT/go2rtc) application 
 - on the fly transcoding for unsupported codecs via FFmpeg
 - autoselect streaming technology based on stream codecs, browser capabilities, network configuration
 
-**Read more in the go2rtc docs!**
+**Read more in the go2rtc [docs](https://github.com/AlexxIT/go2rtc)!**
 
 You can install go2rtc in several ways:
 
