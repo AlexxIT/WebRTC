@@ -142,6 +142,12 @@ style: '.mode {display: none}'
 style: '.header {bottom: 6px} .mode {position: absolute; bottom: 0px}'
 ```
 
+**Move header line**
+
+```yaml
+style: '.header {top: unset; bottom: 6px}'
+```
+
 ## Snapshots to Telegram
 
 [read more](https://github.com/AlexxIT/go2rtc/wiki/Snapshot-to-Telegram)
