@@ -9,16 +9,15 @@ Home Assistant custom component for viewing almost any camera stream in real tim
 ---
 
 <!-- TOC -->
-* [WebRTC Camera](#webrtc-camera)
-  * [go2rtc](#go2rtc)
-  * [Installation](#installation)
-  * [Configuration](#configuration)
-  * [Custom card](#custom-card)
-  * [Snapshots to Telegram](#snapshots-to-telegram)
-  * [Cast or share stream](#cast-or-share-stream)
-  * [FAQ](#faq)
-  * [Debug](#debug)
-  * [Known work cameras](#known-work-cameras)
+* [go2rtc](#go2rtc)
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Custom card](#custom-card)
+* [Snapshots to Telegram](#snapshots-to-telegram)
+* [Cast or share stream](#cast-or-share-stream)
+* [FAQ](#faq)
+* [Debug](#debug)
+* [Known work cameras](#known-work-cameras)
 <!-- TOC -->
 
 ## go2rtc
