@@ -113,7 +113,7 @@ class WebRTCCamera extends VideoRTC {
                 case 'mse':
                 case 'mp4':
                 case 'mjpeg':
-                    this.setStatus(msg.type.toUpperCase());
+                    this.setStatus(msg.type.toUpperCase(), this.config.title || '');
                     break;
             }
         }
@@ -125,7 +125,7 @@ class WebRTCCamera extends VideoRTC {
         super.onpcvideo(ev);
 
         if (this.pcState !== WebSocket.CLOSED) {
-            this.setStatus('RTC');
+            this.setStatus('RTC', this.config.title || '');
         }
     }
 
