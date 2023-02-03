@@ -130,7 +130,8 @@ class WebRTCCamera extends VideoRTC {
     }
 
     renderMain() {
-        this.innerHTML = `
+        const shadow = this.attachShadow({mode: 'open'});
+        shadow.innerHTML = `
         <style>
             ha-card {
                 width: 100%;
@@ -170,6 +171,8 @@ class WebRTCCamera extends VideoRTC {
             </div>
         </ha-card>
         `;
+
+        this.querySelector = selectors => this.shadowRoot.querySelector(selectors);
 
         this.querySelector(".player").appendChild(this.video);
 
