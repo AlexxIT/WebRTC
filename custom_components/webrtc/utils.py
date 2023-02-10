@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "webrtc"
 
-BINARY_VERSION = "1.1.1"
+BINARY_VERSION = "1.1.2"
 
 SYSTEM = {
     "Windows": {"AMD64": "go2rtc_win64.zip"},
