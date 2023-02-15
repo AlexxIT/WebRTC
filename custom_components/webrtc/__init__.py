@@ -3,7 +3,7 @@ import logging
 import time
 import uuid
 from pathlib import Path
-from urllib.parse import urlparse, urlencode
+from urllib.parse import urlencode, urljoin
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -107,15 +107,15 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
     # 1. If user set custom url
-    url = entry.data.get(CONF_URL)
+    go_url = entry.data.get(CONF_URL)
 
     # 2. Check if go2rtc running on same server
-    if not url:
-        url = await utils.check_go2rtc(hass)
+    if not go_url:
+        go_url = await utils.check_go2rtc(hass)
 
-    if url:
+    if go_url:
         # netloc example: admin:admin@192.168.1.123:1984
-        hass.data[DOMAIN] = urlparse(url).netloc
+        hass.data[DOMAIN] = go_url
         return True
 
     # 3. Serve go2rtc binary manually
@@ -142,31 +142,31 @@ async def ws_connect(hass: HomeAssistantType, params) -> str:
     entry = hass.data[DOMAIN]
     if isinstance(entry, Server):
         assert entry.available, "WebRTC server not available"
-        netloc = "localhost:1984"
+        go_url = "http://localhost:1984/"
     else:
-        netloc = entry
+        go_url = entry
 
     if entity := params.get("entity"):
-        url = await utils.get_stream_source(hass, entity)
-        assert url, f"Can't get URL for {entity}"
+        src = await utils.get_stream_source(hass, entity)
+        assert src, f"Can't get URL for {entity}"
 
         # adds stream to go2rtc using entity_id as name (RTSPtoWebRTC API)
         session = async_get_clientsession(hass)
-        r = await session.post(
-            f"http://{netloc}/stream/add",
-            json={"name": entity, "channels": {"0": {"url": url}}},
+        r = await session.patch(
+            urljoin(go_url, "api/streams"),
+            params={"name": entity, "src": src},
             timeout=3,
         )
         if r.ok:
-            url = entity
+            src = entity
 
-    elif url := params.get("url"):
-        if "{{" in url or "{%" in url:
-            url = Template(url, hass).async_render()
+    elif src := params.get("url"):
+        if "{{" in src or "{%" in src:
+            src = Template(src, hass).async_render()
     else:
         raise Exception("Missing url or entity")
 
-    return f"ws://{netloc}/api/ws?" + urlencode({"src": url})
+    return urljoin("ws" + go_url[4:], "api/ws") + "?" + urlencode({"src": src})
 
 
 class WebSocketView(HomeAssistantView):
