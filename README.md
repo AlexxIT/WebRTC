@@ -17,6 +17,7 @@
 * [Custom card](#custom-card)
 * [Snapshots to Telegram](#snapshots-to-telegram)
 * [Cast or share stream](#cast-or-share-stream)
+* [Stream to camera](#stream-to-camera)
 * [FAQ](#faq)
 * [Debug](#debug)
 * [Known work cameras](#known-work-cameras)
@@ -157,6 +158,27 @@ style: '.header {top: unset; bottom: 6px}'
 Component support streaming to [Google Cast](https://www.home-assistant.io/integrations/cast/) Chromecast devices (including Android TV and Google Smart Screen). Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
 
 Also component support creating a temporary or permanent link to a stream without sharing access to you Home Assistant. Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
+
+## Stream to camera
+
+go2rtc support play audio files (ex. [music](https://www.home-assistant.io/integrations/media_source/) or [TTS](https://www.home-assistant.io/integrations/#text-to-speech)) and live streams (ex. radio) on cameras with [two way audio](https://github.com/AlexxIT/go2rtc#two-way-audio) support. You need to:
+
+1. Check if your camera has supported [two way audio](https://github.com/AlexxIT/go2rtc#two-way-audio) source
+2. Setup camera stream in [go2rtc.yaml config](https://github.com/AlexxIT/go2rtc#configuration)
+3. Check audio codec, that your [camera supports](https://github.com/AlexxIT/go2rtc#stream-to-camera)
+4. Create virtual [Media Players](https://www.home-assistant.io/integrations/media_player/) for your cameras in `configuration.yaml`:
+
+```yaml
+media_player:
+  - platform: webrtc
+    name: Dahua Camera
+    stream: dahua
+    audio: pcmu/48000
+  - platform: webrtc
+    name: Tapo Camera
+    stream: tapo
+    audio: pcma
+```
 
 ## FAQ
 
