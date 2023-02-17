@@ -8,6 +8,7 @@ import subprocess
 import zipfile
 from threading import Thread
 from typing import Optional
+from urllib.parse import urljoin
 
 import jwt
 from aiohttp import web
@@ -211,6 +212,12 @@ async def check_go2rtc(hass: HomeAssistant, url: str = DEFAULT_URL) -> Optional[
         return url if r.status < 300 else None
     except Exception:
         return None
+
+
+def api_streams(hass: HomeAssistant) -> str:
+    entry = hass.data[DOMAIN]
+    go_url = "http://localhost:1984/" if isinstance(entry, Server) else entry
+    return urljoin(go_url, "api/streams")
 
 
 class Server(Thread):
