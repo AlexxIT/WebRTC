@@ -27,7 +27,7 @@ DOMAIN = "webrtc"
 BINARY_VERSION = "1.2.0"
 
 SYSTEM = {
-    "Windows": {"AMD64": "go2rtc_win64.zip"},
+    "Windows": {"AMD64": "go2rtc_win64.zip", "ARM64": "go2rtc_win_arm64.zip"},
     "Darwin": {"x86_64": "go2rtc_mac_amd64.zip", "arm64": "go2rtc_mac_arm64.zip"},
     "Linux": {
         "armv7l": "go2rtc_linux_arm",
