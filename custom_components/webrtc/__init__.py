@@ -206,11 +206,21 @@ class WebSocketView(HomeAssistantView):
         try:
             hass = request.app["hass"]
             url = await ws_connect(hass, params)
+
+            remote = request.headers.get("X-Forwarded-For")
+            remote = remote + ", " + request.remote if remote else request.remote
+
+            # https://www.nginx.com/resources/wiki/start/topics/examples/forwarded/
             async with async_get_clientsession(hass).ws_connect(
                 url,
                 autoclose=False,
                 autoping=False,
-                headers={"User-Agent": request.headers.get("User-Agent")},
+                headers={
+                    "User-Agent": request.headers.get("User-Agent"),
+                    "X-Forwarded-For": remote,
+                    "X-Forwarded-Host": request.host,
+                    "X-Forwarded-Proto": request.scheme,
+                },
             ) as ws_client:
                 # Proxy requests
                 await asyncio.wait(
