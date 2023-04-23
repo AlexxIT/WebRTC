@@ -10,6 +10,8 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
+from homeassistant.components.camera import Camera, CameraView
+from homeassistant.components.camera.const import DOMAIN as CAMERA_DOMAIN
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
@@ -19,6 +21,7 @@ from homeassistant.const import (
     CONF_URL,
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.template import Template
 from homeassistant.helpers.typing import HomeAssistantType, ConfigType, ServiceCallType
@@ -112,6 +115,15 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     hass.services.async_register(DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)
     hass.services.async_register(DOMAIN, "dash_cast", dash_cast, DASH_CAST_SCHEMA)
+
+    # 7. Serve camera_stream_source API
+    camera_component: EntityComponent[Camera] = hass.data[CAMERA_DOMAIN]
+
+    if camera_component is None:
+        _LOGGER.error("Camera integration not initialized")
+        return False
+
+    hass.http.register_view(CameraStreamSourceView(camera_component))
 
     return True
 
@@ -266,3 +278,18 @@ class HLSView(HomeAssistantView):
 
             body = await r.read()
             return web.Response(body=body, content_type=r.content_type)
+
+
+class CameraStreamSourceView(CameraView):
+    """Camera view to get the stream source."""
+
+    url = "/api/webrtc/camera_stream_source/{entity_id}"
+    name = "api:webrtc:camera_stream_source"
+    requires_auth = True
+
+    async def handle(self, request: web.Request, camera: Camera) -> web.Response:
+        """Return the camera stream source as plain text."""
+        stream_source = await camera.stream_source()
+        if stream_source is None:
+            raise web.HTTPNotFound()
+        return web.Response(text=stream_source)

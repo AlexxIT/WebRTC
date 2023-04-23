@@ -9,7 +9,8 @@
   ],
   "dependencies": [
     "http",
-    "lovelace"
+    "lovelace",
+    "camera"
   ],
   "requirements": [],
   "version": "v3.3.0",
