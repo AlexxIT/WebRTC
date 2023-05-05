@@ -137,6 +137,8 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     await resources.async_get_info()
 
     url2 = f"{url}?{ver}"
+    if "v=" not in url2:
+        url2 = url2.replace("v","v=")
 
     for item in resources.async_items():
         if not item.get("url", "").startswith(url):
