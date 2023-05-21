@@ -1,5 +1,6 @@
 /** Chrome 63+, Safari 11.1+ */
 import {VideoRTC} from "./video-rtc.js?v=1.5.0";
+import {DigitalPTZ} from "./digital-ptz.js?v3.1.1"
 
 class WebRTCCamera extends VideoRTC {
     /**
@@ -71,6 +72,11 @@ class WebRTCCamera extends VideoRTC {
         this.renderCustomUI();
         this.renderShortcuts();
         this.renderStyle();
+        this.zoomController = new DigitalPTZ(
+          this.querySelector(".player"),
+          this.querySelector(".player video"),
+          { ...this.config.digital_ptz, persist_key: this.config.url }
+        );
     }
 
     onconnect() {
@@ -148,6 +154,13 @@ class WebRTCCamera extends VideoRTC {
                 background-color: black;
                 height: 100%;
                 position: relative; /* important for Safari */
+                overflow: hidden; /* important for zoom-controller */
+            }
+            .player:active {
+                cursor: move; /* important for zoom-controller */
+            }
+            video {
+                transform-origin: 50% 50%; /* important for zoom-controller */
             }
             .header {
                 position: absolute;
