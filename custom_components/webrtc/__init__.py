@@ -54,8 +54,9 @@ LINKS = {}  # 2 3 4
 async def async_setup(hass: HomeAssistantType, config: ConfigType):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
-    for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js"):
-        utils.register_static_path(hass.http.app, "/webrtc/" + name, path / name)
+    for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js", "ditigal-ptz.transform.js", "digital-ptz.gestures.js"):
+        utils.register_static_path(
+            hass.http.app, "/webrtc/" + name, path / name)
 
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)

@@ -106,11 +106,11 @@ url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 
 ui: true  # custom video controls, default false
 digital_ptz:
-  mouse_drag_zoom: true
+  mouse_drag_pan: true
   mouse_wheel_zoom: true
   mouse_double_click_zoom: true
-  touch_drag_zoom: true
-  touch_pan: true
+  touch_tap_drag_zoom: true
+  touch_drag_pan: false
   touch_pinch_zoom: true
   touch_double_tap_zoom: true
   persist: true # zoom factor and viewport position survive page reloads
