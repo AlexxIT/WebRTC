@@ -13,7 +13,13 @@ function startDoubleTapZoom({ containerEl, transform, render }) {
     if (!relevant) return;
     const onTouchEnd = (endEvent) => {
       const isQuickRelease = endEvent.timeStamp - lastTap < DBL_CLICK_MS;
-      if (!isQuickRelease) return;
+      const didMove =
+        50 <
+        Math.hypot(
+          endEvent.changedTouches[0].clientX - downEvent.touches[0].clientX,
+          endEvent.changedTouches[0].clientY - downEvent.touches[0].clientY
+        );
+      if (!isQuickRelease || didMove) return;
       const zoom = transform.scale == 1 ? 2 : 0.01;
       transform.zoomAtCoords(
         zoom,
