@@ -13,11 +13,11 @@ export const ONE_FINGER_ZOOM_SPEED = 1 / 200; // 1 scale every 200px
 export const DBL_CLICK_MS = 400;
 export const MAX_ZOOM = 10;
 const DEFAULT_OPTIONS = {
+  touch_drag_pan: false,
+  touch_tap_drag_zoom: false,
   mouse_drag_pan: true,
   mouse_wheel_zoom: true,
   mouse_double_click_zoom: true,
-  touch_tap_drag_zoom: true,
-  touch_drag_pan: false,
   touch_pinch_zoom: true,
   touch_double_tap_zoom: true,
   persist_key: "",
