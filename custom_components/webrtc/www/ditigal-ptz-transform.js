@@ -17,9 +17,21 @@ export class Transform {
     this.loadPersistedTransform();
   }
   updateRects(videoEl, containerEl) {
-    this.containerRect = containerEl.getBoundingClientRect();
+    const containerRect = containerEl.getBoundingClientRect();
+    if (containerRect.width === 0 || containerRect.height === 0) {
+      /*
+        The container rect has no size yet.
+        This happens when coming back to a tab that was already opened.
+        The card will get size shortly and the size observer will call this function again.
+      */
+      return;
+    }
+    this.containerRect = containerRect;
     if (!videoEl.videoWidth) {
-      console.log("this.videoEl.videoWidth video not loaded");
+      /*
+        The video hasn't loaded yet.
+        Once it loads, the videometadata listener will call this function again.
+      */
       return;
     }
     const screenAspectRatio =
