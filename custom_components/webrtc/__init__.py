@@ -100,10 +100,8 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
             f"{get_url(hass)}/webrtc/embed?" + urlencode(query),
         )
 
-    hass.services.async_register(
-        DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)
-    hass.services.async_register(
-        DOMAIN, "dash_cast", dash_cast, DASH_CAST_SCHEMA)
+    hass.services.async_register(DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)
+    hass.services.async_register(DOMAIN, "dash_cast", dash_cast, DASH_CAST_SCHEMA)
 
     return True
 
@@ -228,10 +226,8 @@ class WebSocketView(HomeAssistantView):
                 # Proxy requests
                 await asyncio.wait(
                     [
-                        asyncio.create_task(
-                            _websocket_forward(ws_server, ws_client)),
-                        asyncio.create_task(
-                            _websocket_forward(ws_client, ws_server)),
+                        asyncio.create_task(_websocket_forward(ws_server, ws_client)),
+                        asyncio.create_task(_websocket_forward(ws_client, ws_server)),
                     ],
                     return_when=asyncio.FIRST_COMPLETED,
                 )

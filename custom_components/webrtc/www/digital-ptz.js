@@ -2,10 +2,9 @@
 import {
   startMouseWheel,
   startDoubleClickZoom,
-  startDoubleTapZoom,
   startMouseDragPan,
-  startOneFingerPan,
-  startPinchZoom,
+  startTouchDragPan,
+  startTouchPinchZoom,
   startTouchTapDragZoom,
 } from "./digital-ptz-gestures.js";
 import { Transform } from "./ditigal-ptz-transform.js";
@@ -14,12 +13,11 @@ export const DBL_CLICK_MS = 400;
 export const MAX_ZOOM = 10;
 const DEFAULT_OPTIONS = {
   touch_drag_pan: false,
-  touch_tap_drag_zoom: false,
+  touch_tap_drag_zoom: true,
   mouse_drag_pan: true,
   mouse_wheel_zoom: true,
   mouse_double_click_zoom: true,
   touch_pinch_zoom: true,
-  touch_double_tap_zoom: true,
   persist_key: "",
   persist: true,
 };
@@ -51,10 +49,9 @@ export class DigitalPTZ {
     if (o.mouse_drag_pan) h.push(startMouseDragPan(gestureParam));
     if (o.mouse_wheel_zoom) h.push(startMouseWheel(gestureParam));
     if (o.mouse_double_click_zoom) h.push(startDoubleClickZoom(gestureParam));
-    if (o.touch_double_tap_zoom) h.push(startDoubleTapZoom(gestureParam));
     if (o.touch_tap_drag_zoom) h.push(startTouchTapDragZoom(gestureParam));
-    if (o.touch_drag_pan) h.push(startOneFingerPan(gestureParam));
-    if (o.touch_pinch_zoom) h.push(startPinchZoom(gestureParam));
+    if (o.touch_drag_pan) h.push(startTouchDragPan(gestureParam));
+    if (o.touch_pinch_zoom) h.push(startTouchPinchZoom(gestureParam));
     this.videoEl.addEventListener("loadedmetadata", this.recomputeRects);
     this.resizeObserver = new ResizeObserver(this.recomputeRects);
     this.resizeObserver.observe(this.containerEl);
@@ -70,7 +67,13 @@ export class DigitalPTZ {
     this.videoEl.removeEventListener("loadedmetadata", this.recomputeRects);
     this.resizeObserver.unobserve(this.containerEl);
   }
-  render = () => {
+  render = (transition = false) => {
+    if (transition) {
+      this.videoEl.style.transition = "transform 200ms";
+      setTimeout(() => {
+        this.videoEl.style.transition = "";
+      }, 200);
+    }
     this.videoEl.style.transform = this.transform.render();
   };
 }

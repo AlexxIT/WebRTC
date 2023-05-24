@@ -72,7 +72,7 @@ class WebRTCCamera extends VideoRTC {
         this.renderCustomUI();
         this.renderShortcuts();
         this.renderStyle();
-        this.zoomController = new DigitalPTZ(
+        this.digitalPTZ = new DigitalPTZ(
           this.querySelector(".player"),
           this.querySelector(".player video"),
           { ...this.config.digital_ptz, persist_key: this.config.url }
