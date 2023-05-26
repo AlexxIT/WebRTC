@@ -34,9 +34,9 @@ function startTouchPinchZoom({ containerEl, transform, render }) {
       lastTouches = moveEvent.touches;
       render();
     };
-    containerEl.addEventListener("touchmove", onTouchMove);
     const onTouchEnd = () =>
       containerEl.removeEventListener("touchmove", onTouchMove);
+    containerEl.addEventListener("touchmove", onTouchMove);
     containerEl.addEventListener("touchend", onTouchEnd, { once: true });
   };
   containerEl.addEventListener("touchstart", onTouchStart);
@@ -107,7 +107,7 @@ function startDoubleClickZoom({ containerEl, transform, render }) {
       transform.zoomAtCoords(zoom, upEvent.pageX, upEvent.pageY);
       render(true);
     };
-    containerEl.addEventListener("mouseup", onUp, { once: true });
+    window.addEventListener("mouseup", onUp, { once: true });
   };
   containerEl.addEventListener("mousedown", onDown);
   return () => containerEl.removeEventListener("mousedown", onDown);
@@ -129,7 +129,7 @@ function startGesturePan({ containerEl, transform, render }, type) {
     };
     containerEl.addEventListener(moveName, onMove);
     const onUp = () => containerEl.removeEventListener(moveName, onMove);
-    containerEl.addEventListener(upName, onUp, { once: true });
+    window.addEventListener(upName, onUp, { once: true });
   };
   containerEl.addEventListener(downName, onDown);
   return () => containerEl.removeEventListener(downName, onDown);
