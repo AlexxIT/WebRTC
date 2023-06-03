@@ -22,9 +22,6 @@ const DEFAULT_OPTIONS = {
   persist: true,
 };
 export class DigitalPTZ {
-  lastTouches;
-  lastMouse;
-  lastTap = 0;
   containerEl;
   videoEl;
   resizeObserver;
