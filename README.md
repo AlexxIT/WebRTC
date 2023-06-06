@@ -56,6 +56,19 @@ You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass
 
 **Method 2.** Manually copy `webrtc` folder from [latest release](https://github.com/AlexxIT/WebRTC/releases/latest) to `/config/custom_components` folder.
 
+<details>
+  <summary>Additional steps if you are using the UI in YAML mode: add card to resources</summary>
+
+  The `custom_card` will be automatically registered with the Home Assistant UI, except when you are managing the UI in YAML mode.
+  If you are managing the UI in YAML mode then add this to your UI resources for the `custom:webrtc-camera` card to work:
+  ```yaml
+  url: /webrtc/webrtc-camera.js
+  type: module
+  ```
+  - Refresh your browser 
+
+</details>
+
 ## Configuration
 
 Settings > Devices & Services > Add Integration > **WebRTC**
