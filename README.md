@@ -50,6 +50,8 @@ You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass
 
 **Important.** go2rtc runs its own web interface on port `1984` without a password. There you can see a list of active streams from cameras. And anyone on your LAN can access them without password. You can disable this in the go2rtc config.
 
+**PS.** There is also another nice card with go2rtc support - [Frigate Lovelace Card](https://github.com/dermotduffy/frigate-hass-card).
+
 ## Installation
 
 **Method 1.** [HACS](https://hacs.xyz/) > Integrations > Plus > **WebRTC** > Install
