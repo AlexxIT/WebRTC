@@ -24,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "webrtc"
 
-BINARY_VERSION = "1.2.0"
+BINARY_VERSION = "1.5.0"
 
 SYSTEM = {
     "Windows": {"AMD64": "go2rtc_win64.zip", "ARM64": "go2rtc_win_arm64.zip"},
@@ -136,7 +136,7 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     # force load storage
     await resources.async_get_info()
 
-    url2 = f"{url}?{ver}"
+    url2 = f"{url}?v={ver}"
 
     for item in resources.async_items():
         if not item.get("url", "").startswith(url):
