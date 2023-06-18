@@ -3,7 +3,7 @@ const ONE_FINGER_ZOOM_SPEED = 1 / 200; // 1 scale every 200px
 const DBL_CLICK_MS = 400;
 const MAX_ZOOM = 10;
 const DEFAULT_OPTIONS = {
-  touch_drag_pan: false,
+  touch_drag_pan: true,
   touch_tap_drag_zoom: true,
   mouse_drag_pan: true,
   mouse_wheel_zoom: true,
