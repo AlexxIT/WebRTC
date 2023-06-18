@@ -105,14 +105,15 @@ type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 
 ui: true  # custom video controls, default false
-digital_ptz:
+digital_ptz: # digital zoom and pan via mouse/touch. Defaults to:
   mouse_drag_pan: true 
   mouse_wheel_zoom: true
   mouse_double_click_zoom: true
-  touch_drag_pan: false # can interfere with scrolling
+  touch_drag_pan: true 
   touch_pinch_zoom: true  
   touch_tap_drag_zoom: true 
   persist: true # zoom factor and viewport position survive page reloads
+# digital_ptz: false # to disable al mouse/touch digital zoom and pan
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 muted: true  # disable sound, default false
