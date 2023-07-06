@@ -133,18 +133,10 @@ style: "video {aspect-ratio: 16/9; object-fit: fill;}"
 **Video rotation**
 
 1. On client (free CPU):
-
-```yaml
-style: 'video {transform: rotate(90deg); aspect-ratio: 1}'
-```
-
+   ```yaml
+   style: 'video {transform: rotate(90deg); aspect-ratio: 1}'
+   ```
 2. On server - [FFmpeg transcoding](https://github.com/AlexxIT/go2rtc#source-ffmpeg) (high CPU cost)
-
-**Shortcuts position**
-
-```yaml
-style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-direction: column}"
-```
 
 **Hide mode label**
 
@@ -152,13 +144,25 @@ style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-dire
 style: '.mode {display: none}'
 ```
 
-**Move mode label**
+**Shortcuts position**
+
+```yaml
+style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-direction: column}"
+```
+
+**PTZ position**
+
+```yaml
+style: ".ptz {right: unset; left: 10px}"
+```
+
+**Mode label position**
 
 ```yaml
 style: '.header {bottom: 6px} .mode {position: absolute; bottom: 0px}'
 ```
 
-**Move header line**
+**Header line position**
 
 ```yaml
 style: '.header {top: unset; bottom: 6px}'
