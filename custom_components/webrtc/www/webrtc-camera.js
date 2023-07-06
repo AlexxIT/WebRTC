@@ -76,7 +76,7 @@ class WebRTCCamera extends VideoRTC {
             this.digitalPTZ = new DigitalPTZ(
                 this.querySelector(".player"),
                 this.querySelector(".player video"),
-                { ...this.config.digital_ptz, persist_key: this.config.url }
+                Object.assign({}, this.config.digital_ptz, { persist_key: this.config.url })
             );
         }
     }

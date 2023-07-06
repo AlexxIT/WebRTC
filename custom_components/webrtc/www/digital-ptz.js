@@ -13,13 +13,23 @@ const DEFAULT_OPTIONS = {
   persist: true,
 };
 export class DigitalPTZ {
-  containerEl;
-  videoEl;
-  resizeObserver;
-  transform;
-  options;
-  offHandles = [];
   constructor(containerEl, videoEl, options) {
+    this.offHandles = [];
+    this.recomputeRects = () => {
+      this.transform.updateRects(this.videoEl, this.containerEl);
+      this.transform.zoomAtCoords(1, 0, 0); // clamp transform
+      this.render();
+    };
+    this.render = (transition = false) => {
+      if (transition) {
+        // transition is used to animate dbl click zoom
+        this.videoEl.style.transition = "transform 200ms";
+        setTimeout(() => {
+          this.videoEl.style.transition = "";
+        }, 200);
+      }
+      this.videoEl.style.transform = this.transform.render();
+    };
     this.containerEl = containerEl;
     this.videoEl = videoEl;
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
@@ -45,26 +55,11 @@ export class DigitalPTZ {
     this.resizeObserver.observe(this.containerEl);
     this.recomputeRects();
   }
-  recomputeRects = () => {
-    this.transform.updateRects(this.videoEl, this.containerEl);
-    this.transform.zoomAtCoords(1, 0, 0); // clamp transform
-    this.render();
-  };
   destroy() {
     for (const off of this.offHandles) off();
     this.videoEl.removeEventListener("loadedmetadata", this.recomputeRects);
     this.resizeObserver.unobserve(this.containerEl);
   }
-  render = (transition = false) => {
-    if (transition) {
-      // transition is used to animate dbl click zoom
-      this.videoEl.style.transition = "transform 200ms";
-      setTimeout(() => {
-        this.videoEl.style.transition = "";
-      }, 200);
-    }
-    this.videoEl.style.transform = this.transform.render();
-  };
 }
 /* Gestures */
 const preventScroll = (e) => {
@@ -119,7 +114,7 @@ function startTouchTapDragZoom({ containerEl, transform, render }) {
   let fastClicks = 0;
   const onTouchStart = (downEvent) => {
     const isFastClick =
-      downEvent.timeStamp - lastEvent?.timeStamp < DBL_CLICK_MS;
+      lastEvent && downEvent.timeStamp - lastEvent.timeStamp < DBL_CLICK_MS;
     if (!isFastClick) fastClicks = 0;
     fastClicks++;
     if (downEvent.touches.length > 1) fastClicks = 0;
@@ -211,17 +206,41 @@ function startMouseDragPan(params) {
 const PERSIST_KEY_PREFIX = "webrtc-digital-ptc:";
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 class Transform {
-  scale = 1;
-  x = 0;
-  y = 0;
-  videoRect;
-  containerRect;
-  settings;
   constructor(settings) {
-    this.settings = {
-      ...settings,
-      persist_key: PERSIST_KEY_PREFIX + settings.persist_key,
+    this.scale = 1;
+    this.x = 0;
+    this.y = 0;
+    this.loadPersistedTransform = () => {
+      const { persist_key, persist } = this.settings;
+      if (!persist) return;
+      try {
+        const loaded = JSON.parse(localStorage[persist_key]);
+        const isValid = [loaded.scale, loaded.x, loaded.y].every(
+          Number.isFinite
+        );
+        if (!isValid) {
+          throw new Error("Broken local storage");
+        }
+        this.x = loaded.x;
+        this.y = loaded.y;
+        this.scale = loaded.scale;
+      } catch (e) {
+        delete localStorage[persist_key];
+      }
     };
+    this.persistTransform = () => {
+      const { persist_key, persist } = this.settings;
+      if (!persist) return;
+      const { x, y, scale } = this;
+      localStorage[persist_key] = JSON.stringify({
+        x,
+        y,
+        scale,
+      });
+    };
+    this.settings = Object.assign(Object.assign({}, settings), {
+      persist_key: PERSIST_KEY_PREFIX + settings.persist_key,
+    });
     this.loadPersistedTransform();
   }
   updateRects(videoEl, containerEl) {
@@ -302,32 +321,4 @@ class Transform {
       y * this.videoRect.height
     }px) scale(${scale})`;
   }
-  loadPersistedTransform = () => {
-    const { persist_key, persist } = this.settings;
-    if (!persist) return;
-    try {
-      const loaded = JSON.parse(localStorage[persist_key]);
-      const isValid = [loaded.scale || loaded.x || loaded.y].every(
-        Number.isFinite
-      );
-      if (!isValid) {
-        throw new Error("Broken local storage");
-      }
-      this.x = loaded.x;
-      this.y = loaded.y;
-      this.scale = loaded.scale;
-    } catch (e) {
-      delete localStorage[persist_key];
-    }
-  };
-  persistTransform = () => {
-    const { persist_key, persist } = this.settings;
-    if (!persist) return;
-    const { x, y, scale } = this;
-    localStorage[persist_key] = JSON.stringify({
-      x,
-      y,
-      scale,
-    });
-  };
 }
