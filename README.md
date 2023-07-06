@@ -107,7 +107,7 @@ url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 ui: true  # custom video controls, default false
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
-muted: true  # disable sound, default false
+muted: true  # initial mute toggle state, default is false (unmuted)
 
 intersection: 0.75  # auto stop stream when less than 75% of video element is in the screen, 50% by default
 background: true  # run stream when not displayed (ex. for quick video loading), default false
