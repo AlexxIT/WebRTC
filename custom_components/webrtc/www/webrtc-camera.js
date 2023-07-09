@@ -312,8 +312,10 @@ class WebRTCCamera extends VideoRTC {
         for (const [start, end] of [['touchstart', 'touchend'], ['mousedown', 'mouseup']]) {
             ptz.addEventListener(start, startEvt => {
                 const { className } = startEvt.target;
+                startEvt.preventDefault();
                 handle('start_' + className);
                 window.addEventListener(end, endEvt => {
+                    endEvt.preventDefault();
                     handle('end_' + className);
                     if (endEvt.timeStamp - startEvt.timeStamp > 400) {
                         handle('long_' + className);
