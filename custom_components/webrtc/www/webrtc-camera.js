@@ -318,7 +318,7 @@ class WebRTCCamera extends VideoRTC {
                     if (endEvt.timeStamp - startEvt.timeStamp > 400) {
                         handle('long_' + className);
                     } else {
-                        handle(ev.target.className)
+                        handle(className);
                     }
                 }, { once: true });
             });
