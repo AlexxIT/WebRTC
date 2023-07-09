@@ -187,15 +187,15 @@ class WebRTCCamera extends VideoRTC {
         let hasZoom = false;
         let hasHome = false;
         for (const prefix of ['', '_start', '_end', '_long']) {
-            hasMove ||= this.config.ptz['data' + prefix + '_right'];
-            hasMove ||= this.config.ptz['data' + prefix + '_left'];
-            hasMove ||= this.config.ptz['data' + prefix + '_up'];
-            hasMove ||= this.config.ptz['data' + prefix + '_down'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_right'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_left'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_up'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_down'];
 
-            hasZoom ||= this.config.ptz['data' + prefix + '_zoom_in'];
-            hasZoom ||= this.config.ptz['data' + prefix + '_zoom_out'];
+            hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_in'];
+            hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_out'];
             
-            hasHome ||= this.config.ptz['data' + prefix + '_home'];
+            hasHome = hasHome || this.config.ptz['data' + prefix + '_home'];
         }
 
         const card = this.querySelector('.card');
