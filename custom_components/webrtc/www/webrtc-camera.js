@@ -148,6 +148,7 @@ class WebRTCCamera extends VideoRTC {
                 background-color: black;
                 height: 100%;
                 position: relative; /* important for Safari */
+            }
             .header {
                 position: absolute;
                 top: 6px;
