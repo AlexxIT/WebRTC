@@ -1,5 +1,6 @@
 /** Chrome 63+, Safari 11.1+ */
 import {VideoRTC} from "./video-rtc.js?v=1.5.0";
+import {DigitalPTZ} from "./digital-ptz.js?v3.1.1"
 
 class WebRTCCamera extends VideoRTC {
     /**
@@ -148,7 +149,6 @@ class WebRTCCamera extends VideoRTC {
                 background-color: black;
                 height: 100%;
                 position: relative; /* important for Safari */
-            }
             .header {
                 position: absolute;
                 top: 6px;
@@ -183,9 +183,20 @@ class WebRTCCamera extends VideoRTC {
     renderPTZ() {
         if (!this.config.ptz || !this.config.ptz.service) return;
 
-        const hasMove = this.config.ptz.data_right;
-        const hasZoom = this.config.ptz.data_zoom_in;
-        const hasHome = this.config.ptz.data_home;
+        let hasMove = false;
+        let hasZoom = false;
+        let hasHome = false;
+        for (const prefix of ['', '_start', '_end', '_long']) {
+            hasMove ||= this.config.ptz['data' + prefix + '_right'];
+            hasMove ||= this.config.ptz['data' + prefix + '_left'];
+            hasMove ||= this.config.ptz['data' + prefix + '_up'];
+            hasMove ||= this.config.ptz['data' + prefix + '_down'];
+
+            hasZoom ||= this.config.ptz['data' + prefix + '_zoom_in'];
+            hasZoom ||= this.config.ptz['data' + prefix + '_zoom_out'];
+            
+            hasHome ||= this.config.ptz['data' + prefix + '_home'];
+        }
 
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
@@ -291,14 +302,27 @@ class WebRTCCamera extends VideoRTC {
             </div>
         `);
 
-        const ptz = this.querySelector('.ptz')
-        ptz.addEventListener('click', ev => {
-            const data = this.config.ptz['data_' + ev.target.className];
+        const handle = path => {
+            const data = this.config.ptz['data_' + path];
             if (!data) return;
-
             const [domain, service] = this.config.ptz.service.split('.', 2);
             this.hass.callService(domain, service, data);
-        });
+        }
+        const ptz = this.querySelector('.ptz')
+        for (const [start, end] of [['touchstart', 'touchend'], ['mousedown', 'mouseup']]) {
+            ptz.addEventListener(start, startEvt => {
+                const { className } = startEvt.target;
+                handle('start_' + className);
+                window.addEventListener(end, endEvt => {
+                    handle('end_' + className);
+                    if (endEvt.timeStamp - startEvt.timeStamp > 400) {
+                        handle('long_' + className);
+                    } else {
+                        handle(ev.target.className)
+                    }
+                }, { once: true });
+            });
+        }
     }
 
     renderCustomUI() {
