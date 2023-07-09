@@ -116,7 +116,7 @@ digital_ptz: # digital zoom and pan via mouse/touch. Defaults to:
 # digital_ptz: false # to disable al mouse/touch digital zoom and pan
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
-muted: true  # disable sound, default false
+muted: true  # initial mute toggle state, default is false (unmuted)
 
 intersection: 0.75  # auto stop stream when less than 75% of video element is in the screen, 50% by default
 background: true  # run stream when not displayed (ex. for quick video loading), default false
@@ -142,18 +142,10 @@ style: "video {aspect-ratio: 16/9; object-fit: fill;}"
 **Video rotation**
 
 1. On client (free CPU):
-
-```yaml
-style: 'video {transform: rotate(90deg); aspect-ratio: 1}'
-```
-
+   ```yaml
+   style: 'video {transform: rotate(90deg); aspect-ratio: 1}'
+   ```
 2. On server - [FFmpeg transcoding](https://github.com/AlexxIT/go2rtc#source-ffmpeg) (high CPU cost)
-
-**Shortcuts position**
-
-```yaml
-style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-direction: column}"
-```
 
 **Hide mode label**
 
@@ -161,13 +153,25 @@ style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-dire
 style: '.mode {display: none}'
 ```
 
-**Move mode label**
+**Shortcuts position**
+
+```yaml
+style: ".shortcuts {left: unset; top: 25px; right: 5px; display: flex; flex-direction: column}"
+```
+
+**PTZ position**
+
+```yaml
+style: ".ptz {right: unset; left: 10px}"
+```
+
+**Mode label position**
 
 ```yaml
 style: '.header {bottom: 6px} .mode {position: absolute; bottom: 0px}'
 ```
 
-**Move header line**
+**Header line position**
 
 ```yaml
 style: '.header {top: unset; bottom: 6px}'
