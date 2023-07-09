@@ -68,17 +68,11 @@ class WebRTCCamera extends VideoRTC {
     oninit() {
         super.oninit();
         this.renderMain();
+        this.renderDigitalPTZ();
         this.renderPTZ();
         this.renderCustomUI();
         this.renderShortcuts();
         this.renderStyle();
-        if (this.config.digital_ptz !== false){
-            this.digitalPTZ = new DigitalPTZ(
-                this.querySelector(".player"),
-                this.querySelector(".player video"),
-                Object.assign({}, this.config.digital_ptz, { persist_key: this.config.url })
-            );
-        }
     }
 
     onconnect() {
@@ -193,6 +187,15 @@ class WebRTCCamera extends VideoRTC {
 
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster) this.video.poster = this.config.poster;
+    }
+
+    renderDigitalPTZ() {
+        if (this.config.digital_ptz === false) return;
+        this.digitalPTZ = new DigitalPTZ(
+            this.querySelector(".player"),
+            this.querySelector(".player video"),
+            Object.assign({}, this.config.digital_ptz, { persist_key: this.config.url })
+        );
     }
 
     renderPTZ() {
