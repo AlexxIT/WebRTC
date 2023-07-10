@@ -201,9 +201,20 @@ class WebRTCCamera extends VideoRTC {
     renderPTZ() {
         if (!this.config.ptz || !this.config.ptz.service) return;
 
-        const hasMove = this.config.ptz.data_right;
-        const hasZoom = this.config.ptz.data_zoom_in;
-        const hasHome = this.config.ptz.data_home;
+        let hasMove = false;
+        let hasZoom = false;
+        let hasHome = false;
+        for (const prefix of ['', '_start', '_end', '_long']) {
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_right'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_left'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_up'];
+            hasMove = hasMove || this.config.ptz['data' + prefix + '_down'];
+
+            hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_in'];
+            hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_out'];
+            
+            hasHome = hasHome || this.config.ptz['data' + prefix + '_home'];
+        }
 
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
@@ -309,14 +320,29 @@ class WebRTCCamera extends VideoRTC {
             </div>
         `);
 
-        const ptz = this.querySelector('.ptz')
-        ptz.addEventListener('click', ev => {
-            const data = this.config.ptz['data_' + ev.target.className];
+        const handle = path => {
+            const data = this.config.ptz['data_' + path];
             if (!data) return;
-
             const [domain, service] = this.config.ptz.service.split('.', 2);
             this.hass.callService(domain, service, data);
-        });
+        }
+        const ptz = this.querySelector('.ptz')
+        for (const [start, end] of [['touchstart', 'touchend'], ['mousedown', 'mouseup']]) {
+            ptz.addEventListener(start, startEvt => {
+                const { className } = startEvt.target;
+                startEvt.preventDefault();
+                handle('start_' + className);
+                window.addEventListener(end, endEvt => {
+                    endEvt.preventDefault();
+                    handle('end_' + className);
+                    if (endEvt.timeStamp - startEvt.timeStamp > 400) {
+                        handle('long_' + className);
+                    } else {
+                        handle(className);
+                    }
+                }, { once: true });
+            });
+        }
     }
 
     renderCustomUI() {
