@@ -23,7 +23,7 @@
 <body>
 <script type="module" src="/webrtc/webrtc-camera.js"></script>
 <script type="module">
-    const config = {}
+    const config = {};
     for (const [k, v] of new URLSearchParams(location.search)) {
         if (v === 'true') config[k] = true;
         else if (v === 'false') config[k] = false;
@@ -31,10 +31,10 @@
     }
 
     const card = document.createElement('webrtc-camera');
-    card.setConfig(config)
+    card.setConfig(config);
     card.hass = {
         callWS: () => new Promise(resolve => {
-            resolve('')
+            resolve('');
         }),
         hassUrl: () => location.origin + '/api/webrtc/ws?embed=1'
     };

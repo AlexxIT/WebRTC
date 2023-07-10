@@ -1,6 +1,6 @@
 /** Chrome 63+, Safari 11.1+ */
-import {VideoRTC} from "./video-rtc.js?v=1.5.0";
-import {DigitalPTZ} from "./digital-ptz.js?v3.1.1"
+import {VideoRTC} from './video-rtc.js?v=1.5.0';
+import {DigitalPTZ} from './digital-ptz.js?v3.1.1';
 
 class WebRTCCamera extends VideoRTC {
     /**
@@ -8,7 +8,7 @@ class WebRTCCamera extends VideoRTC {
      * @param {Object} config
      */
     setConfig(config) {
-        if (!config.url && !config.entity) throw new Error("Missing `url` or `entity`");
+        if (!config.url && !config.entity) throw new Error('Missing `url` or `entity`');
 
         if (config.mode) this.mode = config.mode;
         // backward compatibility
@@ -24,6 +24,15 @@ class WebRTCCamera extends VideoRTC {
          * @type {{
          *     url:string, entity:string, muted:boolean, poster:string, title:string,
          *     intersection:number, ui:boolean, style:string,
+         *     digital_ptz:{
+         *         mouse_drag_pan:boolean,
+         *         mouse_wheel_zoom:boolean,
+         *         mouse_double_click_zoom:boolean,
+         *         touch_pinch_zoom:boolean,
+         *         touch_drag_pan:boolean,
+         *         touch_tap_drag_zoom:boolean,
+         *         persist:boolean|string,
+         *     },
          *     ptz:{
          *         opacity:number|string, service:string,
          *         data_left, data_up, data_right, data_down,
@@ -54,7 +63,7 @@ class WebRTCCamera extends VideoRTC {
      * @returns {{url: string}}
      */
     static getStubConfig() {
-        return {'url': ''}
+        return {'url': ''};
     }
 
     setStatus(mode, status) {
@@ -97,7 +106,7 @@ class WebRTCCamera extends VideoRTC {
             if (super.onconnect()) {
                 this.setStatus('loading2');
             } else {
-                this.setStatus('error', "can't connect");
+                this.setStatus('error', 'unable to connect');
             }
         }).catch(er => {
             this.setStatus('error', er);
@@ -118,7 +127,7 @@ class WebRTCCamera extends VideoRTC {
                     this.setStatus(msg.type.toUpperCase(), this.config.title || '');
                     break;
             }
-        }
+        };
 
         return result;
     }
@@ -183,7 +192,7 @@ class WebRTCCamera extends VideoRTC {
 
         this.querySelector = selectors => this.shadowRoot.querySelector(selectors);
 
-        this.querySelector(".player").appendChild(this.video);
+        this.querySelector('.player').appendChild(this.video);
 
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster) this.video.poster = this.config.poster;
@@ -191,10 +200,10 @@ class WebRTCCamera extends VideoRTC {
 
     renderDigitalPTZ() {
         if (this.config.digital_ptz === false) return;
-        this.digitalPTZ = new DigitalPTZ(
-            this.querySelector(".player"),
-            this.querySelector(".player video"),
-            Object.assign({}, this.config.digital_ptz, { persist_key: this.config.url })
+        new DigitalPTZ(
+            this.querySelector('.player'),
+            this.querySelector('.player video'),
+            Object.assign({}, this.config.digital_ptz, {persist_key: this.config.url})
         );
     }
 
@@ -212,7 +221,7 @@ class WebRTCCamera extends VideoRTC {
 
             hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_in'];
             hasZoom = hasZoom || this.config.ptz['data' + prefix + '_zoom_out'];
-            
+
             hasHome = hasHome || this.config.ptz['data' + prefix + '_home'];
         }
 
@@ -325,11 +334,11 @@ class WebRTCCamera extends VideoRTC {
             if (!data) return;
             const [domain, service] = this.config.ptz.service.split('.', 2);
             this.hass.callService(domain, service, data);
-        }
-        const ptz = this.querySelector('.ptz')
+        };
+        const ptz = this.querySelector('.ptz');
         for (const [start, end] of [['touchstart', 'touchend'], ['mousedown', 'mouseup']]) {
             ptz.addEventListener(start, startEvt => {
-                const { className } = startEvt.target;
+                const {className} = startEvt.target;
                 startEvt.preventDefault();
                 handle('start_' + className);
                 window.addEventListener(end, endEvt => {
@@ -340,7 +349,7 @@ class WebRTCCamera extends VideoRTC {
                     } else {
                         handle(className);
                     }
-                }, { once: true });
+                }, {once: true});
             });
         }
     }
@@ -412,7 +421,9 @@ class WebRTCCamera extends VideoRTC {
             } else if (icon === 'mdi:volume-high') {
                 video.muted = true;
             } else if (icon === 'mdi:fullscreen') {
-                this.requestFullscreen(); // Chrome 71
+                this.requestFullscreen().catch(reason => {
+                    console.warn(reason);
+                }); // Chrome 71
             } else if (icon === 'mdi:fullscreen-exit') {
                 this.exitFullscreen();
             }
@@ -458,7 +469,7 @@ class WebRTCCamera extends VideoRTC {
 
         const icons = services.map((value, index) => `
             <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
-        `).join("");
+        `).join('');
 
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
