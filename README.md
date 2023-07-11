@@ -98,6 +98,19 @@ type: 'custom:webrtc-camera'
 entity: camera.generic_stream  # change to your camera entity_id
 ```
 
+**or**
+
+```yaml
+type: 'custom:webrtc-camera'
+streams:
+  - url: go2rtc_stream_hd
+    name: HD
+    mode: webrtc # mode is optional
+  - url: go2rtc_stream_sd
+    name: SD
+    mode: mse 
+```
+
 **Full**
 
 ```yaml
