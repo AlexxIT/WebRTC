@@ -115,7 +115,7 @@ digital_ptz:  # digital zoom and pan via mouse/touch. Defaults to:
   touch_tap_drag_zoom: true 
   persist: true  # zoom factor and viewport position survive page reloads
 
-# digital_ptz: false  # to disable al mouse/touch digital zoom and pan
+# digital_ptz: false  # to disable all mouse/touch digital zoom and pan
 
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
