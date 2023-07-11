@@ -165,12 +165,21 @@ async def ws_connect(hass: HomeAssistantType, params) -> str:
             params={"name": entity, "src": src},
             timeout=3,
         )
-        if r.ok:
-            src = entity
+        assert r.ok, f"Can't update URL for {entity}"
+        src = entity
 
     elif src := params.get("url"):
         if "{{" in src or "{%" in src:
             src = Template(src, hass).async_render()
+
+        session = async_get_clientsession(hass)
+        r = await session.patch(
+            urljoin(go_url, "api/streams"),
+            params={"name": src, "src": src},
+            timeout=3,
+        )
+        assert r.ok, f"Can't update URL for {src}"
+
     else:
         raise Exception("Missing url or entity")
 
