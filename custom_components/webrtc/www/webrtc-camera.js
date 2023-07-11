@@ -1,5 +1,5 @@
 /** Chrome 63+, Safari 11.1+ */
-import {VideoRTC} from './video-rtc.js?v=1.5.0';
+import {VideoRTC} from './video-rtc.js?v=1.6.0';
 import {DigitalPTZ} from './digital-ptz.js?v3.1.1';
 
 class WebRTCCamera extends VideoRTC {
