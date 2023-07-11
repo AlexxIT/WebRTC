@@ -122,6 +122,7 @@ class WebRTCCamera extends VideoRTC {
                     this.setStatus('error', msg.value);
                     break;
                 case 'mse':
+                case 'hls':
                 case 'mp4':
                 case 'mjpeg':
                     this.setStatus(msg.type.toUpperCase(), this.config.title || '');
