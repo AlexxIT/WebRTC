@@ -105,15 +105,18 @@ type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 
 ui: true  # custom video controls, default false
-digital_ptz: # digital zoom and pan via mouse/touch. Defaults to:
+
+digital_ptz:  # digital zoom and pan via mouse/touch. Defaults to:
   mouse_drag_pan: true 
   mouse_wheel_zoom: true
   mouse_double_click_zoom: true
   touch_drag_pan: true 
   touch_pinch_zoom: true  
   touch_tap_drag_zoom: true 
-  persist: true # zoom factor and viewport position survive page reloads
-# digital_ptz: false # to disable al mouse/touch digital zoom and pan
+  persist: true  # zoom factor and viewport position survive page reloads
+
+# digital_ptz: false  # to disable al mouse/touch digital zoom and pan
+
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 muted: true  # initial mute toggle state, default is false (unmuted)
@@ -121,14 +124,14 @@ muted: true  # initial mute toggle state, default is false (unmuted)
 intersection: 0.75  # auto stop stream when less than 75% of video element is in the screen, 50% by default
 background: true  # run stream when not displayed (ex. for quick video loading), default false
 
-shortcuts: # custom shortcuts, default none
+shortcuts:  # custom shortcuts, default none
 - name: Record
   icon: mdi:record-circle-outline
   service: switch.toggle
   service_data:
     entity_id: switch.camera_record
 
-mode: webrtc,mse,mp4,mjpeg
+mode: webrtc,mse,hls,mjpeg  # also available - webrtc/tcp
 ```
 
 Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRTC/wiki/PTZ-Config-Examples).
