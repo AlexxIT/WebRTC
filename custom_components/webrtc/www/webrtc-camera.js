@@ -98,10 +98,8 @@ class WebRTCCamera extends VideoRTC {
         this.mode = stream.mode || this.defaultMode;
     }
 
-    getNextStreamName() {
-        const nextIdx =  (this.streamIdx + 1) % this.config.streams.length;
-        const nexdtStream = this.config.streams[nextIdx];
-        return nexdtStream.name || `S${nextIdx}`;
+    getStreamName() {
+        return this.config.streams[this.streamIdx].name || `S${this.streamIdx}`;
     }
     
     oninit() {
@@ -429,7 +427,7 @@ class WebRTCCamera extends VideoRTC {
                 <ha-circular-progress class="spinner"></ha-circular-progress>
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
-                    <span class="stream">${this.getNextStreamName()}</span>
+                    <span class="stream">${this.getStreamName()}</span>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -471,7 +469,7 @@ class WebRTCCamera extends VideoRTC {
                 this.onNextStream();
                 this.ondisconnect();
                 this.connectedCallback();
-                ev.target.innerText = this.getNextStreamName();
+                ev.target.innerText = this.getStreamName();
             }
         });
 
