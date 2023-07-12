@@ -90,17 +90,20 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector('.status').innerText = status || '';
     }
 
-    onNextStream(){
+    onNextStream() {
         this.streamIdx = (this.streamIdx + 1) % this.config.streams.length;
         const stream = this.config.streams[this.streamIdx];
         this.config.url = stream.url;
         this.config.entity = stream.entity;
         this.mode = stream.mode || this.defaultMode;
-        const nextIdx =  (this.streamIdx + 1) % this.config.streams.length;
-        const nexdtStream = this.config.streams[nextIdx];
-        this.nextStreamName = nexdtStream.name || `S${nextIdx}`;
     }
 
+    getNextStreamName() {
+        const nextIdx =  (this.streamIdx + 1) % this.config.streams.length;
+        const nexdtStream = this.config.streams[nextIdx];
+        return nexdtStream.name || `S${nextIdx}`;
+    }
+    
     oninit() {
         super.oninit();
         this.renderMain();
@@ -426,7 +429,7 @@ class WebRTCCamera extends VideoRTC {
                 <ha-circular-progress class="spinner"></ha-circular-progress>
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
-                    <span class="stream">${this.nextStreamName}</span>
+                    <span class="stream">${this.getNextStreamName()}</span>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -468,7 +471,7 @@ class WebRTCCamera extends VideoRTC {
                 this.onNextStream();
                 this.ondisconnect();
                 this.connectedCallback();
-                ev.target.innerText = this.nextStreamName;
+                ev.target.innerText = this.getNextStreamName();
             }
         });
 
