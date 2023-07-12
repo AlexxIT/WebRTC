@@ -41,20 +41,19 @@ class WebRTCCamera extends VideoRTC {
          * }} config
          */
         
-        this.defaultMode = this.mode;
+        this.defaultMode = config.mode
+            ? config.mode
+            : config.mse === false
+            ? "webrtc"
+            : config.webrtc === false
+            ? "mse"
+            : this.mode;
         this.config = Object.assign({}, config);
         if (!this.config.streams) {
             this.config.streams = [
                 {
                   url: config.url,
                   entity: config.entity,
-                  mode: config.mode
-                    ? config.mode
-                    : config.mse === false
-                    ? "webrtc"
-                    : config.webrtc === false
-                    ? "mse"
-                    : undefined,
                 },
             ];
         }
