@@ -124,6 +124,7 @@ muted: true  # initial mute toggle state, default is false (unmuted)
 intersection: 0.75  # auto stop stream when less than 75% of video element is in the screen, 50% by default
 background: true  # run stream when not displayed (ex. for quick video loading), default false
 
+screenshot: false # remove button to take screenshots from video
 shortcuts:  # custom shortcuts, default none
 - name: Record
   icon: mdi:record-circle-outline

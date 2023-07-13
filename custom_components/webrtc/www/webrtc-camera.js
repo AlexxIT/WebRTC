@@ -9,7 +9,6 @@ class WebRTCCamera extends VideoRTC {
      */
     setConfig(config) {
         if (!config.url && !config.entity) throw new Error('Missing `url` or `entity`');
-
         if (config.mode) this.mode = config.mode;
         // backward compatibility
         else if (config.mse === false) this.mode = 'webrtc';
@@ -24,6 +23,7 @@ class WebRTCCamera extends VideoRTC {
          * @type {{
          *     url:string, entity:string, muted:boolean, poster:string, title:string,
          *     intersection:number, ui:boolean, style:string,
+         *     screenshot: boolean,
          *     digital_ptz:{
          *         mouse_drag_pan:boolean,
          *         mouse_wheel_zoom:boolean,
@@ -354,7 +354,35 @@ class WebRTCCamera extends VideoRTC {
             });
         }
     }
-
+    saveScreenshot(){ 
+        const canvas = document.createElement('canvas');
+        canvas.width = this.video.videoWidth;
+        canvas.height = this.video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height);
+        const image = canvas.toDataURL('image/jpeg');
+        const data = atob(image.substring("data:image/jpeg;base64,".length));
+        const asArray = new Uint8Array(data.length);
+        for (let i = 0, len = data.length; i < len; ++i) {
+            asArray[i] = data.charCodeAt(i);
+        }
+        const f = new Blob([asArray.buffer], {type:'application/octet-stream'});
+        const a = document.createElement('a');
+        window.URL = window.URL || window.webkitURL;
+        a.href = window.URL.createObjectURL(f);
+        
+        let now = new Date();
+        let year = now.getFullYear();
+        let month = (now.getMonth() + 1).toString().padStart(2, '0');  // Months are 0-based in JS
+        let day = now.getDate().toString().padStart(2, '0');
+        let hours = now.getHours().toString().padStart(2, '0');
+        let minutes = now.getMinutes().toString().padStart(2, '0');
+        let seconds = now.getSeconds().toString().padStart(2, '0');
+        a.download = `snapshot_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.jpeg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(document.body.lastElementChild); 
+    }
     renderCustomUI() {
         if (!this.config.ui) return;
 
@@ -380,7 +408,8 @@ class WebRTCCamera extends VideoRTC {
                 .space {
                     width: 100%;
                 }
-                .volume {
+                .volume,
+                .screenshot {
                     display: none;
                 }
             </style>
@@ -390,6 +419,7 @@ class WebRTCCamera extends VideoRTC {
                 <ha-circular-progress class="spinner"></ha-circular-progress>
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
+                    <ha-icon class="screenshot" icon="mdi:floppy"></ha-icon>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -427,6 +457,8 @@ class WebRTCCamera extends VideoRTC {
                 }); // Chrome 71
             } else if (icon === 'mdi:fullscreen-exit') {
                 this.exitFullscreen();
+            } else if (icon === 'mdi:floppy') {
+                this.saveScreenshot();
             }
         });
 
@@ -460,6 +492,10 @@ class WebRTCCamera extends VideoRTC {
             fullscreen.icon = this.fullscreenElement()
                 ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
         });
+
+        const screenshot = this.querySelector('.screenshot');
+        screenshot.style.display = this.config.screenshot !== false ? 'block' : 'none';
+
     }
 
     renderShortcuts() {
