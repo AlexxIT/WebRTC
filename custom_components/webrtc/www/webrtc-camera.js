@@ -160,13 +160,12 @@ class WebRTCCamera extends VideoRTC {
                 background-color: black;
                 height: 100%;
                 position: relative; /* important for Safari */
-                overflow: hidden; /* important for zoom-controller */
             }
             .player:active {
                 cursor: move; /* important for zoom-controller */
             }
-            video {
-                transform-origin: 50% 50%; /* important for zoom-controller */
+            .player .ptz-transform {
+                height: 100%;
             }
             .header {
                 position: absolute;
@@ -183,7 +182,9 @@ class WebRTCCamera extends VideoRTC {
             }
         </style>
         <ha-card class="card">
-            <div class="player"></div>
+            <div class="player">
+                <div class="ptz-transform"></div>
+            </div>
             <div class="header">
                 <div class="status"></div>
                 <div class="mode"></div>
@@ -192,8 +193,7 @@ class WebRTCCamera extends VideoRTC {
         `;
 
         this.querySelector = selectors => this.shadowRoot.querySelector(selectors);
-
-        this.querySelector('.player').appendChild(this.video);
+        this.querySelector('.ptz-transform').appendChild(this.video);
 
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster) this.video.poster = this.config.poster;
@@ -203,7 +203,8 @@ class WebRTCCamera extends VideoRTC {
         if (this.config.digital_ptz === false) return;
         new DigitalPTZ(
             this.querySelector('.player'),
-            this.querySelector('.player video'),
+            this.querySelector('.player .ptz-transform'),
+            this.video,
             Object.assign({}, this.config.digital_ptz, {persist_key: this.config.url})
         );
     }
