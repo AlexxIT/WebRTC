@@ -211,10 +211,8 @@ function getTransformedDimensions(video) {
   if (!videoHeight || !videoWidth) return undefined;
   var transform = window.getComputedStyle(video).getPropertyValue("transform");
   const match = transform.match(/matrix\((.+)\)/);
-  if (!(match === null || match === void 0 ? void 0 : match[1]))
-    return { videoWidth, videoHeight }; // the video isn't transformed
-  const matrixValues = match[1].split(", ").map(Number);
-  const matrix = new DOMMatrix(matrixValues);
+  if (!match || !match[1]) return { videoWidth, videoHeight }; // the video isn't transformed
+  const matrix = new DOMMatrix(match[1].split(", ").map(Number));
   const points = [
     new DOMPoint(0, 0),
     new DOMPoint(videoWidth, 0),
