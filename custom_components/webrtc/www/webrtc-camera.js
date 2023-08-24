@@ -15,8 +15,8 @@ class WebRTCCamera extends VideoRTC {
         if (config.intersection === 0) this.visibilityThreshold = 0;
         else this.visibilityThreshold = config.intersection || 0.75;
 
-        /** @type {string} defaultMode */
-        this.mode = config.mode
+        /** @type {string} configMode */
+        this.configMode = config.mode
             ? config.mode
             : config.mse === false
                 ? 'webrtc'
@@ -68,15 +68,11 @@ class WebRTCCamera extends VideoRTC {
         this.config = Object.assign({}, config);
 
         if (!this.config.streams) {
-            this.config.streams = [
-                {
-                    url: config.url,
-                    entity: config.entity,
-                },
-            ];
+            this.config.streams = [{url: config.url, entity: config.entity}];
         }
-        this.streamIdx = -1;
-        this.nextStream();
+
+        this.streamID = -1;
+        this.nextStream(false);
     }
 
     set hass(hass) {
@@ -108,17 +104,23 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector('.status').innerText = status || '';
     }
 
-    nextStream() {
-        this.streamIdx = (this.streamIdx + 1) % this.config.streams.length;
-        const stream = this.config.streams[this.streamIdx];
+    /** @param reload {boolean} */
+    nextStream(reload) {
+        this.streamID = (this.streamID + 1) % this.config.streams.length;
+        const stream = this.config.streams[this.streamID];
         this.config.url = stream.url;
         this.config.entity = stream.entity;
-        this.mode = stream.mode || this.mode;
+        this.mode = stream.mode || this.configMode;
+
+        if (reload) {
+            this.ondisconnect();
+            setTimeout(() => this.onconnect(), 100); // wait ws.close event
+        }
     }
 
     /** @return {string} */
     get streamName() {
-        return this.config.streams[this.streamIdx].name || `S${this.streamIdx}`;
+        return this.config.streams[this.streamID].name || `S${this.streamID}`;
     }
 
     oninit() {
@@ -248,11 +250,7 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector('.player').appendChild(this.video);
 
         const mode = this.querySelector('.mode');
-        mode.addEventListener('click', () => {
-            this.nextStream();
-            this.ondisconnect();
-            setTimeout(() => this.onconnect(), 100); // wait ws.close event
-        });
+        mode.addEventListener('click', () => this.nextStream(true));
 
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster) this.video.poster = this.config.poster;
@@ -513,9 +511,7 @@ class WebRTCCamera extends VideoRTC {
             } else if (icon === 'mdi:floppy') {
                 this.saveScreenshot();
             } else if (ev.target.className === 'stream') {
-                this.nextStream();
-                this.ondisconnect();
-                setTimeout(() => this.onconnect(), 100); // wait ws.close event
+                this.nextStream(true);
                 ev.target.innerText = this.streamName;
             }
         });
