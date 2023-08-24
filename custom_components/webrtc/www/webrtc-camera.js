@@ -15,50 +15,68 @@ class WebRTCCamera extends VideoRTC {
         if (config.intersection === 0) this.visibilityThreshold = 0;
         else this.visibilityThreshold = config.intersection || 0.75;
 
-        /**
-         * @type {{
-         *     url:string, entity:string, mode:string, muted:boolean, poster:string, title:string,
-         *     streams: {
-         *         url:string, entity:string, mode:string
-         *     }[]
-         *     intersection:number, ui:boolean, style:string, server:string,
-         *     digital_ptz:{
-         *         mouse_drag_pan:boolean,
-         *         mouse_wheel_zoom:boolean,
-         *         mouse_double_click_zoom:boolean,
-         *         touch_pinch_zoom:boolean,
-         *         touch_drag_pan:boolean,
-         *         touch_tap_drag_zoom:boolean,
-         *         persist:boolean|string,
-         *     },
-         *     ptz:{
-         *         opacity:number|string, service:string,
-         *         data_left, data_up, data_right, data_down,
-         *         data_zoom_in, data_zoom_out, data_home
-         *     },
-         *     shortcuts:Array<{name:string,icon:string}>,
-         *     mse:boolean, webrtc:boolean,
-         * }} config
-         */
-        
-        this.defaultMode = config.mode
+        /** @type {string} defaultMode */
+        this.mode = config.mode
             ? config.mode
             : config.mse === false
-            ? "webrtc"
-            : config.webrtc === false
-            ? "mse"
-            : this.mode;
+                ? 'webrtc'
+                : config.webrtc === false
+                    ? 'mse'
+                    : this.mode;
+
+        /**
+         * @type {{
+         *     url: string,
+         *     entity: string,
+         *     mode: string,
+         *     server: string,
+         *
+         *     streams: Array<{
+         *         name: string,
+         *         url: string,
+         *         entity: string,
+         *         mode: string
+         *     }>,
+         *
+         *     title: string,
+         *     poster: string,
+         *     muted: boolean,
+         *     intersection: number,
+         *     ui: boolean,
+         *     style: string,
+         *
+         *     mse: boolean,
+         *     webrtc: boolean,
+         *
+         *     digital_ptz:{
+         *         mouse_drag_pan: boolean,
+         *         mouse_wheel_zoom: boolean,
+         *         mouse_double_click_zoom: boolean,
+         *         touch_pinch_zoom: boolean,
+         *         touch_drag_pan: boolean,
+         *         touch_tap_drag_zoom: boolean,
+         *         persist: boolean|string,
+         *     },
+         *     ptz:{
+         *         opacity: number|string,
+         *         service: string,
+         *         data_left, data_up, data_right, data_down, data_zoom_in, data_zoom_out, data_home
+         *     },
+         *     shortcuts:Array<{ name:string, icon:string }>,
+         * }} config
+         */
         this.config = Object.assign({}, config);
+
         if (!this.config.streams) {
             this.config.streams = [
                 {
-                  url: config.url,
-                  entity: config.entity,
+                    url: config.url,
+                    entity: config.entity,
                 },
             ];
         }
         this.streamIdx = -1;
-        this.onNextStream();
+        this.nextStream();
     }
 
     set hass(hass) {
@@ -76,7 +94,7 @@ class WebRTCCamera extends VideoRTC {
 
     /**
      * Called by the Hass to get defaul card config
-     * @returns {{url: string}}
+     * @return {{url: string}}
      */
     static getStubConfig() {
         return {'url': ''};
@@ -90,18 +108,19 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector('.status').innerText = status || '';
     }
 
-    onNextStream() {
+    nextStream() {
         this.streamIdx = (this.streamIdx + 1) % this.config.streams.length;
         const stream = this.config.streams[this.streamIdx];
         this.config.url = stream.url;
         this.config.entity = stream.entity;
-        this.mode = stream.mode || this.defaultMode;
+        this.mode = stream.mode || this.mode;
     }
 
-    getStreamName() {
+    /** @return {string} */
+    get streamName() {
         return this.config.streams[this.streamIdx].name || `S${this.streamIdx}`;
     }
-    
+
     oninit() {
         super.oninit();
         this.renderMain();
@@ -461,7 +480,7 @@ class WebRTCCamera extends VideoRTC {
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
                     <ha-icon class="screenshot" icon="mdi:floppy"></ha-icon>
-                    <span class="stream">${this.getStreamName()}</span>
+                    <span class="stream">${this.streamName}</span>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -501,11 +520,11 @@ class WebRTCCamera extends VideoRTC {
                 this.exitFullscreen();
             } else if (icon === 'mdi:floppy') {
                 this.saveScreenshot();
-            } else if (ev.target.className === 'stream'){
-                this.onNextStream();
+            } else if (ev.target.className === 'stream') {
+                this.nextStream();
                 this.ondisconnect();
                 this.connectedCallback();
-                ev.target.innerText = this.getStreamName();
+                ev.target.innerText = this.streamName;
             }
         });
 
