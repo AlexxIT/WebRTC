@@ -23,7 +23,6 @@ class WebRTCCamera extends VideoRTC {
          * @type {{
          *     url:string, entity:string, muted:boolean, poster:string, title:string,
          *     intersection:number, ui:boolean, style:string, server:string,
-         *     screenshot: boolean,
          *     digital_ptz:{
          *         mouse_drag_pan:boolean,
          *         mouse_wheel_zoom:boolean,
@@ -413,8 +412,7 @@ class WebRTCCamera extends VideoRTC {
                 .space {
                     width: 100%;
                 }
-                .volume,
-                .screenshot {
+                .volume {
                     display: none;
                 }
             </style>
@@ -497,10 +495,6 @@ class WebRTCCamera extends VideoRTC {
             fullscreen.icon = this.fullscreenElement()
                 ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
         });
-
-        const screenshot = this.querySelector('.screenshot');
-        screenshot.style.display = this.config.screenshot !== false ? 'block' : 'none';
-
     }
 
     renderShortcuts() {
