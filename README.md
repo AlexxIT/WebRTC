@@ -81,7 +81,7 @@ Component **doesn't create devices and entities**. It creates only two services 
 
 ## Custom card
 
-As a `url` you can use any protocol supported in go2rtc or specify the stream name from the go2rtc config.  
+As a `url` you can use any protocol supported in go2rtc or **specify the stream name** from the go2rtc config.  
 As a `entity` you can use almost any camera from Hass.
 
 **Minimal**
@@ -89,6 +89,13 @@ As a `entity` you can use almost any camera from Hass.
 ```yaml
 type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
+```
+
+**or**
+
+```yaml
+type: 'custom:webrtc-camera'
+url: 'camera1'  # stream name from go2rtc.yaml
 ```
 
 **or**
@@ -104,22 +111,28 @@ entity: camera.generic_stream  # change to your camera entity_id
 type: 'custom:webrtc-camera'
 streams:
   - url: go2rtc_stream_hd
-    name: HD
+    name: HD     # name is optional
     mode: webrtc # mode is optional
   - url: go2rtc_stream_sd
     name: SD
-    mode: mse 
+    mode: mse
 ```
 
 **Full**
 
+**All settings are optional!** Only required setting - `url` or `entity` or `streams`.
+
 ```yaml
 type: 'custom:webrtc-camera'
+
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
+entity: camera.generic_stream
+mode: webrtc,webrtc/tcp,mse,hls,mjpeg  # stream technology, default all of them
+server: http://192.168.1.123:1984/     # custom go2rtc server address, default empty
 
 ui: true  # custom video controls, default false
 
-digital_ptz:  # digital zoom and pan via mouse/touch. Defaults to:
+digital_ptz:  # digital zoom and pan via mouse/touch, defaults:
   mouse_drag_pan: true 
   mouse_wheel_zoom: true
   mouse_double_click_zoom: true
@@ -143,8 +156,6 @@ shortcuts:  # custom shortcuts, default none
   service: switch.toggle
   service_data:
     entity_id: switch.camera_record
-
-mode: webrtc,mse,hls,mjpeg  # also available - webrtc/tcp
 ```
 
 Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRTC/wiki/PTZ-Config-Examples).
