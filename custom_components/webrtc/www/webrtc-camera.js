@@ -523,7 +523,9 @@ class WebRTCCamera extends VideoRTC {
             } else if (ev.target.className === 'stream') {
                 this.nextStream();
                 this.ondisconnect();
-                this.connectedCallback();
+                setTimeout(() => {
+                    this.onconnect();
+                }, 100); // wait ws.close event
                 ev.target.innerText = this.streamName;
             }
         });
