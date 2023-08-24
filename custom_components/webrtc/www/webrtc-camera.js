@@ -229,7 +229,9 @@ class WebRTCCamera extends VideoRTC {
                 pointer-events: none;
             }
             .mode {
+                cursor: pointer;
                 opacity: 0.6;
+                pointer-events: auto;
             }
         </style>
         <ha-card class="card">
@@ -244,6 +246,13 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector = selectors => this.shadowRoot.querySelector(selectors);
 
         this.querySelector('.player').appendChild(this.video);
+
+        const mode = this.querySelector('.mode');
+        mode.addEventListener('click', () => {
+            this.nextStream();
+            this.ondisconnect();
+            setTimeout(() => this.onconnect(), 100); // wait ws.close event
+        });
 
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster) this.video.poster = this.config.poster;
@@ -506,9 +515,7 @@ class WebRTCCamera extends VideoRTC {
             } else if (ev.target.className === 'stream') {
                 this.nextStream();
                 this.ondisconnect();
-                setTimeout(() => {
-                    this.onconnect();
-                }, 100); // wait ws.close event
+                setTimeout(() => this.onconnect(), 100); // wait ws.close event
                 ev.target.innerText = this.streamName;
             }
         });
