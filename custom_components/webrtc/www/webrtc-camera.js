@@ -8,11 +8,7 @@ class WebRTCCamera extends VideoRTC {
      * @param {Object} config
      */
     setConfig(config) {
-        if (!config.url && !config.entity) throw new Error('Missing `url` or `entity`');
-        if (config.mode) this.mode = config.mode;
-        // backward compatibility
-        else if (config.mse === false) this.mode = 'webrtc';
-        else if (config.webrtc === false) this.mode = 'mse';
+        if (!config.url && !config.entity && !config.streams) throw new Error('Missing `url` or `entity` or `streams`');
 
         if (config.background) this.background = config.background;
 
@@ -21,7 +17,10 @@ class WebRTCCamera extends VideoRTC {
 
         /**
          * @type {{
-         *     url:string, entity:string, muted:boolean, poster:string, title:string,
+         *     url:string, entity:string, mode:string, muted:boolean, poster:string, title:string,
+         *     streams: {
+         *         url:string, entity:string, mode:string
+         *     }[]
          *     intersection:number, ui:boolean, style:string, server:string,
          *     digital_ptz:{
          *         mouse_drag_pan:boolean,
@@ -41,7 +40,25 @@ class WebRTCCamera extends VideoRTC {
          *     mse:boolean, webrtc:boolean,
          * }} config
          */
-        this.config = config;
+        
+        this.defaultMode = config.mode
+            ? config.mode
+            : config.mse === false
+            ? "webrtc"
+            : config.webrtc === false
+            ? "mse"
+            : this.mode;
+        this.config = Object.assign({}, config);
+        if (!this.config.streams) {
+            this.config.streams = [
+                {
+                  url: config.url,
+                  entity: config.entity,
+                },
+            ];
+        }
+        this.streamIdx = -1;
+        this.onNextStream();
     }
 
     set hass(hass) {
@@ -73,6 +90,18 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector('.status').innerText = status || '';
     }
 
+    onNextStream() {
+        this.streamIdx = (this.streamIdx + 1) % this.config.streams.length;
+        const stream = this.config.streams[this.streamIdx];
+        this.config.url = stream.url;
+        this.config.entity = stream.entity;
+        this.mode = stream.mode || this.defaultMode;
+    }
+
+    getStreamName() {
+        return this.config.streams[this.streamIdx].name || `S${this.streamIdx}`;
+    }
+    
     oninit() {
         super.oninit();
         this.renderMain();
@@ -415,6 +444,15 @@ class WebRTCCamera extends VideoRTC {
                 .volume {
                     display: none;
                 }
+                .stream {
+                    padding-top: 2px;
+                    margin-left: 2px;
+                    font-weight: 400;
+                    font-size: 20px;
+                    color: white;
+                    display: none;
+                    cursor: pointer;
+                }
             </style>
         `);
         card.insertAdjacentHTML('beforeend', `
@@ -423,6 +461,7 @@ class WebRTCCamera extends VideoRTC {
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
                     <ha-icon class="screenshot" icon="mdi:floppy"></ha-icon>
+                    <span class="stream">${this.getStreamName()}</span>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -462,6 +501,11 @@ class WebRTCCamera extends VideoRTC {
                 this.exitFullscreen();
             } else if (icon === 'mdi:floppy') {
                 this.saveScreenshot();
+            } else if (ev.target.className === 'stream'){
+                this.onNextStream();
+                this.ondisconnect();
+                this.connectedCallback();
+                ev.target.innerText = this.getStreamName();
             }
         });
 
@@ -495,6 +539,8 @@ class WebRTCCamera extends VideoRTC {
             fullscreen.icon = this.fullscreenElement()
                 ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
         });
+        const stream = this.querySelector('.stream');
+        stream.style.display = this.config.streams.length > 1 ? 'block' : 'none';
     }
 
     renderShortcuts() {
