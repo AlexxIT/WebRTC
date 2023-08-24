@@ -169,7 +169,7 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
 
 
 # noinspection PyProtectedMember
-def dash_cast(hass: HomeAssistant, cast_entities: list, url: str):
+def dash_cast(hass: HomeAssistant, cast_entities: list, url: str, force=False):
     """Cast webpage to chromecast device via DashCast application."""
     try:
         entities = [
@@ -188,7 +188,7 @@ def dash_cast(hass: HomeAssistant, cast_entities: list, url: str):
                 entity._chromecast.register_handler(entity.dashcast)
 
             _LOGGER.debug(f"DashCast to {entity.entity_id}")
-            entity.dashcast.load_url(url)
+            entity.dashcast.load_url(url, force)
 
     except Exception:
         _LOGGER.exception(f"Can't DashCast to {cast_entities}")

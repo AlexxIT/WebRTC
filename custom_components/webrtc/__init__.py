@@ -44,6 +44,7 @@ DASH_CAST_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Exclusive("url", "url"): cv.string,
         vol.Exclusive("entity", "url"): cv.entity_id,
+        vol.Optional("force", default=False): bool,
         vol.Optional("extra"): dict,
     },
     required=True,
@@ -106,6 +107,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
             hass,
             call.data[ATTR_ENTITY_ID],
             f"{get_url(hass)}/webrtc/embed?" + urlencode(query),
+            call.data.get("force"),
         )
 
     hass.services.async_register(DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)

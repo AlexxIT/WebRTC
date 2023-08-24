@@ -61,6 +61,11 @@ dash_cast:
       selector:
         text:
 
+    force:
+      description: Force restart DashCast application
+      selector:
+        boolean:
+
     entity:
       description: Camera entity
       example: camera.generic_stream
