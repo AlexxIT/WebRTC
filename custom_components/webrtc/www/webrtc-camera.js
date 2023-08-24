@@ -409,30 +409,13 @@ class WebRTCCamera extends VideoRTC {
         const canvas = document.createElement('canvas');
         canvas.width = this.video.videoWidth;
         canvas.height = this.video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height);
-        const image = canvas.toDataURL('image/jpeg');
-        const data = atob(image.substring('data:image/jpeg;base64,'.length));
-        const asArray = new Uint8Array(data.length);
-        for (let i = 0, len = data.length; i < len; ++i) {
-            asArray[i] = data.charCodeAt(i);
-        }
-        const f = new Blob([asArray.buffer], {type: 'application/octet-stream'});
-        const a = document.createElement('a');
-        window.URL = window.URL || window.webkitURL;
-        a.href = window.URL.createObjectURL(f);
+        canvas.getContext('2d').drawImage(this.video, 0, 0, canvas.width, canvas.height);
 
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');  // Months are 0-based in JS
-        const day = now.getDate().toString().padStart(2, '0');
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        a.download = `snapshot_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.jpeg`;
-        document.body.appendChild(a);
+        const ts = new Date().toISOString().substring(0, 19).replaceAll('-', '').replaceAll(':', '');
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/jpeg');
+        a.download = `snapshot_${ts}.jpeg`;
         a.click();
-        document.body.removeChild(document.body.lastElementChild);
     }
 
     renderCustomUI() {
