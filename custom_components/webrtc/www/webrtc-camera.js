@@ -67,7 +67,7 @@ class WebRTCCamera extends VideoRTC {
 
     setStatus(mode, status) {
         const divMode = this.querySelector('.mode').innerText;
-        if (mode === 'error' && divMode !== 'loading1' && divMode !== 'loading2') return;
+        if (mode === 'error' && divMode !== 'Loading..' && divMode !== 'Loading...') return;
 
         this.querySelector('.mode').innerText = mode;
         this.querySelector('.status').innerText = status || '';
@@ -88,9 +88,9 @@ class WebRTCCamera extends VideoRTC {
         if (!this.isConnected || this.ws || this.pc) return false;
 
         const divMode = this.querySelector('.mode').innerText;
-        if (divMode === 'loading1') return;
+        if (divMode === 'Loading..') return;
 
-        this.setStatus('loading1');
+        this.setStatus('Loading..');
 
         this.hass.callWS({
             type: 'auth/sign_path', path: '/api/webrtc/ws'
@@ -106,7 +106,7 @@ class WebRTCCamera extends VideoRTC {
                 this.wsURL += '&entity=' + this.config.entity;
             }
             if (super.onconnect()) {
-                this.setStatus('loading2');
+                this.setStatus('Loading...');
             } else {
                 this.setStatus('error', 'unable to connect');
             }
