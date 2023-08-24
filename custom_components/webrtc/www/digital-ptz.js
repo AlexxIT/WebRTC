@@ -179,11 +179,12 @@ function startGesturePan({ containerEl, transform, render }, type) {
     type === "mouse"
       ? ["mousedown", "mousemove", "mouseup"]
       : ["touchstart", "touchmove", "touchend"];
+  const isTouchEvent = ev => 'TouchEvent' in window && ev instanceof TouchEvent;
   const onDown = (downEvt) => {
-    let last = downEvt instanceof TouchEvent ? downEvt.touches[0] : downEvt;
+    let last = isTouchEvent(downEvt) ? downEvt.touches[0] : downEvt;
     const onMove = (moveEvt) => {
-      if (moveEvt instanceof TouchEvent && moveEvt.touches.length !== 1) return;
-      const curr = moveEvt instanceof TouchEvent ? moveEvt.touches[0] : moveEvt;
+      if (isTouchEvent(moveEvt) && moveEvt.touches.length !== 1) return;
+      const curr = isTouchEvent(moveEvt) ? moveEvt.touches[0] : moveEvt;
       transform.move(curr.pageX - last.pageX, curr.pageY - last.pageY);
       last = curr;
       render();
