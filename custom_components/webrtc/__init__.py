@@ -3,6 +3,7 @@ import logging
 import time
 import uuid
 from pathlib import Path
+from typing import Union
 from urllib.parse import urlencode, urljoin
 
 import homeassistant.helpers.config_validation as cv
@@ -146,44 +147,24 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
     return True
 
 
-async def ws_connect(hass: HomeAssistantType, params) -> str:
-    entry = hass.data[DOMAIN]
-    if isinstance(entry, Server):
-        assert entry.available, "WebRTC server not available"
-        go_url = "http://localhost:1984/"
-    else:
-        go_url = entry
+async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
+    server: Union[str, Server] = hass.data[DOMAIN]
+    if isinstance(server, Server):
+        assert server.available, "WebRTC server not available"
+        server = "http://localhost:1984/"
 
-    if entity := params.get("entity"):
-        src = await utils.get_stream_source(hass, entity)
-        assert src, f"Can't get URL for {entity}"
-
-        # adds stream to go2rtc using entity_id as name (RTSPtoWebRTC API)
-        session = async_get_clientsession(hass)
-        r = await session.patch(
-            urljoin(go_url, "api/streams"),
-            params={"name": entity, "src": src},
-            timeout=3,
-        )
-        assert r.ok, f"Can't update URL for {entity}"
-        src = entity
-
+    if name := params.get("entity"):
+        src = await utils.get_stream_source(hass, name)
+        assert src, f"Can't get URL for {name}"
+        query = {"src": src, "name": name}
     elif src := params.get("url"):
         if "{{" in src or "{%" in src:
             src = Template(src, hass).async_render()
-
-        session = async_get_clientsession(hass)
-        r = await session.patch(
-            urljoin(go_url, "api/streams"),
-            params={"name": src, "src": src},
-            timeout=3,
-        )
-        assert r.ok, f"Can't update URL for {src}"
-
+        query = {"src": src}
     else:
         raise Exception("Missing url or entity")
 
-    return urljoin("ws" + go_url[4:], "api/ws") + "?" + urlencode({"src": src})
+    return urljoin("ws" + server[4:], "api/ws") + "?" + urlencode(query)
 
 
 class WebSocketView(HomeAssistantView):
