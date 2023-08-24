@@ -148,7 +148,12 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
 
 
 async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
-    server: Union[str, Server] = hass.data[DOMAIN]
+    # 1. Server URL from card param
+    server: str = params.get("server")
+    # 2. Server URL from integration settings
+    if not server:
+        server: Union[str, Server] = hass.data[DOMAIN]
+    # 3. Server is manual binary
     if isinstance(server, Server):
         assert server.available, "WebRTC server not available"
         server = "http://localhost:1984/"

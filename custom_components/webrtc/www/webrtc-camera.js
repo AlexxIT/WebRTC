@@ -23,7 +23,7 @@ class WebRTCCamera extends VideoRTC {
         /**
          * @type {{
          *     url:string, entity:string, muted:boolean, poster:string, title:string,
-         *     intersection:number, ui:boolean, style:string,
+         *     intersection:number, ui:boolean, style:string, server:string,
          *     digital_ptz:{
          *         mouse_drag_pan:boolean,
          *         mouse_wheel_zoom:boolean,
@@ -99,6 +99,9 @@ class WebRTCCamera extends VideoRTC {
             this.wsURL = 'ws' + this.hass.hassUrl(data.path).substring(4);
             if (this.config.url) {
                 this.wsURL += '&url=' + encodeURIComponent(this.config.url);
+            }
+            if (this.config.server) {
+                this.wsURL += '&server=' + encodeURIComponent(this.config.server);
             }
             if (this.config.entity) {
                 this.wsURL += '&entity=' + this.config.entity;
