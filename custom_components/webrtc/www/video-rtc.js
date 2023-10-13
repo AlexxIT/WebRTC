@@ -132,6 +132,12 @@ export class VideoRTC extends HTMLElement {
          * @type {Object.<string,Function>}}
          */
         this.onmessage = null;
+
+        /**
+         * A microphone stream to attach to a WebRTC connection.
+         * @type {MediaStream}}
+         */
+        this.microphoneStream = null;
     }
 
     /**
@@ -509,6 +515,15 @@ export class VideoRTC extends HTMLElement {
         // Safari doesn't support "offerToReceiveVideo"
         pc.addTransceiver('video', {direction: 'recvonly'});
         pc.addTransceiver('audio', {direction: 'recvonly'});
+
+        // Must add microphone tracks prior to making the offer.
+        if (this.config) {
+            if (this.config.streams[this.streamID].mic) {
+                this.microphoneStream?.getTracks().forEach((track) => {
+                    pc.addTransceiver(track, { direction: 'sendonly' });
+                });
+            }
+        }
 
         pc.createOffer().then(offer => {
             pc.setLocalDescription(offer).then(() => {

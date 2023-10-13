@@ -112,6 +112,12 @@ class WebRTCCamera extends VideoRTC {
         this.config.entity = stream.entity;
         this.mode = stream.mode || this.configMode;
 
+        if (stream.mic && navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(micStream => {
+                this.microphoneStream = micStream;
+            });
+        }
+
         if (reload) {
             this.ondisconnect();
             setTimeout(() => this.onconnect(), 100); // wait ws.close event
