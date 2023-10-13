@@ -15,27 +15,19 @@ class WebRTCCamera extends VideoRTC {
         if (config.intersection === 0) this.visibilityThreshold = 0;
         else this.visibilityThreshold = config.intersection || 0.75;
 
-        /** @type {string} configMode */
-        this.configMode = config.mode
-            ? config.mode
-            : config.mse === false
-                ? 'webrtc'
-                : config.webrtc === false
-                    ? 'mse'
-                    : this.mode;
-
         /**
          * @type {{
          *     url: string,
          *     entity: string,
          *     mode: string,
-         *     server: string,
+         *     media: string,
          *
          *     streams: Array<{
          *         name: string,
          *         url: string,
          *         entity: string,
-         *         mode: string
+         *         mode: string,
+         *         media: string,
          *     }>,
          *
          *     title: string,
@@ -44,6 +36,8 @@ class WebRTCCamera extends VideoRTC {
          *     intersection: number,
          *     ui: boolean,
          *     style: string,
+         *
+         *     server: string,
          *
          *     mse: boolean,
          *     webrtc: boolean,
@@ -65,7 +59,10 @@ class WebRTCCamera extends VideoRTC {
          *     shortcuts:Array<{ name:string, icon:string }>,
          * }} config
          */
-        this.config = Object.assign({}, config);
+        this.config = Object.assign({
+            mode: config.mse === false ? 'webrtc' : config.webrtc === false ? 'mse' : this.mode,
+            media: this.media,
+        }, config);
 
         if (!this.config.streams) {
             this.config.streams = [{url: config.url, entity: config.entity}];
@@ -107,10 +104,12 @@ class WebRTCCamera extends VideoRTC {
     /** @param reload {boolean} */
     nextStream(reload) {
         this.streamID = (this.streamID + 1) % this.config.streams.length;
+
         const stream = this.config.streams[this.streamID];
         this.config.url = stream.url;
         this.config.entity = stream.entity;
-        this.mode = stream.mode || this.configMode;
+        this.mode = stream.mode || this.config.mode;
+        this.media = stream.media || this.config.media;
 
         if (reload) {
             this.ondisconnect();
