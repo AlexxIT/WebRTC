@@ -15,6 +15,7 @@
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Custom card](#custom-card)
+* [Two-way audio](#two-way-audio)
 * [Snapshots to Telegram](#snapshots-to-telegram)
 * [Cast or share stream](#cast-or-share-stream)
 * [Stream to camera](#stream-to-camera)
@@ -111,11 +112,13 @@ entity: camera.generic_stream  # change to your camera entity_id
 type: 'custom:webrtc-camera'
 streams:
   - url: go2rtc_stream_hd
-    name: HD     # name is optional
-    mode: webrtc # mode is optional
+    name: HD      # name is optional
+    mode: webrtc  # mode is optional
+    media: video  # media is optional
   - url: go2rtc_stream_sd
     name: SD
     mode: mse
+    media: audio
 ```
 
 **Full**
@@ -128,6 +131,8 @@ type: 'custom:webrtc-camera'
 url: 'rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0'
 entity: camera.generic_stream
 mode: webrtc,webrtc/tcp,mse,hls,mjpeg  # stream technology, default all of them
+media: video,audio  # select only video or audio track, default both
+
 server: http://192.168.1.123:1984/     # custom go2rtc server address, default empty
 
 ui: true  # custom video controls, default false
@@ -209,6 +214,26 @@ style: '.header {bottom: 6px} .mode {position: absolute; bottom: 0px}'
 ```yaml
 style: '.header {top: unset; bottom: 6px}'
 ```
+
+## Two-way audio
+
+- Only for [supported sources](https://github.com/AlexxIT/go2rtc#two-way-audio) in go2rtc
+- Only for Hass with HTTPS-access, this limitation [from browsers](https://stackoverflow.com/questions/52759992/how-to-access-camera-and-microphone-in-chrome-without-https)
+- Only for WebRTC mode
+- HTTPS also important for Hass Mobile App!
+
+You should add `microphone` to `media` param. You can use two streams: one with mic, second without:
+
+```yaml
+type: 'custom:webrtc-camera'
+streams:
+  - url: go2rtc_stream
+  - url: go2rtc_stream
+    mode: webrtc
+    media: video,audio,microphone
+```
+
+**PS.** For Hass [Mobile App](https://www.home-assistant.io/integrations/mobile_app/) ensure that you can use microphone with build-in [Assist](https://www.home-assistant.io/voice_control/).
 
 ## Snapshots to Telegram
 
