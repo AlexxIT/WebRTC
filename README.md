@@ -185,6 +185,12 @@ style: "video {aspect-ratio: 16/9; object-fit: fill;}"
 style: '.mode {display: none}'
 ```
 
+**Hide fullscreen button**
+
+```yaml
+style: '.fullscreen {display: none}'
+```
+
 **Hide screenshot button**
 
 ```yaml
