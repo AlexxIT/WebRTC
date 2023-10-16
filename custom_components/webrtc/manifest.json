@@ -7,7 +7,8 @@
   "config_flow": true,
   "dependencies": [
     "http",
-    "lovelace"
+    "lovelace",
+    "camera"
   ],
   "documentation": "https://github.com/AlexxIT/WebRTC",
   "iot_class": "calculated",
