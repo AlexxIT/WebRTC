@@ -224,9 +224,9 @@ style: '.header {top: unset; bottom: 6px}'
 ## Two-way audio
 
 - Only for [supported sources](https://github.com/AlexxIT/go2rtc#two-way-audio) in go2rtc
-- Only for Hass with HTTPS-access, this limitation [from browsers](https://stackoverflow.com/questions/52759992/how-to-access-camera-and-microphone-in-chrome-without-https)
+- Only for Hass with HTTPS access, this limitation is [from the browsers](https://stackoverflow.com/questions/52759992/how-to-access-camera-and-microphone-in-chrome-without-https)
 - Only for WebRTC mode
-- HTTPS also important for Hass Mobile App!
+- HTTPS is also important for Hass Mobile App!
 
 You should add `microphone` to `media` param. You can use two streams: one with mic, second without:
 
@@ -239,7 +239,7 @@ streams:
     media: video,audio,microphone
 ```
 
-**PS.** For Hass [Mobile App](https://www.home-assistant.io/integrations/mobile_app/) ensure that you can use microphone with build-in [Assist](https://www.home-assistant.io/voice_control/).
+**PS.** For Hass [Mobile App](https://www.home-assistant.io/integrations/mobile_app/) ensure that you can use microphone with the built-in [Assist](https://www.home-assistant.io/voice_control/).
 
 ## Snapshots to Telegram
 
