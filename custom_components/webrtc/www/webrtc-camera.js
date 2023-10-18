@@ -129,6 +129,10 @@ class WebRTCCamera extends VideoRTC {
         this.renderPTZ();
         this.renderCustomUI();
         this.renderShortcuts();
+        this.renderShortcuts_1();
+        this.renderShortcuts_2();
+        this.renderShortcuts_3();
+        this.renderShortcuts_4();
         this.renderStyle();
     }
 
@@ -576,6 +580,134 @@ class WebRTCCamera extends VideoRTC {
 
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
+            const value = services[ev.target.dataset.index];
+            const [domain, name] = value.service.split('.');
+            this.hass.callService(domain, name, value.service_data || {});
+        });
+    }
+    
+   renderShortcuts_1() {
+        if (!this.config.shortcuts_1) return;
+
+        // backward compatibility with `services` property
+        const services = this.config.shortcuts_1.services || this.config.shortcuts_1;
+
+        const icons = services.map((value, index) => `
+            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+        `).join("");
+
+        const card = this.querySelector('.card');
+        card.insertAdjacentHTML('beforebegin', `
+        <style>
+            .shortcuts_1 {
+                position: absolute;
+                top: 50%;
+                left: 5px;
+                }
+        </style>
+        `);
+        card.insertAdjacentHTML('beforeend', `
+        <div class="shortcuts_1">${icons}</div>
+        `);
+
+        const shortcuts_1 = this.querySelector('.shortcuts_1');
+        shortcuts_1.addEventListener('click', ev => {
+            const value = services[ev.target.dataset.index];
+            const [domain, name] = value.service.split('.');
+            this.hass.callService(domain, name, value.service_data || {});
+        });
+    }
+
+    renderShortcuts_2() {
+        if (!this.config.shortcuts_2) return;
+
+        // backward compatibility with `services` property
+        const services = this.config.shortcuts_2.services || this.config.shortcuts_2;
+
+        const icons = services.map((value, index) => `
+            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+        `).join("");
+
+        const card = this.querySelector('.card');
+        card.insertAdjacentHTML('beforebegin', `
+        <style>
+            .shortcuts_2 {
+                position: absolute;
+                top: 50%;
+                right: 5px;
+            }
+        </style>
+        `);
+        card.insertAdjacentHTML('beforeend', `
+        <div class="shortcuts_2">${icons}</div>
+        `);
+
+        const shortcuts_2 = this.querySelector('.shortcuts_2');
+        shortcuts_2.addEventListener('click', ev => {
+            const value = services[ev.target.dataset.index];
+            const [domain, name] = value.service.split('.');
+            this.hass.callService(domain, name, value.service_data || {});
+        });
+    }
+
+    renderShortcuts_3() {
+        if (!this.config.shortcuts_3) return;
+
+        // backward compatibility with `services` property
+        const services = this.config.shortcuts_3.services || this.config.shortcuts_3;
+
+        const icons = services.map((value, index) => `
+            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+        `).join("");
+
+        const card = this.querySelector('.card');
+        card.insertAdjacentHTML('beforebegin', `
+        <style>
+            .shortcuts_3 {
+                position: absolute;
+                top: 5px;
+                left: 50%;
+            }
+        </style>
+        `);
+        card.insertAdjacentHTML('beforeend', `
+        <div class="shortcuts_3">${icons}</div>
+        `);
+
+        const shortcuts_3 = this.querySelector('.shortcuts_3');
+        shortcuts_3.addEventListener('click', ev => {
+            const value = services[ev.target.dataset.index];
+            const [domain, name] = value.service.split('.');
+            this.hass.callService(domain, name, value.service_data || {});
+        });
+    }
+
+    renderShortcuts_4() {
+        if (!this.config.shortcuts_4) return;
+
+        // backward compatibility with `services` property
+        const services = this.config.shortcuts_4.services || this.config.shortcuts_4;
+
+        const icons = services.map((value, index) => `
+            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+        `).join("");
+
+        const card = this.querySelector('.card');
+        card.insertAdjacentHTML('beforebegin', `
+        <style>
+            .shortcuts_4 {
+                position: absolute;
+                bottom: 5px;
+                left: 50%;
+            }
+        </style>
+        `);
+        card.insertAdjacentHTML('beforeend', `
+        <div class="shortcuts_4">${icons}</div>
+        `);
+
+        const shortcuts_4 = this.querySelector('.shortcuts_4');
+        shortcuts_4.addEventListener('click', ev => {
             const value = services[ev.target.dataset.index];
             const [domain, name] = value.service.split('.');
             this.hass.callService(domain, name, value.service_data || {});
