@@ -184,6 +184,14 @@ class WebRTCCamera extends VideoRTC {
         return result;
     }
 
+    onenterpictureinpicture() {
+        this.background = true
+    }
+
+    onleavepictureinpicture() {
+        this.background = this.config.background
+    }
+
     onpcvideo(ev) {
         super.onpcvideo(ev);
 
@@ -546,6 +554,10 @@ class WebRTCCamera extends VideoRTC {
         video.addEventListener('pause', () => {
             play.style.display = 'block';
         });
+
+
+        video.addEventListener('enterpictureinpicture', () => this.onenterpictureinpicture());
+        video.addEventListener('leavepictureinpicture', () => this.onleavepictureinpicture());
 
         const volume = this.querySelector('.volume');
         video.addEventListener('loadeddata', () => {
