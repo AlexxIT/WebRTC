@@ -498,6 +498,12 @@ class WebRTCCamera extends VideoRTC {
             this.exitFullscreen = () => document.webkitExitFullscreen();
             this.fullscreenElement = () => document.webkitFullscreenElement;
             this.fullscreenEvent = 'webkitfullscreenchange';
+        } else if (this.video.webkitEnterFullscreen) {
+            this.requestFullscreen = () => new Promise(resolve => {
+                this.video.webkitEnterFullscreen()
+                resolve()
+            })
+            this.exitFullscreen = () => video.webkitExitFullscreen();
         } else {
             this.querySelector('.fullscreen').style.display = 'none';
         }
@@ -566,10 +572,12 @@ class WebRTCCamera extends VideoRTC {
         });
 
         const fullscreen = this.querySelector('.fullscreen');
-        this.addEventListener(this.fullscreenEvent, () => {
-            fullscreen.icon = this.fullscreenElement()
-                ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
-        });
+        if (this.fullscreenEvent && this.fullscreenElement) {
+            this.addEventListener(this.fullscreenEvent, () => {
+                fullscreen.icon = this.fullscreenElement()
+                    ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
+            });
+        }
         const stream = this.querySelector('.stream');
         stream.style.display = this.config.streams.length > 1 ? 'block' : 'none';
     }
