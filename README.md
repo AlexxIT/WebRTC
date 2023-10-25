@@ -197,6 +197,12 @@ style: '.fullscreen {display: none}'
 style: '.screenshot {display: none}'
 ```
 
+**Hide picture-in-picture button**
+
+```yaml
+style: '.picture-in-picture {display: none}'
+```
+
 **Shortcuts position**
 
 ```yaml

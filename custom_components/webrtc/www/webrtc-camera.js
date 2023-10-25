@@ -184,6 +184,14 @@ class WebRTCCamera extends VideoRTC {
         return result;
     }
 
+    onenterpictureinpicture() {
+        this.background = true
+    }
+
+    onleavepictureinpicture() {
+        this.background = this.config.background
+    }
+
     onpcvideo(ev) {
         super.onpcvideo(ev);
 
@@ -425,6 +433,14 @@ class WebRTCCamera extends VideoRTC {
         a.click();
     }
 
+    togglePictureInPicture() {
+        if (document.pictureInPictureElement) {
+            document.exitPictureInPicture();
+        } else if (document.pictureInPictureEnabled) {
+            this.video.requestPictureInPicture()
+        }
+    }
+
     renderCustomUI() {
         if (!this.config.ui) return;
 
@@ -470,6 +486,7 @@ class WebRTCCamera extends VideoRTC {
                 <div class="controls">
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
                     <ha-icon class="screenshot" icon="mdi:floppy"></ha-icon>
+                    <ha-icon class="picture-in-picture" icon="mdi:picture-in-picture-bottom-right"></ha-icon>
                     <span class="stream">${this.streamName}</span>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
@@ -493,6 +510,10 @@ class WebRTCCamera extends VideoRTC {
             this.querySelector('.fullscreen').style.display = 'none';
         }
 
+        if (!this.video.requestPictureInPicture) {
+            this.querySelector('.picture-in-picture').style.display = 'none';
+        }
+
         const ui = this.querySelector('.ui');
         ui.addEventListener('click', ev => {
             const icon = ev.target.icon;
@@ -510,6 +531,8 @@ class WebRTCCamera extends VideoRTC {
                 this.exitFullscreen();
             } else if (icon === 'mdi:floppy') {
                 this.saveScreenshot();
+            } else if (icon === 'mdi:picture-in-picture-bottom-right') {
+                this.togglePictureInPicture()
             } else if (ev.target.className === 'stream') {
                 this.nextStream(true);
                 ev.target.innerText = this.streamName;
@@ -531,6 +554,10 @@ class WebRTCCamera extends VideoRTC {
         video.addEventListener('pause', () => {
             play.style.display = 'block';
         });
+
+
+        video.addEventListener('enterpictureinpicture', () => this.onenterpictureinpicture());
+        video.addEventListener('leavepictureinpicture', () => this.onleavepictureinpicture());
 
         const volume = this.querySelector('.volume');
         video.addEventListener('loadeddata', () => {
