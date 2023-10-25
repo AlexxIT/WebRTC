@@ -553,6 +553,7 @@ class WebRTCCamera extends VideoRTC {
         });
         video.addEventListener('leavepictureinpicture', () => {
             this.background = this.config.background;
+            this.play();
         });
 
         const volume = this.querySelector('.volume');
