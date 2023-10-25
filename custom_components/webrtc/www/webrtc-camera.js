@@ -184,14 +184,6 @@ class WebRTCCamera extends VideoRTC {
         return result;
     }
 
-    onenterpictureinpicture() {
-        this.background = true
-    }
-
-    onleavepictureinpicture() {
-        this.background = this.config.background
-    }
-
     onpcvideo(ev) {
         super.onpcvideo(ev);
 
@@ -437,7 +429,7 @@ class WebRTCCamera extends VideoRTC {
         if (document.pictureInPictureElement) {
             document.exitPictureInPicture();
         } else if (document.pictureInPictureEnabled) {
-            this.video.requestPictureInPicture()
+            this.video.requestPictureInPicture();
         }
     }
 
@@ -532,7 +524,7 @@ class WebRTCCamera extends VideoRTC {
             } else if (icon === 'mdi:floppy') {
                 this.saveScreenshot();
             } else if (icon === 'mdi:picture-in-picture-bottom-right') {
-                this.togglePictureInPicture()
+                this.togglePictureInPicture();
             } else if (ev.target.className === 'stream') {
                 this.nextStream(true);
                 ev.target.innerText = this.streamName;
@@ -556,8 +548,12 @@ class WebRTCCamera extends VideoRTC {
         });
 
 
-        video.addEventListener('enterpictureinpicture', () => this.onenterpictureinpicture());
-        video.addEventListener('leavepictureinpicture', () => this.onleavepictureinpicture());
+        video.addEventListener('enterpictureinpicture', () => {
+            this.background = true;
+        });
+        video.addEventListener('leavepictureinpicture', () => {
+            this.background = this.config.background;
+        });
 
         const volume = this.querySelector('.volume');
         video.addEventListener('loadeddata', () => {
