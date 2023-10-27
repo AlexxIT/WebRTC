@@ -497,7 +497,13 @@ class WebRTCCamera extends VideoRTC {
                 fullscreen.icon = document.fullscreenElement ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
             });
         } else if (video.webkitEnterFullscreen) {
-            this.requestFullscreen = () => video.webkitEnterFullscreen();
+            this.requestFullscreen = () => new Promise((resolve, reject) => {
+                try {
+                    video.webkitEnterFullscreen();
+                } catch (e) {
+                    reject(e);
+                }
+            });
             video.addEventListener('webkitendfullscreen', () => {
                 setTimeout(() => this.play(), 1000); // fix bug in iOS
             });
