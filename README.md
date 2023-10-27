@@ -4,7 +4,7 @@
 ![](https://img.shields.io/github/stars/AlexxIT/WebRTC?style=flat-square&logo=github) 
 ![](https://img.shields.io/github/forks/AlexxIT/WebRTC?style=flat-square&logo=github) 
 
-[Home Assistant](https://www.home-assistant.io/) custom component for viewing almost any camera stream in real time using [WebRTC](https://en.wikipedia.org/wiki/WebRTC) and other technologies.
+[Home Assistant](https://www.home-assistant.io/) custom component for real-time viewing of almost any camera stream using [WebRTC](https://en.wikipedia.org/wiki/WebRTC) and other technologies.
 
 **Starting with version 3** the streaming server has been changed from [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC) to [go2rtc](https://github.com/AlexxIT/go2rtc).
 
@@ -30,13 +30,13 @@
 ![](https://img.shields.io/docker/pulls/alexxit/go2rtc?style=flat-square&logo=docker&logoColor=white&label=pulls)
 ![](https://img.shields.io/github/downloads/AlexxIT/go2rtc/total?color=blue&style=flat-square&logo=github)  
 
-This component uses the [go2rtc](https://github.com/AlexxIT/go2rtc) application as streaming server:
+This component uses the [go2rtc](https://github.com/AlexxIT/go2rtc) application as a streaming server:
 
 - lowest possible streaming latency for many supported protocols
-- streaming from RTSP, RTMP, HTTP (FLV/MJPEG/JPEG), HomeKit Cameras, USB Cameras and other sources
+- streaming from RTSP, RTMP, HTTP (FLV/MJPEG/JPEG), HomeKit cameras, USB cameras and other sources
 - streaming to RTSP, WebRTC, MSE/MP4 or MJPEG
 - support popular codec H264/H265, AAC, PCMU/PCMA, OPUS
-- on the fly transcoding for unsupported codecs via FFmpeg
+- on-the-fly transcoding for unsupported codecs via FFmpeg
 - autoselect streaming technology based on stream codecs, browser capabilities, network configuration
 
 **Read more in the go2rtc [docs](https://github.com/AlexxIT/go2rtc)!**
@@ -49,7 +49,7 @@ You can install go2rtc in several ways:
 
 You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass configuration folder.
 
-**Important.** go2rtc runs its own web interface on port `1984` without a password. There you can see a list of active streams from cameras. And anyone on your LAN can access them without password. You can disable this in the go2rtc config.
+**Important.** go2rtc runs its own web interface on port `1984` without a password. There you can see a list of active camera streams. Anyone on your LAN can **access them without a password**. You can disable this in the go2rtc config.
 
 **PS.** There is also another nice card with go2rtc support - [Frigate Lovelace Card](https://github.com/dermotduffy/frigate-hass-card).
 
@@ -82,8 +82,18 @@ Component **doesn't create devices and entities**. It creates only two services 
 
 ## Custom card
 
-As a `url` you can use any protocol supported in go2rtc or **specify the stream name** from the go2rtc config.  
+As a `url` you can use:
+- any protocol supported by go2rtc (`rtsp`, `rtmp`, `http`, `onvif`, `dvrip`, `homekit`, `roborock`, etc.)
+- stream `name` from the go2rtc config
+- `Jinja2` template (should render supported protocol or stream `name`)
+
 As a `entity` you can use almost any camera from Hass.
+
+As a `poster` you can use:
+- `http`-link (should be publicly available link)
+- camera `entity` from Hass
+- stream `name` from the go2rtc config
+- `Jinja2` template (should render camera `entity` or stream `name`)
 
 **Minimal**
 
@@ -120,6 +130,8 @@ streams:
     mode: mse
     media: audio
 ```
+
+**PS.** You can change the active stream by clicking on the `mode` label. Or by clicking on the stream `name` with enabled `ui: true`.
 
 **Full**
 
@@ -164,6 +176,16 @@ shortcuts:  # custom shortcuts, default none
 ```
 
 Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRTC/wiki/PTZ-Config-Examples).
+
+**Paused by default**
+
+```yaml
+type: custom:webrtc-camera
+poster: dahua1-snap  # stream name from go2rtc.yaml (http-snapshot)
+streams:
+  - url: ''          # empty url, so only poster will be shown
+  - url: dahua1      # stream name from go2rtc.yaml (rtsp-stream)
+```
 
 **Video aspect ratio** [issue](https://github.com/AlexxIT/WebRTC/issues/21)
 
@@ -285,12 +307,6 @@ A. [Read more](https://github.com/AlexxIT/WebRTC/issues/378) and don't create ne
 
 **Q. Audio doesn't work**  
 A. Check what audio codec your camera outputs. And what technology do you use to watch videos. Different technologies support different codecs.
-
-**Q. External access on the iPhone not in real time**  
-A. The iPhone browser does not support [modern web technologies](https://caniuse.com/mediasource). It's hard to believe, but it's true. If you haven't setup external access for WebRTC - you will get a chopped stream of keyframes in MP4 format.
-
-**Q. Stream in macOS app not in real time**  
-A. Support for modern web technologies is blocked in the macOS app. You will get a chopped stream of keyframes in MP4 format.
 
 ## Debug
 
