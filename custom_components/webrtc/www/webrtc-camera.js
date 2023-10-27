@@ -36,6 +36,7 @@ class WebRTCCamera extends VideoRTC {
          *     intersection: number,
          *     ui: boolean,
          *     style: string,
+         *     background: boolean,
          *
          *     server: string,
          *
@@ -554,7 +555,6 @@ class WebRTCCamera extends VideoRTC {
         const volume = this.querySelector('.volume');
         video.addEventListener('loadeddata', () => {
             volume.style.display = this.hasAudio ? 'block' : 'none';
-            // volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
         });
         video.addEventListener('volumechange', () => {
             volume.icon = video.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
