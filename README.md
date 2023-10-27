@@ -197,10 +197,10 @@ style: '.fullscreen {display: none}'
 style: '.screenshot {display: none}'
 ```
 
-**Hide picture-in-picture button**
+**Hide PIP button**
 
 ```yaml
-style: '.picture-in-picture {display: none}'
+style: '.pictureinpicture {display: none}'
 ```
 
 **Shortcuts position**
