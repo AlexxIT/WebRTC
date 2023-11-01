@@ -76,6 +76,21 @@ class WebRTCCamera extends VideoRTC {
     set hass(hass) {
         // if card in vertical stack - `hass` property assign after `onconnect`
         super.hass = hass;
+
+        if (this.config.shortcuts) {
+            // Create a deep copy of the shortcuts array
+            const shortcutsCopy = JSON.parse(JSON.stringify(this.config.shortcuts));
+
+            // Modify the copied array
+            this.config.shortcuts = shortcutsCopy.map(shortcut => {
+                if (shortcut.entity) {
+                    // Check the state of the entity. If it's "on", set isToggled to true.
+                    shortcut.isToggled = hass.states[shortcut.entity].state === "on";
+                }
+                return shortcut;
+            });
+        }
+
         this.onconnect();
     }
 
@@ -591,7 +606,7 @@ class WebRTCCamera extends VideoRTC {
         const servicesCopy = JSON.parse(JSON.stringify(services));
 
         const icons = services.map((value, index) => `
-            <ha-icon data-index="${index}" icon="${value.isToggled ? value.toggledIcon : value.icon}" title="${value.name}"></ha-icon>
+	<ha-icon data-index="${index}" icon="${value.isToggled ? value.toggledIcon : value.icon}" title="${value.name}"></ha-icon>
         `).join('');
 
         const card = this.querySelector('.card');
