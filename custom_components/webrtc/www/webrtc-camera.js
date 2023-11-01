@@ -585,8 +585,13 @@ class WebRTCCamera extends VideoRTC {
         // backward compatibility with `services` property
         const services = this.config.shortcuts.services || this.config.shortcuts;
 
+        // We're creating a deep copy of the services array. This is because objects in JavaScript
+        // are passed by reference. By creating a deep copy, we ensure that we don't mutate the
+        // original services array which may cause a "read-only" error.
+        const servicesCopy = JSON.parse(JSON.stringify(services));
+
         const icons = services.map((value, index) => `
-            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+            <ha-icon data-index="${index}" icon="${value.isToggled ? value.toggledIcon : value.icon}" title="${value.name}"></ha-icon>
         `).join('');
 
         const card = this.querySelector('.card');
@@ -605,9 +610,22 @@ class WebRTCCamera extends VideoRTC {
 
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
-            const value = services[ev.target.dataset.index];
-            const [domain, name] = value.service.split('.');
-            this.hass.callService(domain, name, value.service_data || {});
+            // Here, when a shortcut icon is clicked, we retrieve its details from the copied services array.
+            const index = ev.target.dataset.index;
+            const shortcut = servicesCopy[index];
+            const [domain, name] = shortcut.service.split('.');
+            this.hass.callService(domain, name, shortcut.service_data || {});
+
+            // Toggle the icon
+            if (shortcut.toggledIcon) {
+                if (shortcut.isToggled) {
+                    ev.target.icon = shortcut.icon; // set to original icon
+                } else {
+                    ev.target.icon = shortcut.toggledIcon; // set to toggled icon
+                }
+                // Update the state of the isToggled flag for this particular shortcut.
+                servicesCopy[index].isToggled = !servicesCopy[index].isToggled; // toggle the state
+            }
         });
     }
 
