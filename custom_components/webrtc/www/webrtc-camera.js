@@ -32,6 +32,7 @@ class WebRTCCamera extends VideoRTC {
          *
          *     title: string,
          *     poster: string,
+         *     poster_remote: boolean,
          *     muted: boolean,
          *     intersection: number,
          *     ui: boolean,
@@ -63,11 +64,9 @@ class WebRTCCamera extends VideoRTC {
         this.config = Object.assign({
             mode: config.mse === false ? 'webrtc' : config.webrtc === false ? 'mse' : this.mode,
             media: this.media,
+            streams: [{url: config.url, entity: config.entity}],
+            poster_remote: config.poster && (config.poster.indexOf('://') > 0 || config.poster.charAt(0) === '/'),
         }, config);
-
-        if (!this.config.streams) {
-            this.config.streams = [{url: config.url, entity: config.entity}];
-        }
 
         this.streamID = -1;
         this.nextStream(false);
@@ -145,7 +144,7 @@ class WebRTCCamera extends VideoRTC {
         this.hass.callWS({
             type: 'auth/sign_path', path: '/api/webrtc/ws'
         }).then(data => {
-            if (this.config.poster && this.config.poster.indexOf('://') < 0) {
+            if (this.config.poster && !this.config.poster_remote) {
                 this.video.poster = this.hass.hassUrl(data.path) + '&poster=' + encodeURIComponent(this.config.poster);
             }
 
@@ -262,7 +261,7 @@ class WebRTCCamera extends VideoRTC {
         mode.addEventListener('click', () => this.nextStream(true));
 
         if (this.config.muted) this.video.muted = true;
-        if (this.config.poster && this.config.poster.indexOf('://') > 0) this.video.poster = this.config.poster;
+        if (this.config.poster_remote) this.video.poster = this.config.poster;
     }
 
     renderDigitalPTZ() {
