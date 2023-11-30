@@ -3,14 +3,16 @@ import logging
 import time
 import uuid
 from pathlib import Path
-from typing import Union
+from typing import Union, cast
 from urllib.parse import urlencode, urljoin
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
-from homeassistant.components.camera import async_get_image
+from homeassistant.components.image import ImageEntity
+from homeassistant.components.camera import async_get_image as camera_get_image
+from homeassistant.components.image import _async_get_image as image_get_image
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
@@ -173,6 +175,16 @@ async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
         raise Exception("Missing url or entity")
 
     return urljoin("ws" + server[4:], "api/ws") + "?" + urlencode(query)
+    
+def _get_image_from_entity_id(hass: HomeAssistantType, entity_id: str) -> ImageEntity:
+    """Get camera component from entity_id."""
+    if (component := hass.data.get("image")) is None:
+        raise Exception("Image integration not set up")
+
+    if (image := component.get_entity(entity_id)) is None:
+        raise Exception("Image not found")
+
+    return cast(ImageEntity, image)
 
 
 async def ws_poster(hass: HomeAssistantType, params: dict) -> web.Response:
@@ -184,8 +196,15 @@ async def ws_poster(hass: HomeAssistantType, params: dict) -> web.Response:
 
     if poster.startswith("camera."):
         # support entity_id as poster
-        image = await async_get_image(hass, poster)
+        image = await camera_get_image(hass, poster)
         return web.Response(body=image.content, content_type=image.content_type)
+        
+    if poster.startswith("image."):
+        # support entity_id as poster
+        image_entity = _get_image_from_entity_id(hass, poster) 
+        image = await image_entity.async_image()
+        _LOGGER.debug(f"webrtc image_entity: {image_entity} - {len(image)}")
+        return web.Response(body=image, content_type="image/jpeg")
 
     # support poster from go2rtc stream name
     entry = hass.data[DOMAIN]
