@@ -72,7 +72,7 @@ class WebRTCCamera extends VideoRTC {
 
         this.streamID = -1;
         this.nextStream(false);
-        setTimeout(() => this.checkStateChange(), 1000);
+        setTimeout(() => this.checkStateChange(), 2000);
     }
 
     checkStateChange() {
@@ -85,7 +85,7 @@ class WebRTCCamera extends VideoRTC {
             this.config.state = state
             this.nextStream(true);
         }
-        setTimeout(() => this.checkStateChange(), 1000);
+        setTimeout(() => this.checkStateChange(), 2000);
     }
 
     /**
