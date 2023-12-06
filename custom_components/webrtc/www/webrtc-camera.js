@@ -21,6 +21,7 @@ class WebRTCCamera extends VideoRTC {
          *     entity: string,
          *     mode: string,
          *     media: string,
+         *     state: string
          *
          *     streams: Array<{
          *         name: string,
@@ -32,7 +33,6 @@ class WebRTCCamera extends VideoRTC {
          *
          *     title: string,
          *     poster: string,
-         *     poster_remote: boolean,
          *     muted: boolean,
          *     intersection: number,
          *     ui: boolean,
@@ -64,18 +64,28 @@ class WebRTCCamera extends VideoRTC {
         this.config = Object.assign({
             mode: config.mse === false ? 'webrtc' : config.webrtc === false ? 'mse' : this.mode,
             media: this.media,
-            streams: [{url: config.url, entity: config.entity}],
-            poster_remote: config.poster && (config.poster.indexOf('://') > 0 || config.poster.charAt(0) === '/'),
         }, config);
+
+        if (!this.config.streams) {
+            this.config.streams = [{ url: config.url, entity: config.entity }];
+        }
 
         this.streamID = -1;
         this.nextStream(false);
+        setTimeout(() => this.checkStateChange(), 500);
     }
 
-    set hass(hass) {
-        // if card in vertical stack - `hass` property assign after `onconnect`
-        super.hass = hass;
-        this.onconnect();
+    checkStateChange() {
+        if (!this.config.state){
+            this.config.state = this.hass.states[this.config.entity].state
+            console.log("config state set", this.config.state)
+        }
+        const state = this.hass.states[this.config.entity].state
+        if (this.config.state != state) {
+            this.config.state = state
+            this.nextStream(true);
+        }
+        setTimeout(() => this.checkStateChange(), 100);
     }
 
     /**
@@ -144,7 +154,7 @@ class WebRTCCamera extends VideoRTC {
         this.hass.callWS({
             type: 'auth/sign_path', path: '/api/webrtc/ws'
         }).then(data => {
-            if (this.config.poster && !this.config.poster_remote) {
+            if (this.config.poster && this.config.poster.indexOf('://') < 0) {
                 this.video.poster = this.hass.hassUrl(data.path) + '&poster=' + encodeURIComponent(this.config.poster);
             }
 
@@ -261,7 +271,7 @@ class WebRTCCamera extends VideoRTC {
         mode.addEventListener('click', () => this.nextStream(true));
 
         if (this.config.muted) this.video.muted = true;
-        if (this.config.poster_remote) this.video.poster = this.config.poster;
+        if (this.config.poster && this.config.poster.indexOf('://') > 0) this.video.poster = this.config.poster;
     }
 
     renderDigitalPTZ() {
@@ -496,13 +506,7 @@ class WebRTCCamera extends VideoRTC {
                 fullscreen.icon = document.fullscreenElement ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
             });
         } else if (video.webkitEnterFullscreen) {
-            this.requestFullscreen = () => new Promise((resolve, reject) => {
-                try {
-                    video.webkitEnterFullscreen();
-                } catch (e) {
-                    reject(e);
-                }
-            });
+            this.requestFullscreen = () => video.webkitEnterFullscreen();
             video.addEventListener('webkitendfullscreen', () => {
                 setTimeout(() => this.play(), 1000); // fix bug in iOS
             });
@@ -639,4 +643,3 @@ const card = {
 // Apple iOS 12 doesn't support `||=`
 if (window.customCards) window.customCards.push(card);
 else window.customCards = [card];
-
