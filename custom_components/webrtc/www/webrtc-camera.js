@@ -605,8 +605,19 @@ class WebRTCCamera extends VideoRTC {
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
             const value = services[ev.target.dataset.index];
-            const [domain, name] = value.service.split('.');
-            this.hass.callService(domain, name, value.service_data || {});
+            if(value.more_info !== undefined) {
+                const event = new Event('hass-more-info', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                });
+                event.detail = { entityId: value.more_info };
+                ev.target.dispatchEvent(event);
+            }
+            if(value.service !== undefined) {
+                const [domain, name] = value.service.split('.');
+                this.hass.callService(domain, name, value.service_data || {});
+            }
         });
     }
 
