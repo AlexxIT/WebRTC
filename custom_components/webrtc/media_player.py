@@ -3,12 +3,10 @@ from datetime import timedelta
 import voluptuous as vol
 from homeassistant.components import media_source
 from homeassistant.components.media_player import (
-    MediaPlayerEntity,
-    SUPPORT_PLAY_MEDIA,
     async_process_play_media_url,
-    SUPPORT_BROWSE_MEDIA,
     BrowseMedia,
-    SUPPORT_STOP,
+    MediaPlayerEntity,
+    MediaPlayerEntityFeature,
     PLATFORM_SCHEMA,
 )
 from homeassistant.const import STATE_PLAYING, STATE_IDLE, CONF_NAME
@@ -46,7 +44,9 @@ async def async_setup_platform(
 class WebRTCPlayer(MediaPlayerEntity):
     def __init__(self, name: str, stream: str, audio: str, **kwargs):
         self._attr_supported_features = (
-            SUPPORT_PLAY_MEDIA | SUPPORT_BROWSE_MEDIA | SUPPORT_STOP
+            MediaPlayerEntityFeature.PLAY_MEDIA
+            | MediaPlayerEntityFeature.BROWSE_MEDIA
+            | MediaPlayerEntityFeature.STOP
         )
         self._attr_name = name
         self._attr_unique_id = stream
