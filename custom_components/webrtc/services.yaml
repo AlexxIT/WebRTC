@@ -3,6 +3,7 @@ create_link:
   description: Create a temporary or permanent link to a stream (enter "url" or "entity")
   fields:
     link_id:
+      name: Link ID
       description: Create a random or permanent ID for your link
       example: fd0a53ca-e9ab-4e7a-86a2-441642b16ae1
       required: true
@@ -10,12 +11,14 @@ create_link:
         text:
 
     url:
+      name: URL
       description: Link to RTSP-stream
       example: rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0
       selector:
         text:
 
     entity:
+      name: Entity ID
       description: Camera entity
       example: camera.generic_stream
       selector:
@@ -23,6 +26,7 @@ create_link:
           domain: camera
 
     open_limit:
+      name: Open limit
       description: How many times a link can be opened (0 - unlimit)
       example: 1
       default: 1
@@ -33,6 +37,7 @@ create_link:
           unit_of_measurement: times
 
     time_to_live:
+      name: Time to live
       description: How many seconds will the link live (0 - unlimit)
       example: 60
       default: 60
@@ -47,6 +52,7 @@ dash_cast:
   description: Cast stream to Chromecast device via DashCast application
   fields:
     entity_id:
+      name: Entity ID
       description: Media player entity
       example: media_player.mibox4
       required: true
@@ -56,17 +62,20 @@ dash_cast:
           domain: media_player
 
     url:
+      name: URL
       description: Link to RTSP-stream
       example: rtsp://rtsp:12345678@192.168.1.123:554/av_stream/ch0
       selector:
         text:
 
     force:
+      name: Force
       description: Force restart DashCast application
       selector:
         boolean:
 
     entity:
+      name: Entity ID
       description: Camera entity
       example: camera.generic_stream
       selector:
