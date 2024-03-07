@@ -188,7 +188,7 @@ def dash_cast(hass: HomeAssistant, cast_entities: list, url: str, force=False):
                 entity._chromecast.register_handler(entity.dashcast)
 
             _LOGGER.debug(f"DashCast to {entity.entity_id}")
-            entity.dashcast.load_url(url, force)
+            entity.dashcast.load_url(url, force = force)
 
     except Exception:
         _LOGGER.exception(f"Can't DashCast to {cast_entities}")
