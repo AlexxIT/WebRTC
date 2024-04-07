@@ -113,19 +113,6 @@ async def get_stream_source(hass: HomeAssistant, entity: str) -> str:
         return None
 
 
-def register_static_path(app: web.Application, url_path: str, path):
-    """Register static path with CORS for Chromecast"""
-
-    async def serve_file(request):
-        return web.FileResponse(path)
-
-    route = app.router.add_route("GET", url_path, serve_file)
-    if "allow_all_cors" in app:
-        app["allow_all_cors"](route)
-    elif "allow_cors" in app:
-        app["allow_cors"](route)
-
-
 async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     """Add extra JS module for lovelace mode YAML and new lovelace resource
     for mode GUI. It's better to add extra JS for all modes, because it has

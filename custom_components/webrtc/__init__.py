@@ -63,15 +63,14 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
     for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js"):
-        utils.register_static_path(hass.http.app, "/webrtc/" + name, path / name)
+        hass.http.register_static_path("/webrtc/" + name, str(path / name))
 
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/webrtc/webrtc-camera.js", str(version))
 
     # 3. Serve html page
-    path = Path(__file__).parent / "www/embed.html"
-    utils.register_static_path(hass.http.app, "/webrtc/embed", path)
+    hass.http.register_static_path("/webrtc/embed", str(path / "embed.html"))
 
     # 4. Serve WebSocket API
     hass.http.register_view(WebSocketView)
