@@ -26,5 +26,63 @@
         }
       }
     }
+  },
+  "services": {
+    "create_link": {
+      "name": "Create Link",
+      "description": "Create a temporary or permanent link to a stream (enter `url` or `entity`)",
+      "fields": {
+        "link_id": {
+          "name": "Link ID",
+          "description": "Create a random or permanent ID for your link"
+        },
+        "url": {
+          "name": "URL",
+          "description": "Link to RTSP-stream"
+        },
+        "entity": {
+          "name": "Entity",
+          "description": "Camera entity_id"
+        },
+        "open_limit": {
+          "name": "Open limit",
+          "description": "How many times a link can be opened (0 - unlimit)"
+        },
+        "time_to_live": {
+          "name": "Time to live",
+          "description": "How many seconds will the link live (0 - unlimit)"
+        }
+      }
+    },
+    "dash_cast": {
+      "name": "DashCast",
+      "description": "Cast stream to Chromecast device via DashCast application",
+      "fields": {
+        "entity_id": {
+          "name": "Media Entity",
+          "description": "Media player entity_id"
+        },
+        "url": {
+          "name": "URL",
+          "description": "Link to RTSP-stream"
+        },
+        "entity": {
+          "name": "Entity",
+          "description": "Camera entity_id"
+        },
+        "extra": {
+          "name": "Extra",
+          "description": "Additional card params"
+        },
+        "force": {
+          "name": "Force",
+          "description": "Force restart DashCast application"
+        },
+        "hass_url": {
+          "name": "Hass URL",
+          "description": "Manual base URL to Hass server"
+        }
+      }
+    }
   }
 }
