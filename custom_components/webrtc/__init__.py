@@ -45,8 +45,9 @@ DASH_CAST_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Exclusive("url", "url"): cv.string,
         vol.Exclusive("entity", "url"): cv.entity_id,
-        vol.Optional("force", default=False): bool,
         vol.Optional("extra"): dict,
+        vol.Optional("force", default=False): bool,
+        vol.Optional("hass_url"): str,
     },
     required=True,
 )
@@ -93,20 +94,24 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     async def dash_cast(call: ServiceCallType):
         link_id = uuid.uuid4().hex
         LINKS[link_id] = {
-            "url": call.data.get("url"),
-            "entity": call.data.get("entity"),
+            "url": call.data.get("url"),  # camera URL (rtsp...)
+            "entity": call.data.get("entity"),  # camera entity id
             "limit": 1,  # 1 attempt
             "ts": time.time() + 30,  # for 30 seconds
         }
 
+        hass_url = call.data.get("hass_url") or get_url(hass)
         query = call.data.get("extra", {})
         query["url"] = link_id
+        cast_url = hass_url + "/webrtc/embed?" + urlencode(query)
+
+        _LOGGER.debug(f"dash_cast: {cast_url}")
 
         await hass.async_add_executor_job(
             utils.dash_cast,
             hass,
             call.data[ATTR_ENTITY_ID],
-            f"{get_url(hass)}/webrtc/embed?" + urlencode(query),
+            cast_url,
             call.data.get("force", False),
         )
 
