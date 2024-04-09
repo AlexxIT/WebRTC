@@ -1,0 +1,88 @@
+{
+  "config": {
+    "abort": {
+      "arch": "غیر تعاون یافتہ OS آرکیٹیکچر: {uname}",
+      "single_instance_allowed": "پہلے سے ترتیب شدہ۔ صرف ایک ہی ترتیب ممکن ہے۔."
+    },
+    "error": {
+      "connect": "go2rtc سرور سے منسلک نہیں ہو سکتا"
+    },
+    "step": {
+      "user": {
+        "title": "go2rtc یو آر ایل",
+        "description": "[go2rtc](https://github.com/AlexxIT/go2rtc) اسٹریمنگ سرور ورژن منتخب کریں:\n1۔ اگر آپ بلٹ ان go2rtc ورژن (*بنیادی صارفین*) چاہتے ہیں تو خالی چھوڑ دیں\n2۔ اگر آپ [go2rtc](https://github.com/AlexxIT/go2rtc#go2rtc-home-assistant-add-on) یا [Frigate 12+](https://) کو انسٹال کرتے ہیں تو `http://localhost:1984` سیٹ کریں docs.frigate.video/) ایڈ آن (*جدید صارفین*)\n3۔ اگر آپ کسی دوسرے سرور (*ہیکرز*) پر go2rtc انسٹال کرتے ہیں تو اپنی مرضی کے مطابق پتہ سیٹ کریں۔",
+        "data": {
+          "url": "URL"
+        }
+      },
+      "config": {
+        "title": "go2rtc تشکیل",
+        "description": "راستہ: `{path}`",
+        "data": {
+          "api": "Public WebUI on port 1984",
+          "rtsp": "Public RTSP on port 8554",
+          "username": "عوامی صارف کا نام (ویب اور آر ٹی ایس پی)",
+          "password": "پبلک پاس ورڈ (ویب اور آر ٹی ایس پی)"
+        }
+      }
+    }
+  },
+  "services": {
+    "create_link": {
+      "name": "لنک بنائیں",
+      "description": "سٹریم کا عارضی یا مستقل لنک بنائیں ('url' یا 'entity' درج کریں)",
+      "fields": {
+        "link_id": {
+          "name": "لنک آئی ڈی",
+          "description": "اپنے لنک کے لیے ایک بے ترتیب یا مستقل ID بنائیں"
+        },
+        "url": {
+          "name": "URL",
+          "description": "RTSP اسٹریم سے لنک کریں۔"
+        },
+        "entity": {
+          "name": "ہستی",
+          "description": "کیمرہ entity_id"
+        },
+        "open_limit": {
+          "name": "کھلی حد",
+          "description": "ایک لنک کتنی بار کھولا جا سکتا ہے (0 - لا محدود)"
+        },
+        "time_to_live": {
+          "name": "زندہ رہنے کا وقت",
+          "description": "لنک کتنے سیکنڈ تک زندہ رہے گا (0 - لامحدود)"
+        }
+      }
+    },
+    "dash_cast": {
+      "name": "ڈیش کاسٹ",
+      "description": "DashCast ایپلیکیشن کے ذریعے کروم کاسٹ ڈیوائس پر اسٹریم کاسٹ کریں۔",
+      "fields": {
+        "entity_id": {
+          "name": "میڈیا ہستی",
+          "description": "میڈیا پلیئر کی entity_id"
+        },
+        "url": {
+          "name": "URL",
+          "description": "RTSP اسٹریم سے لنک کریں۔"
+        },
+        "entity": {
+          "name": "ہستی",
+          "description": "کیمرہ entity_id"
+        },
+        "extra": {
+          "name": "اضافی",
+          "description": "کارڈ کے اضافی پیرامز"
+        },
+        "force": {
+          "name": "زبردستی",
+          "description": "ڈیش کاسٹ ایپلیکیشن کو زبردستی دوبارہ شروع کریں۔"
+        },
+        "hass_url": {
+          "name": " بیس یو آر ایل",
+          "description": "ہاس سرور کے لیے دستی بیس یو آر ایل"
+        }
+      }
+    }
+  }
+}
