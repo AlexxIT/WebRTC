@@ -103,16 +103,6 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
     return filename
 
 
-# noinspection PyTypeChecker
-async def get_stream_source(hass: HomeAssistant, entity: str) -> str:
-    try:
-        component: EntityComponent = hass.data["camera"]
-        camera: Camera = next(e for e in component.entities if e.entity_id == entity)
-        return await camera.stream_source()
-    except Exception:
-        return None
-
-
 async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     """Add extra JS module for lovelace mode YAML and new lovelace resource
     for mode GUI. It's better to add extra JS for all modes, because it has

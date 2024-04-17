@@ -10,7 +10,7 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
-from homeassistant.components.camera import async_get_image
+from homeassistant.components import camera
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
@@ -165,10 +165,15 @@ async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
         assert server.available, "WebRTC server not available"
         server = "http://localhost:1984/"
 
-    if name := params.get("entity"):
-        src = await utils.get_stream_source(hass, name)
-        assert src, f"Can't get URL for {name}"
-        query = {"src": src, "name": name}
+    if entity_id := params.get("entity"):
+        src = await camera.async_get_stream_source(hass, entity_id)
+        if src is None:
+            # build link to MJPEG stream
+            if state := hass.states.get(entity_id):
+                if token := state.attributes.get("access_token"):
+                    src = f"{get_url(hass)}/api/camera_proxy_stream/{entity_id}?token={token}"
+        assert src, f"Can't get URL for {entity_id}"
+        query = {"src": src, "name": entity_id}
     elif src := params.get("url"):
         if "{{" in src or "{%" in src:
             src = Template(src, hass).async_render()
@@ -199,7 +204,7 @@ async def ws_poster(hass: HomeAssistantType, params: dict) -> web.Response:
 
     if poster.startswith("camera."):
         # support entity_id as poster
-        image = await async_get_image(hass, poster)
+        image = await camera.async_get_image(hass, poster)
         return web.Response(body=image.content, content_type=image.content_type)
 
     if poster.startswith("image."):
