@@ -422,14 +422,21 @@ class WebRTCCamera extends VideoRTC {
     }
 
     saveScreenshot() {
-        const canvas = document.createElement('canvas');
-        canvas.width = this.video.videoWidth;
-        canvas.height = this.video.videoHeight;
-        canvas.getContext('2d').drawImage(this.video, 0, 0, canvas.width, canvas.height);
+        const a = document.createElement('a');
+
+        if (this.video.videoWidth && this.video.videoHeight) {
+            const canvas = document.createElement('canvas');
+            canvas.width = this.video.videoWidth;
+            canvas.height = this.video.videoHeight;
+            canvas.getContext('2d').drawImage(this.video, 0, 0, canvas.width, canvas.height);
+            a.href = canvas.toDataURL('image/jpeg');
+        } else if (this.video.poster && this.video.poster.startsWith('data:image/jpeg')) {
+            a.href = this.video.poster;
+        } else {
+            return;
+        }
 
         const ts = new Date().toISOString().substring(0, 19).replaceAll('-', '').replaceAll(':', '');
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/jpeg');
         a.download = `snapshot_${ts}.jpeg`;
         a.click();
     }
