@@ -12,13 +12,12 @@ from urllib.parse import urljoin
 
 import jwt
 from aiohttp import web
-from homeassistant.components.camera import Camera
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http.auth import DATA_SIGN_SECRET, SIGN_QUERY_PARAM
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.entity_component import EntityComponent, DATA_INSTANCES
+from homeassistant.helpers.entity_component import DATA_INSTANCES
 
 _LOGGER = logging.getLogger(__name__)
 
