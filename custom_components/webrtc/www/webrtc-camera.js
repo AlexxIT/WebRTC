@@ -70,6 +70,22 @@ class WebRTCCamera extends VideoRTC {
 
         this.streamID = -1;
         this.nextStream(false);
+        if(this.config.entity)
+            setTimeout(() => this.checkStateChange(), 2000);
+    }
+
+    checkStateChange() {
+        if (!this.config.state){
+            this.config.state = this.hass.states[this.config.entity].state
+            console.log("config state set", this.config.state)
+        }
+        const state = this.hass.states[this.config.entity].state
+        if (this.config.state != state) {
+            this.config.state = state
+            if (this.config.state === "idle" || this.config.state === "streaming")
+                this.nextStream(true);
+        }
+        setTimeout(() => this.checkStateChange(), 2000);
     }
 
     set hass(hass) {
@@ -657,4 +673,3 @@ const card = {
 // Apple iOS 12 doesn't support `||=`
 if (window.customCards) window.customCards.push(card);
 else window.customCards = [card];
-
