@@ -1,5 +1,5 @@
 {
   "name": "WebRTC Camera",
-  "homeassistant": "2023.2.0",
+  "homeassistant": "2024.7.0b0",
   "render_readme": true
 }
