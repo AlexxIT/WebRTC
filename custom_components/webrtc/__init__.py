@@ -61,6 +61,7 @@ LINKS = {}  # 2 3 4
 HLS_COOKIE = "webrtc-hls-session"
 HLS_SESSION = str(uuid.uuid4())
 
+
 async def async_setup(hass: HomeAssistant, config: dict):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
