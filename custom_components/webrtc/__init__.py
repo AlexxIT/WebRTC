@@ -11,7 +11,7 @@ from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.binary_sensor import HomeAssistant  # fix tests
 from homeassistant.components.camera import async_get_stream_source, async_get_image
 from homeassistant.components.hassio.ingress import _websocket_forward
-from homeassistant.components.http import HomeAssistantView
+from homeassistant.components.http import HomeAssistantView, StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, CONF_URL, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import ServiceCall
