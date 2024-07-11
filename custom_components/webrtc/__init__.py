@@ -11,7 +11,7 @@ from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.binary_sensor import HomeAssistant  # fix tests
 from homeassistant.components.camera import async_get_stream_source, async_get_image
 from homeassistant.components.hassio.ingress import _websocket_forward
-from homeassistant.components.http import HomeAssistantView, StaticPathConfig
+from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, CONF_URL, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import ServiceCall
@@ -19,6 +19,12 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.template import Template
+
+try:
+    from homeassistant.components.http import StaticPathConfig
+    HA_VERSION_BEFORE_2024_7 = False
+except ImportError:
+    HA_VERSION_BEFORE_2024_7 = True
 
 from . import utils
 from .utils import DOMAIN, Server
@@ -55,35 +61,40 @@ LINKS = {}  # 2 3 4
 HLS_COOKIE = "webrtc-hls-session"
 HLS_SESSION = str(uuid.uuid4())
 
-
 async def async_setup(hass: HomeAssistant, config: dict):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
     for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js"):
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    "/webrtc/" + name,
-                    str(path / name),
-                    True,
-                )
-            ]
-        )
+        if HA_VERSION_BEFORE_2024_7:
+            hass.http.register_static_path("/webrtc/" + name, str(path / name))
+        else:
+            await hass.http.async_register_static_paths(
+                [
+                    StaticPathConfig(
+                        "/webrtc/" + name,
+                        str(path / name),
+                        True,
+                    )
+                ]
+            )
 
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/webrtc/webrtc-camera.js", str(version))
 
     # 3. Serve html page
-    await hass.http.async_register_static_paths(
-        [
-            StaticPathConfig(
-                "/webrtc/embed",
-                "/config/custom_components/webrtc/www/embed.html",
-                True,
-            )
-        ]
-    )
+    if HA_VERSION_BEFORE_2024_7:
+        hass.http.register_static_path("/webrtc/embed", str(path / "embed.html"))
+    else:
+        await hass.http.async_register_static_paths(
+            [
+                StaticPathConfig(
+                    "/webrtc/embed",
+                    "/config/custom_components/webrtc/www/embed.html",
+                    True,
+                )
+            ]
+        )
 
     # 4. Serve WebSocket API
     hass.http.register_view(WebSocketView)
