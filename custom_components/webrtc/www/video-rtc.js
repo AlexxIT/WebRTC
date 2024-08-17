@@ -20,6 +20,7 @@ export class VideoRTC extends HTMLElement {
 
         this.DISCONNECT_TIMEOUT = 5000;
         this.RECONNECT_TIMEOUT = 30000;
+        this.PLAY_REATTEMPT_TIMEOUT = 500;
 
         this.CODECS = [
             'avc1.640029',      // H.264 high 4.1 (Chromecast 1st and 2nd Gen)
@@ -163,12 +164,17 @@ export class VideoRTC extends HTMLElement {
      * https://developer.chrome.com/blog/autoplay/
      */
     play() {
-        this.video.play().catch(() => {
-            if (!this.video.muted) {
+        this.video.play().catch((firstError) => {
+            console.warn(firstError);
+            const isAutoplayError = firstError.message.includes("NotAllowedError");
+
+            if (!this.video.muted && isAutoplayError) {
                 this.video.muted = true;
-                this.video.play().catch(er => {
-                    console.warn(er);
-                });
+                setTimeout(() =>
+                    this.video.play().catch(secondError => {
+                        console.warn(secondError);
+                    }
+                ), PLAY_REATTEMPT_TIMEOUT);
             }
         });
     }
