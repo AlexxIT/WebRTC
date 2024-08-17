@@ -166,7 +166,7 @@ export class VideoRTC extends HTMLElement {
     play() {
         this.video.play().catch((firstError) => {
             console.warn(firstError);
-            const isAutoplayError = firstError.message.includes("NotAllowedError");
+            const isAutoplayError = firstError.name == "NotAllowedError";
 
             if (!this.video.muted && isAutoplayError) {
                 this.video.muted = true;
@@ -174,7 +174,7 @@ export class VideoRTC extends HTMLElement {
                     this.video.play().catch(secondError => {
                         console.warn(secondError);
                     }
-                ), PLAY_REATTEMPT_TIMEOUT);
+                ), this.PLAY_REATTEMPT_TIMEOUT);
             }
         });
     }
