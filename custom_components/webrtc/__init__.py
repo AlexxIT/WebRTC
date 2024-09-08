@@ -20,12 +20,6 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.template import Template
 
-try:
-    from homeassistant.components.http import StaticPathConfig
-    HA_VERSION_BEFORE_2024_7 = False
-except ImportError:
-    HA_VERSION_BEFORE_2024_7 = True
-
 from . import utils
 from .utils import DOMAIN, Server
 
@@ -66,36 +60,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
     for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js"):
-        if HA_VERSION_BEFORE_2024_7:
-            hass.http.register_static_path("/webrtc/" + name, str(path / name))
-        else:
-            await hass.http.async_register_static_paths(
-                [
-                    StaticPathConfig(
-                        "/webrtc/" + name,
-                        str(path / name),
-                        True,
-                    )
-                ]
-            )
+        await utils.register_static_path(hass, "/webrtc/" + name, str(path / name))
 
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/webrtc/webrtc-camera.js", str(version))
 
     # 3. Serve html page
-    if HA_VERSION_BEFORE_2024_7:
-        hass.http.register_static_path("/webrtc/embed", str(path / "embed.html"))
-    else:
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    "/webrtc/embed",
-                    "/config/custom_components/webrtc/www/embed.html",
-                    True,
-                )
-            ]
-        )
+    await utils.register_static_path(hass, "/webrtc/embed", str(path / "embed.html"))
 
     # 4. Serve WebSocket API
     hass.http.register_view(WebSocketView)

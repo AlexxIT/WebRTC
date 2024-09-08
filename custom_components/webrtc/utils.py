@@ -15,6 +15,7 @@ from aiohttp import web
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http.auth import DATA_SIGN_SECRET, SIGN_QUERY_PARAM
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_component import DATA_INSTANCES
@@ -100,6 +101,17 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
     os.chmod(filename, os.stat(filename).st_mode | stat.S_IEXEC)
 
     return filename
+
+
+async def register_static_path(hass: HomeAssistant, url_path: str, path: str):
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 7):
+        from homeassistant.components.http import StaticPathConfig
+
+        await hass.http.async_register_static_paths(
+            [StaticPathConfig(url_path, path, True)]
+        )
+    else:
+        hass.http.register_static_path(url_path, path)
 
 
 async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
