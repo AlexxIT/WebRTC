@@ -11,6 +11,7 @@ from typing import Optional
 from urllib.parse import urljoin
 
 import jwt
+import requests
 from aiohttp import web
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http.auth import DATA_SIGN_SECRET, SIGN_QUERY_PARAM
@@ -62,7 +63,7 @@ def unzip(content: bytes) -> bytes:
                 return f.read()
 
 
-async def validate_binary(hass: HomeAssistant) -> Optional[str]:
+def validate_binary(hass: HomeAssistant) -> Optional[str]:
     filename = f"go2rtc-{BINARY_VERSION}"
     if platform.system() == "Windows":
         filename += ".exe"
@@ -83,11 +84,11 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
         f"v{BINARY_VERSION}/{get_arch()}"
     )
     _LOGGER.debug(f"Download new binary: {url}")
-    r = await async_get_clientsession(hass).get(url)
+    r = requests.get(url)
     if not r.ok:
         return None
 
-    raw = await r.read()
+    raw = r.content
 
     # unzip binary for windows
     if url.endswith(".zip"):

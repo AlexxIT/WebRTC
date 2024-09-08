@@ -131,7 +131,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         return True
 
     # 3. Serve go2rtc binary manually
-    binary = await utils.validate_binary(hass)
+    binary = await hass.async_add_executor_job(utils.validate_binary, hass)
     if not binary:
         return False
 
