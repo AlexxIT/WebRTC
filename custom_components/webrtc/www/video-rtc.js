@@ -163,14 +163,12 @@ export class VideoRTC extends HTMLElement {
      * https://developer.chrome.com/blog/autoplay/
      */
     play() {
-        this.video.play().catch((firstError) => {
-            console.warn(firstError);
-            const isAutoplayError = firstError.name == "NotAllowedError";
-
+        this.video.play().catch(er => {
+            const isAutoplayError = er.name === 'NotAllowedError';
             if (!this.video.muted && isAutoplayError) {
                 this.video.muted = true;
-                this.video.play().catch(secondError => {
-                    console.warn(secondError);
+                this.video.play().catch(er => {
+                    console.warn(er);
                 });
             }
         });
