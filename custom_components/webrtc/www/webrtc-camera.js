@@ -75,6 +75,19 @@ class WebRTCCamera extends VideoRTC {
     set hass(hass) {
         // if card in vertical stack - `hass` property assign after `onconnect`
         super.hass = hass;
+        if (this.config.shortcuts) {
+            // Create a deep copy of the shortcuts array
+            const shortcutsCopy = JSON.parse(JSON.stringify(this.config.shortcuts));
+
+            // Modify the copied array
+            this.config.shortcuts = shortcutsCopy.map(shortcut => {
+                if (shortcut.entity) {
+                    // Check the state of the entity. If it's "on", set isToggled to true.
+                    shortcut.isToggled = hass.states[shortcut.entity].state === "on";
+                }
+                return shortcut;
+            });
+        }
         this.onconnect();
     }
 
@@ -591,8 +604,10 @@ class WebRTCCamera extends VideoRTC {
         // backward compatibility with `services` property
         const services = this.config.shortcuts.services || this.config.shortcuts;
 
+        const servicesCopy = JSON.parse(JSON.stringify(services));
+
         const icons = services.map((value, index) => `
-            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+            <ha-icon data-index="${index}" icon="${value.isToggled ? value.toggledIcon : value.icon}" title="${value.name}"></ha-icon>
         `).join('');
 
         const card = this.querySelector('.card');
@@ -612,6 +627,8 @@ class WebRTCCamera extends VideoRTC {
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
             const value = services[ev.target.dataset.index];
+            const index = ev.target.dataset.index;
+            const shortcut = servicesCopy[index];
             if (value.more_info !== undefined) {
                 const event = new Event('hass-more-info', {
                     bubbles: true,
@@ -624,6 +641,14 @@ class WebRTCCamera extends VideoRTC {
             if (value.service !== undefined) {
                 const [domain, name] = value.service.split('.');
                 this.hass.callService(domain, name, value.service_data || {});
+                if (shortcut.toggledIcon) {
+                    if (shortcut.isToggled) {
+                        ev.target.icon = shortcut.icon;
+                    } else {
+                        ev.target.icon = shortcut.toggledIcon;
+                    }
+                    servicesCopy[index].isToggled = !servicesCopy[index].isToggled;
+                }
             }
         });
     }
