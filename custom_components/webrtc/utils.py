@@ -69,8 +69,13 @@ def validate_binary(hass: HomeAssistant) -> Optional[str]:
         filename += ".exe"
 
     filename = hass.config.path(filename)
-    if os.path.isfile(filename) and os.access(filename, os.X_OK):
-        return filename
+    try:
+        if os.path.isfile(filename) and subprocess.check_output(
+            [filename, "-v"]
+        ).startswith(b"go2rtc"):
+            return filename
+    except:
+        pass
 
     # remove all old binaries
     for file in os.listdir(hass.config.config_dir):
