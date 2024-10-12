@@ -70,12 +70,19 @@ class WebRTCCamera extends VideoRTC {
 
         this.streamID = -1;
         this.nextStream(false);
+
+        this.onhass = [];
     }
 
     set hass(hass) {
+        this._hass = hass;
+        this.onhass.forEach(fn => fn());
         // if card in vertical stack - `hass` property assign after `onconnect`
-        super.hass = hass;
-        this.onconnect();
+        // this.onconnect();
+    }
+
+    get hass() {
+        return this._hass;
     }
 
     /**
@@ -588,30 +595,21 @@ class WebRTCCamera extends VideoRTC {
     renderShortcuts() {
         if (!this.config.shortcuts) return;
 
-        // backward compatibility with `services` property
-        const services = this.config.shortcuts.services || this.config.shortcuts;
-
-        const icons = services.map((value, index) => `
-            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
-        `).join('');
-
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
-        <style>
-            .shortcuts {
-                position: absolute;
-                top: 5px;
-                left: 5px;
-            }
-        </style>
+            <style>
+                .shortcuts {
+                    position: absolute;
+                    top: 5px;
+                    left: 5px;
+                }
+            </style>
         `);
-        card.insertAdjacentHTML('beforeend', `
-        <div class="shortcuts">${icons}</div>
-        `);
+        card.insertAdjacentHTML('beforeend', '<div class="shortcuts"></div>');
 
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
-            const value = services[ev.target.dataset.index];
+            const value = this.config.shortcuts[ev.target.dataset.index];
             if (value.more_info !== undefined) {
                 const event = new Event('hass-more-info', {
                     bubbles: true,
@@ -626,15 +624,46 @@ class WebRTCCamera extends VideoRTC {
                 this.hass.callService(domain, name, value.service_data || {});
             }
         });
+
+        this.renderTemplate('shortcuts', () => {
+            shortcuts.innerHTML = this.config.shortcuts.map((value, index) => `
+                <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+            `).join('');
+        });
     }
 
     renderStyle() {
         if (!this.config.style) return;
 
         const style = document.createElement('style');
-        style.innerText = this.config.style;
         const card = this.querySelector('.card');
         card.insertAdjacentElement('beforebegin', style);
+
+        this.renderTemplate('style', () => {
+            style.innerText = this.config.style;
+        });
+    }
+
+    renderTemplate(name, renderHTML) {
+        const config = this.config[name];
+        // support config param as string or as object
+        const template = typeof config === 'string' ? config : JSON.stringify(config);
+        // check if config param has template
+        if (template.indexOf('${') >= 0) {
+            const render = () => {
+                try {
+                    const states = this.hass ? this.hass.states : undefined;
+                    this.config[name] = JSON.parse(eval('`' + template + '`'));
+                    renderHTML();
+                } catch (e) {
+                    console.debug(e);
+                }
+            };
+            this.onhass.push(render);
+            render();
+        } else {
+            renderHTML();
+        }
     }
 
     get hasAudio() {
