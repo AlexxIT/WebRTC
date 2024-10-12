@@ -403,10 +403,12 @@ class WebRTCCamera extends VideoRTC {
             </div>
         `);
 
+        const template = JSON.stringify(this.config.ptz);
         const handle = path => {
-            const data = this.config.ptz['data_' + path];
-            if (!data) return;
-            const [domain, service] = this.config.ptz.service.split('.', 2);
+            if (!this.config.ptz['data_' + path]) return;
+            const config = template.indexOf('${') < 0 ? this.config.ptz : JSON.parse(eval('`' + template + '`'));
+            const [domain, service] = config.service.split('.', 2);
+            const data = config['data_' + path];
             this.hass.callService(domain, service, data);
         };
         const ptz = this.querySelector('.ptz');
