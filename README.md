@@ -15,6 +15,7 @@
 * [Installation](#installation)
 * [Configuration](#configuration)
 * [Custom card](#custom-card)
+* [Templates](#templates)
 * [Two-way audio](#two-way-audio)
 * [Snapshots to Telegram](#snapshots-to-telegram)
 * [Cast or share stream](#cast-or-share-stream)
@@ -249,7 +250,35 @@ style: '.header {bottom: 6px} .mode {position: absolute; bottom: 0px}'
 style: '.header {top: unset; bottom: 6px}'
 ```
 
+## Templates
+
+[New in v3.6.0](https://github.com/AlexxIT/WebRTC/releases/tag/v3.6.0).
+
+- Card options `shortcuts`, `style` and `ptz` supports JavaScript templates
+- In `shortcuts` and `style` you can use `states` related templates
+- In `ptz` you can use `streamName`/`streamID` related templates (useful for card with multiple templates)
+
+```yaml
+shortcuts:
+  - name: Barn Light
+    icon: ${ states['light.yeelight_lamp'].state === 'on' ? 'mdi:outdoor-lamp':'mdi:lamp' }
+    service: light.toggle
+    service_data:
+      entity_id: light.yeelight_lamp
+```
+
+```yaml
+ptz:
+  service: notify.persistent_notification
+  data_left:
+    message: Left for ${ this.streamName } clicked
+  data_right:
+    message: Rigth for ${ this.streamID } clicked
+```
+
 ## Two-way audio
+
+[New in v3.4.0](https://github.com/AlexxIT/WebRTC/releases/tag/v3.4.0).
 
 - Only for [supported sources](https://github.com/AlexxIT/go2rtc#two-way-audio) in go2rtc
 - Only for Hass with HTTPS access, this limitation is [from the browsers](https://stackoverflow.com/questions/52759992/how-to-access-camera-and-microphone-in-chrome-without-https)
@@ -280,6 +309,8 @@ Component support streaming to [Google Cast](https://www.home-assistant.io/integ
 Also component support creating a temporary or permanent link to a stream without sharing access to you Home Assistant. Read more in [wiki](https://github.com/AlexxIT/WebRTC/wiki/Cast-or-share-camera-stream).
 
 ## Stream to camera
+
+[New in v3.1.0](https://github.com/AlexxIT/WebRTC/releases/tag/v3.1.0).
 
 go2rtc support play audio files (ex. [music](https://www.home-assistant.io/integrations/media_source/) or [TTS](https://www.home-assistant.io/integrations/#text-to-speech)) and live streams (ex. radio) on cameras with [two way audio](https://github.com/AlexxIT/go2rtc#two-way-audio) support. You need to:
 
