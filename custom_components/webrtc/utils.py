@@ -127,10 +127,9 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
     random url to avoid problems with the cache. But chromecast don't support
     extra JS urls and can't load custom card.
     """
+    lovelace = hass.data["lovelace"]
     resources: ResourceStorageCollection = (
-        hass.data["lovelace"].resources
-        if hasattr(hass.data["lovelace"], "resources")
-        else hass.data["lovelace"]["resources"]
+        lovelace.resources if hasattr(lovelace, "resources") else lovelace["resources"]
     )
 
     # force load storage
