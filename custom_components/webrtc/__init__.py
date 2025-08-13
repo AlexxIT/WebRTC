@@ -10,7 +10,6 @@ from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.binary_sensor import HomeAssistant  # fix tests
 from homeassistant.components.camera import async_get_stream_source, async_get_image
-from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, CONF_URL, EVENT_HOMEASSISTANT_STOP
@@ -281,8 +280,8 @@ class WebSocketView(HomeAssistantView):
                 # Proxy requests
                 await asyncio.wait(
                     [
-                        asyncio.create_task(_websocket_forward(ws_server, ws_client)),
-                        asyncio.create_task(_websocket_forward(ws_client, ws_server)),
+                        asyncio.create_task(utils.websocket_forward(ws_server, ws_client)),
+                        asyncio.create_task(utils.websocket_forward(ws_client, ws_server)),
                     ],
                     return_when=asyncio.FIRST_COMPLETED,
                 )
