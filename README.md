@@ -384,11 +384,9 @@ logger:
 | Unifi        | G4 Dome, G4 doorbell, G3 Bullet, G3 Flex              | Copy the rtsps link from the camera's settings in Unifi Protect, but change the link to `rstp://` (it defaults to rstps://), change the port to `7447`, and remove any query params                                                                                                                                                                                                                                     |
 | Wyze         | Cam v2/v3, Cam Pan v1/v2                              | support sound                                                                                                                                                                                                                        |
 | Xiaomi       | Dafang                                                | [with hack](https://github.com/EliasKotlyar/Xiaomi-Dafang-Hacks), `rtsp://192.168.1.123:8554/unicast` <br> Video: H264, size: 1920x1080, bitrate: 1000, format: VBR, frame rate: 10 <br> Audio: PCMU, rate in: 8000, rate out: 44100 |
-| Yale         | SV-4CFDVR-2, SV-DAFX                                  | `rtsp://admin:password@192.168.1.123/cam/realmonitor?channel=1&subtype=0` 
-
-| Yale         | SV-DPFX                                               | `rtsp://admin:password@192.168.1.123/cam/realmonitor?channel=1&subtype=1` 
-
-| Yi           | Hi3518e Chipset                                       | [with hack](https://github.com/alienatedsec/yi-hack-v5)                                                                                                                                                                              |
-| Yi           | MStar Infinity Chipset                                | [with hack](https://github.com/roleoroleo/yi-hack-MStar)                                                                                                                                                                             |
+| Yale         | SV-4CFDVR-2, SV-DAFX                                  | `rtsp://admin:password@192.168.1.123/cam/realmonitor?channel=1&subtype=0` |
+| Yale         | SV-DPFX                                               | `rtsp://admin:password@192.168.1.123/cam/realmonitor?channel=1&subtype=1` |
+| Yi           | Hi3518e Chipset                                       | [with hack](https://github.com/alienatedsec/yi-hack-v5)                   |
+| Yi           | MStar Infinity Chipset                                | [with hack](https://github.com/roleoroleo/yi-hack-MStar)                  |
 
 [1]: https://play.google.com/store/apps/details?id=com.pas.webcam.pro
