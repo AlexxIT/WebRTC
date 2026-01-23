@@ -57,6 +57,7 @@ class WebRTCCamera extends VideoRTC {
          *     ui: boolean,
          *     style: string,
          *     background: boolean,
+         *     live_indicator: boolean,
          *
          *     server: string,
          *
@@ -132,7 +133,7 @@ class WebRTCCamera extends VideoRTC {
         this.streamID = (this.streamID + 1) % this.config.streams.length;
 
         // when stream has changed (substream), reset timer and stop heartbeat
-        if (this.streamID > 0) { // ensures video element exists
+        if (this.streamID > 0 && this.config.live_indicator == true) { // ensures video element exists
             // Reset the time for the watchdog
             this._lastFrameTime = 0;
 
@@ -213,12 +214,12 @@ class WebRTCCamera extends VideoRTC {
         });
 
         // when stream is connected, hook the video frame callback to track live indicator
-        if (this.video && this.video.requestVideoFrameCallback) {
+        if (this.video && this.video.requestVideoFrameCallback && this.config.live_indicator == true) {
             this.video.requestVideoFrameCallback(() => this.updateHeartbeat());
         }
 
         // start watchdog timer to update live indicator
-        if (!this._liveCheckInterval) {
+        if (!this._liveCheckInterval && this.config.live_indicator == true) {
             this._liveCheckInterval = setInterval(() => {
                 const dot = this.shadowRoot.querySelector('.live-dot');
                 if (!dot) return;
@@ -337,9 +338,12 @@ class WebRTCCamera extends VideoRTC {
             </div>
             <div class="header">
                 <div class="status"></div>
-                <div class="live-dot-wrapper">
-                    <div class="live-dot"></div> <div class="status"></div>
-                </div>
+                ${ this.config.live_indicator == true ? `
+                    <div class="live-dot-wrapper">
+                        <div class="live-dot"></div> <div class="status"></div>
+                    </div>
+                ` : ''
+                }
                 <div class="mode"></div>
             </div>
         </ha-card>
