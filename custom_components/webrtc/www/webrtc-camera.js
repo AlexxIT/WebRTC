@@ -77,8 +77,25 @@ class WebRTCCamera extends VideoRTC {
     set hass(hass) {
         this._hass = hass;
         this.onhass.forEach(fn => fn());
-        // if card in vertical stack - `hass` property assign after `onconnect`
-        // this.onconnect();
+
+        // Fetch ICE servers once when hass is first available
+        if (!this._iceServersFetched) {
+            this._iceServersFetched = true;
+            this.getIceServers();
+        }
+    }
+
+    async getIceServers() {
+        try {
+            const response = await this.hass.callWS({
+                type: "webrtc/get_ice_servers",
+            });
+            if (response && response.length > 0) {
+                this.pcConfig.iceServers = response;
+            }
+        } catch (err) {
+            console.error("Failed to get ICE servers:", err);
+        }
     }
 
     get hass() {
