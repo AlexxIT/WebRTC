@@ -466,7 +466,7 @@ export class VideoRTC extends HTMLElement {
                         // console.debug('VideoRTC.buffered', gap, this.video.playbackRate, this.video.readyState);
                     }
                 } catch (e) {
-                    // console.debug(e);
+                    console.warn('VideoRTC.updateend', e);
                 }
             });
 
