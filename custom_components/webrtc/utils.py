@@ -214,6 +214,12 @@ def api_streams(hass: HomeAssistant) -> str:
     return urljoin(go_url, "api/streams")
 
 
+def api_ffmpeg(hass: HomeAssistant) -> str:
+    entry = hass.data[DOMAIN]
+    go_url = "http://localhost:1984/" if isinstance(entry, Server) else entry
+    return urljoin(go_url, "api/ffmpeg")
+
+
 # copied from homeassistant.components.hassio.ingress import _websocket_forward
 async def websocket_forward(ws_from, ws_to) -> None:
     try:
