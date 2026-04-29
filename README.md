@@ -56,7 +56,7 @@ You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass
 
 ## Installation
 
-**Method 1.** [HACS](https://hacs.xyz/) > Integrations > Plus > **WebRTC** > Install
+**Method 1.** [HACS](https://hacs.xyz/) > Integrations > Plus > **WebRTC Camera** > Install
 
 **Method 2.** Manually copy `webrtc` folder from [latest release](https://github.com/AlexxIT/WebRTC/releases/latest) to `/config/custom_components` folder.
 
@@ -75,7 +75,7 @@ You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass
 
 ## Configuration
 
-Settings > Devices & Services > Add Integration > **WebRTC**
+Settings > Devices & Services > Add Integration > **WebRTC Camera**
 
 If the integration is not in the list, you need to clear the browser cache.
 
@@ -333,7 +333,7 @@ media_player:
 
 ## FAQ
 
-**Q. Exernal access with WebRTC doesn't work**  
+**Q. External access with WebRTC doesn't work**  
 A. [Read more](https://github.com/AlexxIT/WebRTC/issues/378) and don't create new issues.
 
 **Q. Audio doesn't work**  
