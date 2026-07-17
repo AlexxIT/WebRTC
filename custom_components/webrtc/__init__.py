@@ -7,7 +7,12 @@ from urllib.parse import urlencode, urljoin
 
 import voluptuous as vol
 from aiohttp import web
-from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
+from aiohttp.web_exceptions import (
+    HTTPForbidden,
+    HTTPGone,
+    HTTPNotFound,
+    HTTPUnauthorized,
+)
 from homeassistant.components.binary_sensor import HomeAssistant  # fix tests
 from homeassistant.components.camera import async_get_stream_source, async_get_image
 from homeassistant.components.http import HomeAssistantView
@@ -247,8 +252,10 @@ class WebSocketView(HomeAssistantView):
 
         # fix for https://github.com/AlexxIT/WebRTC/pull/320
         elif not utils.validate_signed_request(request):
-            # you shall not pass
-            raise HTTPUnauthorized()
+            # Reject invalid/expired stream signatures with 403, not 401.
+            # HA's ban middleware treats HTTPUnauthorized as a failed login and
+            # can IP-ban the client after login_attempts_threshold hits (#955).
+            raise HTTPForbidden()
 
         hass = request.app["hass"]
 
@@ -299,7 +306,8 @@ class HLSView(HomeAssistantView):
 
     async def get(self, request: web.Request, filename: str):
         if request.cookies.get(HLS_COOKIE) != HLS_SESSION:
-            raise HTTPUnauthorized()
+            # Same ban footgun as authSig above — do not raise 401 (#955).
+            raise HTTPForbidden()
 
         if filename not in ("playlist.m3u8", "init.mp4", "segment.m4s", "segment.ts"):
             raise HTTPNotFound()
