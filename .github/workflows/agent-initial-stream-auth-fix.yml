@@ -1,0 +1,100 @@
+name: initial-stream-auth-fix
+on:
+  push:
+    branches:
+      - agent/initial-stream-auth-fix-temp
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('custom_components/webrtc/www/webrtc-camera.js')
+          s = p.read_text()
+          old = '''        this.hass.callWS({
+            type: 'auth/sign_path', path: '/api/webrtc/ws'
+        }).then(data => {
+            const buildStreamURL = stream => {
+                let url = 'ws' + this.hass.hassUrl(data.path).substring(4);
+                if (stream?.entity) url += '&entity=' + encodeURIComponent(stream.entity);
+                else if (stream?.url) url += '&url=' + encodeURIComponent(stream.url);
+                else return '';
+                if (stream?.server) url += '&server=' + encodeURIComponent(stream.server);
+                return url;
+            };
+            if (this.initialStream && this.config.initial_stream) {
+                const initial = typeof this.config.initial_stream === 'string'
+                    ? {url: this.config.initial_stream}
+                    : this.config.initial_stream;
+                const initialURL = buildStreamURL(initial);
+                if (initialURL) {
+                    this._mainStreamReady = false;
+                    this.initialStream.style.display = 'block';
+                    this.initialStream.style.opacity = '1';
+                    this.initialStream.ondisconnect();
+                    this.initialStream.wsURL = initialURL;
+                    this.initialStream.onconnect();
+                }
+            }
+            if (this.config.poster && !this.config.poster_remote) {
+'''
+          new = '''        const buildStreamURL = (signedPath, stream) => {
+            let url = 'ws' + this.hass.hassUrl(signedPath).substring(4);
+            if (stream?.entity) url += '&entity=' + encodeURIComponent(stream.entity);
+            else if (stream?.url) url += '&url=' + encodeURIComponent(stream.url);
+            else return '';
+            if (stream?.server) url += '&server=' + encodeURIComponent(stream.server);
+            return url;
+        };
+
+        if (this.initialStream && this.config.initial_stream) {
+            const initial = typeof this.config.initial_stream === 'string'
+                ? {url: this.config.initial_stream}
+                : this.config.initial_stream;
+            this.hass.callWS({
+                type: 'auth/sign_path', path: '/api/webrtc/ws'
+            }).then(initialData => {
+                const initialURL = buildStreamURL(initialData.path, initial);
+                if (!initialURL) return;
+                this._mainStreamReady = false;
+                this.initialStream.style.display = 'block';
+                this.initialStream.style.opacity = '1';
+                this.initialStream.ondisconnect();
+                this.initialStream.src = initialURL;
+            }).catch(er => {
+                console.warn('WebRTC initial_stream connection setup failed', er);
+            });
+        }
+
+        this.hass.callWS({
+            type: 'auth/sign_path', path: '/api/webrtc/ws'
+        }).then(data => {
+            if (this.config.poster && !this.config.poster_remote) {
+'''
+          if old not in s:
+              raise SystemExit('target block not found')
+          p.write_text(s.replace(old, new, 1))
+
+          m = Path('custom_components/webrtc/manifest.json')
+          ms = m.read_text()
+          if '"version": "3.6.14"' not in ms:
+              raise SystemExit('expected 3.6.14 manifest')
+          m.write_text(ms.replace('"version": "3.6.14"', '"version": "3.6.15"', 1))
+          PY
+      - name: Validate
+        run: |
+          node --check custom_components/webrtc/www/webrtc-camera.js
+          python -m json.tool custom_components/webrtc/manifest.json >/dev/null
+      - name: Commit
+        run: |
+          git config user.name D3XT3R
+          git config user.email d3xt3rsl4b@gmail.com
+          git add custom_components/webrtc/www/webrtc-camera.js custom_components/webrtc/manifest.json
+          git commit -m "Give initial stream its own signed WebSocket path"
+          git push
