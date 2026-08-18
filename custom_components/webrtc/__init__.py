@@ -206,7 +206,7 @@ async def ws_poster(hass: HomeAssistant, params: dict) -> web.Response:
         # support entity_id as poster
         image_entity = _get_image_from_entity_id(hass, poster)
         image = await image_entity.async_image()
-        _LOGGER.debug(f"webrtc image_entity: {image_entity} - {len(image)}")
+        _LOGGER.debug(f"webrtc image_entity: {image_entity} - {len(image) if image else 0}")
         return web.Response(body=image, content_type="image/jpeg")
 
     # support poster from go2rtc stream name
