@@ -23,7 +23,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required("stream"): cv.string,
-        vol.Required("audio"): cv.string,
+        vol.Optional("audio"): cv.string,
     },
     extra=vol.REMOVE_EXTRA,
 )
@@ -42,7 +42,7 @@ async def async_setup_platform(
 
 
 class WebRTCPlayer(MediaPlayerEntity):
-    def __init__(self, name: str, stream: str, audio: str, **kwargs):
+    def __init__(self, name: str, stream: str, audio: str = None, **kwargs):
         self._attr_supported_features = (
             MediaPlayerEntityFeature.PLAY_MEDIA
             | MediaPlayerEntityFeature.BROWSE_MEDIA
@@ -50,7 +50,6 @@ class WebRTCPlayer(MediaPlayerEntity):
         )
         self._attr_name = name
         self._attr_unique_id = stream
-        self.audio = audio
 
     async def async_play_media(self, media_type: str, media_id: str, **kwargs) -> None:
         if media_source.is_media_source_id(media_id):
@@ -60,15 +59,15 @@ class WebRTCPlayer(MediaPlayerEntity):
             media_id = sourced_media.url
 
         media_id = async_process_play_media_url(self.hass, media_id)
-        if not media_type.startswith("#"):
-            media_type = "#input=file"
 
+        # Use go2rtc's /api/ffmpeg helper: it sets audio=auto on the ffmpeg
+        # producer so go2rtc negotiates the codec the camera's backchannel
+        # actually supports. The previous /api/streams path hardcoded the
+        # codec from `audio:` config and surfaced mismatches as a misleading
+        # "can't find consumer" error.
         r = await async_get_clientsession(self.hass).post(
-            utils.api_streams(self.hass),
-            params={
-                "dst": self.unique_id,
-                "src": f"ffmpeg:{media_id}#audio={self.audio}{media_type}",
-            },
+            utils.api_ffmpeg(self.hass),
+            params={"dst": self.unique_id, "file": media_id},
             timeout=9,
         )
         assert r.ok
