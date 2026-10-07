@@ -69,7 +69,7 @@ class WebRTCCamera extends VideoRTC {
         }, config);
 
         this.streamID = -1;
-        this.nextStream(false);
+        this.nextStream(false, false);
 
         this.onhass = [];
     }
@@ -109,7 +109,7 @@ class WebRTCCamera extends VideoRTC {
     }
 
     /** @param reload {boolean} */
-    nextStream(reload) {
+    nextStream(reload, click) {
         this.streamID = (this.streamID + 1) % this.config.streams.length;
 
         const stream = this.config.streams[this.streamID];
@@ -117,10 +117,19 @@ class WebRTCCamera extends VideoRTC {
         this.config.entity = stream.entity;
         this.mode = stream.mode || this.config.mode;
         this.media = stream.media || this.config.media;
+        this.muted = stream.muted || this.config.muted;
+        if (this.video) this.video.muted = this.muted;
 
         if (reload) {
             this.ondisconnect();
             setTimeout(() => this.onconnect(), 100); // wait ws.close event
+        }
+
+        if (click) {
+            if (stream.service !== undefined) {
+                const [domain, name] = stream.service.split('.');
+                this.hass.callService(domain, name, stream.service_data || {});
+            }
         }
     }
 
@@ -265,9 +274,9 @@ class WebRTCCamera extends VideoRTC {
         this.querySelector('.ptz-transform').appendChild(this.video);
 
         const mode = this.querySelector('.mode');
-        mode.addEventListener('click', () => this.nextStream(true));
+        mode.addEventListener('click', () => this.nextStream(true, false));
 
-        if (this.config.muted) this.video.muted = true;
+        this.video.muted = this.muted;
         if (this.config.poster_remote) this.video.poster = this.config.poster;
     }
 
@@ -562,8 +571,9 @@ class WebRTCCamera extends VideoRTC {
             } else if (icon === 'mdi:rectangle') {
                 document.exitPictureInPicture().catch(console.warn);
             } else if (ev.target.className === 'stream') {
-                this.nextStream(true);
+                this.nextStream(true, true);
                 ev.target.innerText = this.streamName;
+                this.querySelector('.volume').icon = this.muted ? 'mdi:volume-mute' : 'mdi:volume-high';
             }
         });
 
