@@ -71,8 +71,8 @@ const preventScroll = (e) => {
   e.stopImmediatePropagation();
 };
 const getCenter = (touches) => ({
-  x: (touches[0].pageX + touches[1].pageX) / 2,
-  y: (touches[0].pageY + touches[1].pageY) / 2,
+  x: (touches[0].clientX + touches[1].clientX) / 2,
+  y: (touches[0].clientY + touches[1].clientY) / 2,
 });
 const getSpread = (touches) =>
   Math.hypot(
@@ -125,8 +125,8 @@ function startTouchTapDragZoom({ containerEl, transform, render }) {
   };
   const onTouchMove = (moveEvent) => {
     if (fastClicks === 2) {
-      const lastY = lastEvent.touches[0].pageY;
-      const currY = moveEvent.touches[0].pageY;
+      const lastY = lastEvent.touches[0].clientY;
+      const currY = moveEvent.touches[0].clientY;
       transform.zoom(1 - (lastY - currY) * ONE_FINGER_ZOOM_SPEED);
       lastEvent = moveEvent;
       render();
@@ -145,7 +145,7 @@ function startTouchTapDragZoom({ containerEl, transform, render }) {
 function startMouseWheel({ containerEl, transform, render }) {
   const onWheel = (e) => {
     const zoom = 1 - e.deltaY / 1000;
-    transform.zoomAtCoords(zoom, e.pageX, e.pageY);
+    transform.zoomAtCoords(zoom, e.clientX, e.clientY);
     render();
     preventScroll(e);
   };
@@ -164,12 +164,12 @@ function startDoubleClickZoom({ containerEl, transform, render }) {
     const onUp = (upEvent) => {
       const isQuickRelease = upEvent.timeStamp - lastDown < DBL_CLICK_MS;
       const dist = Math.hypot(
-        upEvent.pageX - downEvent.pageX,
-        upEvent.pageY - downEvent.pageY
+        upEvent.clientX - downEvent.clientX,
+        upEvent.clientY - downEvent.clientY
       );
       if (!isQuickRelease || dist > 20) return;
       const zoom = transform.scale == 1 ? 2 : 0.01;
-      transform.zoomAtCoords(zoom, upEvent.pageX, upEvent.pageY);
+      transform.zoomAtCoords(zoom, upEvent.clientX, upEvent.clientY);
       render(true);
     };
     window.addEventListener("mouseup", onUp, { once: true });
@@ -188,7 +188,7 @@ function startGesturePan({ containerEl, transform, render }, type) {
     const onMove = (moveEvt) => {
       if (isTouchEvent(moveEvt) && moveEvt.touches.length !== 1) return;
       const curr = isTouchEvent(moveEvt) ? moveEvt.touches[0] : moveEvt;
-      transform.move(curr.pageX - last.pageX, curr.pageY - last.pageY);
+      transform.move(curr.clientX - last.clientX, curr.clientY - last.clientY);
       last = curr;
       render();
       if (transform.scale !== 1) preventScroll(moveEvt);
@@ -334,8 +334,8 @@ class Transform {
   }
   zoom(zoom) {
     if (!this.containerRect || !this.videoRect) return;
-    const x = this.containerRect.width / 2;
-    const y = this.containerRect.height / 2;
+    const x = this.containerRect.x + this.containerRect.width / 2;
+    const y = this.containerRect.y + this.containerRect.height / 2;
     this.zoomAtCoords(zoom, x, y);
   }
   render() {
