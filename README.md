@@ -50,7 +50,18 @@ You can install go2rtc in several ways:
 
 You can change the go2rtc settings by adding the `go2rtc.yaml` file to your Hass configuration folder.
 
-**Important.** go2rtc runs its own web interface on port `1984` without a password. There you can see a list of active camera streams. Anyone on your LAN can **access them without a password**. You can disable this in the go2rtc config.
+**Important.** go2rtc runs its own web interface and API on port `1984` without a password, and by default it listens on all network interfaces. Anyone on your LAN can **open it without a password**: see your streams and their source URLs (which often contain camera passwords), and edit the go2rtc config. Through `exec:` sources, that means running commands inside Home Assistant (see [go2rtc security](https://github.com/AlexxIT/go2rtc#security)). RTSP on port `8554` is open the same way.
+
+If you don't need the go2rtc web interface from other devices, keep it on localhost in your `go2rtc.yaml`. When this component runs go2rtc itself, it talks to it on `localhost`, so your cameras keep working:
+
+```yaml
+api:
+  listen: "127.0.0.1:1984"  # web interface and API: this host only
+rtsp:
+  listen: "127.0.0.1:8554"  # RTSP restream: this host only
+```
+
+Leave the WebRTC port `8555` reachable: browsers on your LAN stream through it.
 
 **PS.** There is also another nice card with go2rtc support - [Frigate Lovelace Card](https://github.com/dermotduffy/frigate-hass-card).
 
