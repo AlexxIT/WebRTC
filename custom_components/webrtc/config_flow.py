@@ -11,6 +11,15 @@ from homeassistant.const import CONF_URL, CONF_USERNAME, CONF_PASSWORD
 from . import DOMAIN, utils
 
 
+# links for the user step description (hassfest does not allow URLs inside translations)
+USER_PLACEHOLDERS = {
+    "go2rtc_url": "https://github.com/AlexxIT/go2rtc",
+    "go2rtc_addon_url": "https://github.com/AlexxIT/go2rtc#go2rtc-home-assistant-add-on",
+    "frigate_url": "https://docs.frigate.video/",
+    "local_url": "http://localhost:1984",
+}
+
+
 class FlowHandler(ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         # check if only one integration instance
@@ -42,6 +51,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                         }
                     ),
                     errors={"base": "connect"},
+                    description_placeholders=USER_PLACEHOLDERS,
                 )
 
             return self.async_create_entry(title="WebRTC Camera", data=user_input)
@@ -64,6 +74,7 @@ class FlowHandler(ConfigFlow, domain=DOMAIN):
                     vol.Optional(CONF_URL, default=url): cv.string,
                 }
             ),
+            description_placeholders=USER_PLACEHOLDERS,
         )
 
     async def async_step_config(self, user_input: dict = None):

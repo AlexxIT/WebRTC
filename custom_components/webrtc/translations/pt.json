@@ -10,7 +10,7 @@
     "step": {
       "user": {
         "title": "URL do go2rtc",
-        "description": "Selecione a versão do servidor de streaming [go2rtc](https://github.com/AlexxIT/go2rtc):\n1. Deixe em branco se desejar utilizar a versão go2rtc incorporada (*utilizadores básicos*)\n2. Defina `http://localhost:1984` se instalar o add-on [go2rtc](https://github.com/AlexxIT/go2rtc#go2rtc-home-assistant-add-on) ou [Frigate 12+](https://docs.frigate.video/) (*utilizadores avançados*)\n3. Defina um endereço personalizado se instalar go2rtc num outro servidor (*utilizadores experientes*)",
+        "description": "Selecione a versão do servidor de streaming [go2rtc]({go2rtc_url}):\n1. Deixe em branco se desejar utilizar a versão go2rtc incorporada (*utilizadores básicos*)\n2. Defina `{local_url}` se instalar o add-on [go2rtc]({go2rtc_addon_url}) ou [Frigate 12+]({frigate_url}) (*utilizadores avançados*)\n3. Defina um endereço personalizado se instalar go2rtc num outro servidor (*utilizadores experientes*)",
         "data": {
           "url": "URL"
         }

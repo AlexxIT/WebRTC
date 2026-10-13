@@ -10,7 +10,7 @@
     "step": {
       "user": {
         "title": "go2rtc یو آر ایل",
-        "description": "[go2rtc](https://github.com/AlexxIT/go2rtc) اسٹریمنگ سرور ورژن منتخب کریں:\n1۔ اگر آپ بلٹ ان go2rtc ورژن (*بنیادی صارفین*) چاہتے ہیں تو خالی چھوڑ دیں\n2۔ اگر آپ [go2rtc](https://github.com/AlexxIT/go2rtc#go2rtc-home-assistant-add-on) یا [Frigate 12+](https://) کو انسٹال کرتے ہیں تو `http://localhost:1984` سیٹ کریں docs.frigate.video/) ایڈ آن (*جدید صارفین*)\n3۔ اگر آپ کسی دوسرے سرور (*ہیکرز*) پر go2rtc انسٹال کرتے ہیں تو اپنی مرضی کے مطابق پتہ سیٹ کریں۔",
+        "description": "[go2rtc]({go2rtc_url}) اسٹریمنگ سرور ورژن منتخب کریں:\n1۔ اگر آپ بلٹ ان go2rtc ورژن (*بنیادی صارفین*) چاہتے ہیں تو خالی چھوڑ دیں\n2۔ اگر آپ [go2rtc]({go2rtc_addon_url}) یا [Frigate 12+]({frigate_url}) کو انسٹال کرتے ہیں تو `{local_url}` سیٹ کریں ایڈ آن (*جدید صارفین*)\n3۔ اگر آپ کسی دوسرے سرور (*ہیکرز*) پر go2rtc انسٹال کرتے ہیں تو اپنی مرضی کے مطابق پتہ سیٹ کریں۔",
         "data": {
           "url": "URL"
         }
