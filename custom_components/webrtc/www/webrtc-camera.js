@@ -34,6 +34,7 @@ class WebRTCCamera extends VideoRTC {
          *     poster: string,
          *     poster_remote: boolean,
          *     muted: boolean,
+         *     fullscreen: string,
          *     intersection: number,
          *     ui: boolean,
          *     style: string,
@@ -72,6 +73,7 @@ class WebRTCCamera extends VideoRTC {
         this.nextStream(false);
 
         this.onhass = [];
+        if (this.isConnected) this.autoFullscreen();
     }
 
     set hass(hass) {
@@ -127,6 +129,35 @@ class WebRTCCamera extends VideoRTC {
     /** @return {string} */
     get streamName() {
         return this.config.streams[this.streamID].name || `S${this.streamID}`;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.autoFullscreen();
+    }
+
+    autoFullscreen() {
+        // masonry and sidebar views move the card into its column right after attaching it; ask only once it
+        // has settled, because one tap allows only one fullscreen request (a move would also drop fullscreen)
+        clearTimeout(this.autoFullscreenTimer);
+        this.autoFullscreenTimer = setTimeout(() => this.autoFullscreenNow(), 500);
+    }
+
+    autoFullscreenNow() {
+        // browsers only allow this shortly after a tap, e.g. the one that opened the view
+        if (!this.isConnected) return;
+        if (!this.config || this.config.fullscreen !== 'auto' || this.autoFullscreenDone) return;
+        if (document.fullscreenElement || !this.requestFullscreen) return;
+        // a card in a hidden view must not use up the tap: one tap allows only one fullscreen request
+        if (!(this.checkVisibility ? this.checkVisibility() : this.offsetParent !== null)) return;
+        this.autoFullscreenDone = true;
+        this.requestFullscreen().catch(console.warn);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        clearTimeout(this.autoFullscreenTimer);
+        this.autoFullscreenDone = false; // the next time the view opens, go fullscreen again
     }
 
     oninit() {

@@ -164,6 +164,7 @@ digital_ptz:  # digital zoom and pan via mouse/touch, defaults:
 title: My super camera  # optional card title
 poster: https://home-assistant.io/images/cast/splash.png  # still image when stream is loading
 muted: true  # initial mute toggle state, default is false (unmuted)
+fullscreen: auto  # go fullscreen when the view with the card is opened by a tap, default off
 
 intersection: 0.75  # auto stop stream when less than 75% of video element is in the screen, 50% by default
 background: true  # run stream when not displayed (ex. for quick video loading), default false
