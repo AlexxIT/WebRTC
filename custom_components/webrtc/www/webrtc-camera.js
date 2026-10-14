@@ -471,9 +471,9 @@ class WebRTCCamera extends VideoRTC {
                 }
                 .controls {
                     position: absolute;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
+                    left: 5px;
+                    right: 5px;
+                    bottom: 5px;
                     display: flex;
                     align-items: center;
                 }
