@@ -267,12 +267,36 @@ class WebRTCCamera extends VideoRTC {
         const mode = this.querySelector('.mode');
         mode.addEventListener('click', () => this.nextStream(true));
 
+        const player = this.querySelector('.player');
+
+        // Tap action
+        player.addEventListener('click', e => {
+            if (this.config.tap_action && this.config.tap_action.action) {
+                this.handleAction("tap", this.config);
+                e.preventDefault();
+            }
+        });
+
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster_remote) this.video.poster = this.config.poster;
         // without a poster, Android WebView draws its grey play-button placeholder whenever the video has
         // no frame (before the first one and while switching MSE -> WebRTC). A transparent image hides it;
         // 300x150 is the default size of an empty video, so the layout while loading stays the same
         if (!this.config.poster) this.video.poster = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='150'/%3E";
+    }
+
+    handleAction(action, config) {
+        const event = new Event("hass-action", {
+            bubbles: true,
+            composed: true,
+          });
+
+          event.detail = {
+            config: config,
+            action: action
+          }
+
+          this.dispatchEvent(event);
     }
 
     renderDigitalPTZ() {
