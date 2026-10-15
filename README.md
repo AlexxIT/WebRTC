@@ -331,6 +331,22 @@ media_player:
     audio: pcma
 ```
 
+If your camera integration exposes speaker volume as a Home Assistant `number`
+or `input_number` entity, you can attach it to the virtual media player:
+
+```yaml
+media_player:
+  - platform: webrtc
+    name: Tapo Camera
+    stream: tapo
+    audio: pcma
+    volume_entity: number.tapo_camera_speaker_volume
+```
+
+Home Assistant media players use `volume_level` values from `0` to `1`. The
+integration maps that range to the target entity's native `min` and `max`
+attributes, so a `number` with range `0..100` works as a percentage volume.
+
 ## FAQ
 
 **Q. Exernal access with WebRTC doesn't work**  
