@@ -178,6 +178,10 @@ shortcuts:  # custom shortcuts, default none
 
 Pan, tilt, zoom controls: [PTZ config examples](https://github.com/AlexxIT/WebRTC/wiki/PTZ-Config-Examples).
 
+In MSE mode, the native video controls can seek within the buffered history. Seeking back
+plays at normal speed; seeking within two seconds of the live edge resumes live catch-up.
+History is limited, so a long pause can expire older footage.
+
 **Paused by default**
 
 ```yaml

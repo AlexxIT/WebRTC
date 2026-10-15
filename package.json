@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  },
   "devDependencies": {
     "eslint": "^8.44.0",
     "eslint-plugin-html": "^7.1.0"

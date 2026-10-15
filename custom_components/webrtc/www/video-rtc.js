@@ -431,6 +431,29 @@ export class VideoRTC extends HTMLElement {
 
         this.mseCodecs = '';
 
+        const video = this.video;
+        let live = true;
+        const onSeeking = () => {
+            const ranges = video.buffered;
+            if (ranges.length) {
+                // Seeking back opts out of live catch-up; seeking near the edge restores it.
+                live = ranges.end(ranges.length - 1) - video.currentTime <= 2;
+                video.playbackRate = 1;
+            }
+        };
+        const onPause = () => {
+            if (ms.readyState === 'open' && video.buffered.length) {
+                live = false;
+                video.playbackRate = 1;
+            }
+        };
+        video.addEventListener('seeking', onSeeking);
+        video.addEventListener('pause', onPause);
+        ms.addEventListener('sourceclose', () => {
+            video.removeEventListener('seeking', onSeeking);
+            video.removeEventListener('pause', onPause);
+        }, {once: true});
+
         this.onmessage['mse'] = msg => {
             if (msg.type !== 'mse') return;
 
@@ -451,17 +474,35 @@ export class VideoRTC extends HTMLElement {
 
                 if (!sb.updating && sb.buffered && sb.buffered.length) {
                     const end = sb.buffered.end(sb.buffered.length - 1);
-                    const start = end - 5;
                     const start0 = sb.buffered.start(0);
-                    if (start > start0) {
-                        sb.remove(start0, start);
-                        ms.setLiveSeekableRange(start, end);
+
+                    // MSE removal extends to the next keyframe. A five-second tail can
+                    // delete the playing GOP of cameras with six-second keyframe intervals.
+                    // Keep 30 seconds behind playback, capped near 60 seconds behind live
+                    // so pausing cannot grow the buffer indefinitely. Batch removals.
+                    const removeEnd = Math.max(end - 60, Math.min(end, video.currentTime) - 30);
+                    if (removeEnd > start0 + 5) {
+                        sb.remove(start0, removeEnd);
                     }
-                    if (this.video.currentTime < start) {
-                        this.video.currentTime = start;
+                    ms.setLiveSeekableRange(start0, end);
+                    if (video.paused || video.seeking) return;
+
+                    if (live && video.currentTime < end - 5) {
+                        const start = sb.buffered.start(sb.buffered.length - 1);
+                        video.currentTime = Math.max(start, end - 1);
+                    } else {
+                        // Eviction and timestamp gaps can leave the playhead unbuffered.
+                        // Recover to real media without cancelling intentional replay.
+                        for (let i = 0; i < sb.buffered.length; i++) {
+                            if (video.currentTime < sb.buffered.start(i)) {
+                                video.currentTime = sb.buffered.start(i);
+                                break;
+                            }
+                            if (video.currentTime < sb.buffered.end(i)) break;
+                        }
                     }
-                    const gap = end - this.video.currentTime;
-                    this.video.playbackRate = gap > 0.1 ? gap : 0.1;
+                    const gap = end - video.currentTime;
+                    video.playbackRate = live ? Math.max(gap, 0.1) : 1;
                     // console.debug('VideoRTC.buffered', gap, this.video.playbackRate, this.video.readyState);
                 }
             });
