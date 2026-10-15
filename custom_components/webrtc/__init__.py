@@ -11,6 +11,7 @@ from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
 from homeassistant.components.binary_sensor import HomeAssistant  # fix tests
 from homeassistant.components.camera import async_get_stream_source, async_get_image
 from homeassistant.components.http import HomeAssistantView
+from homeassistant.components.web_rtc import RTCIceServer
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, CONF_URL, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import ServiceCall
@@ -18,6 +19,9 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.template import Template
+from homeassistant.core import callback
+from homeassistant.components import websocket_api
+import voluptuous as vol
 
 from . import utils
 from .utils import DOMAIN, Server
@@ -74,8 +78,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
     # 5. Serve HLS proxy
     hass.http.register_view(HLSView)
 
-    # 6. Register webrtc.create_link and webrtc.dash_cast services:
+    # 6. Serve ICE servers API
+    websocket_api.async_register_command(hass, websocket_get_ice_servers)
 
+    # 7. Register webrtc.create_link and webrtc.dash_cast services:
     async def create_link(call: ServiceCall):
         link_id = call.data["link_id"]
         ttl = call.data["time_to_live"]
@@ -315,3 +321,38 @@ class HLSView(HomeAssistantView):
 
             body = await r.read()
             return web.Response(body=body, content_type=r.content_type)
+
+
+WS_TYPE_GET_ICE_SERVERS = "webrtc/get_ice_servers"
+
+try:
+    from homeassistant.components.web_rtc import async_get_ice_servers
+    WEBRTC_AVAILABLE = True
+except ImportError:
+    WEBRTC_AVAILABLE = False
+
+
+@callback
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): WS_TYPE_GET_ICE_SERVERS,
+    }
+)
+@websocket_api.async_response
+async def websocket_get_ice_servers(hass: HomeAssistant, connection, msg):
+    """Return ICE servers in WebRTC PeerConnection format."""
+    ice_servers: list[RTCIceServer] = []
+    if WEBRTC_AVAILABLE:
+        ice_servers = async_get_ice_servers(hass)
+
+    # Convert to WebRTC PeerConnection format
+    result = []
+    for server in ice_servers:
+        server_dict = {"urls": server.urls}
+        if server.username is not None:
+            server_dict["username"] = server.username
+        if server.credential is not None:
+            server_dict["credential"] = server.credential
+        result.append(server_dict)
+
+    connection.send_result(msg["id"], result)
