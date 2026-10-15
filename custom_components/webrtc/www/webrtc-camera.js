@@ -129,6 +129,11 @@ class WebRTCCamera extends VideoRTC {
         return this.config.streams[this.streamID].name || `S${this.streamID}`;
     }
 
+    /** @return {string} */
+    get streamIcon() {
+        return this.config.streams[this.streamID].icon || `mdi:camera`;
+    }
+
     oninit() {
         super.oninit();
         this.renderMain();
@@ -484,13 +489,19 @@ class WebRTCCamera extends VideoRTC {
                     display: none;
                 }
                 .stream {
-                    padding-top: 2px;
+                    display: none;
+                    cursor: pointer;
+                    align-items: center;
+                }
+                .streamicon {
+                    pointer-events: none;
+                }
+                .streamname {
                     margin-left: 2px;
                     font-weight: 400;
                     font-size: 20px;
                     color: white;
-                    display: none;
-                    cursor: pointer;
+                    pointer-events: none;
                 }
             </style>
         `);
@@ -501,7 +512,10 @@ class WebRTCCamera extends VideoRTC {
                     <ha-icon class="fullscreen" icon="mdi:fullscreen"></ha-icon>
                     <ha-icon class="screenshot" icon="mdi:floppy"></ha-icon>
                     <ha-icon class="pictureinpicture" icon="mdi:picture-in-picture-bottom-right"></ha-icon>
-                    <span class="stream">${this.streamName}</span>
+                    <div class="stream">
+                        <ha-icon class="streamicon" icon="${this.streamIcon}"></ha-icon>
+                        <span class="streamname">${this.streamName}</span>
+                    </div>
                     <span class="space"></span>
                     <ha-icon class="play" icon="mdi:play"></ha-icon>
                     <ha-icon class="volume" icon="mdi:volume-high"></ha-icon>
@@ -567,7 +581,8 @@ class WebRTCCamera extends VideoRTC {
                 document.exitPictureInPicture().catch(console.warn);
             } else if (ev.target.className === 'stream') {
                 this.nextStream(true);
-                ev.target.innerText = this.streamName;
+                ev.target.querySelector('.streamname').innerText = this.streamName;
+                ev.target.querySelector('.streamicon').icon = this.streamIcon;
             }
         });
 
@@ -596,7 +611,7 @@ class WebRTCCamera extends VideoRTC {
         });
 
         const stream = this.querySelector('.stream');
-        stream.style.display = this.config.streams.length > 1 ? 'block' : 'none';
+        stream.style.display = this.config.streams.length > 1 ? 'flex' : 'none';
     }
 
     renderShortcuts() {
