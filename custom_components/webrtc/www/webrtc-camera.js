@@ -269,6 +269,10 @@ class WebRTCCamera extends VideoRTC {
 
         if (this.config.muted) this.video.muted = true;
         if (this.config.poster_remote) this.video.poster = this.config.poster;
+        // without a poster, Android WebView draws its grey play-button placeholder whenever the video has
+        // no frame (before the first one and while switching MSE -> WebRTC). A transparent image hides it;
+        // 300x150 is the default size of an empty video, so the layout while loading stays the same
+        if (!this.config.poster) this.video.poster = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='150'/%3E";
     }
 
     renderDigitalPTZ() {
