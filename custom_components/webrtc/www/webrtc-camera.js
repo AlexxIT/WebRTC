@@ -137,10 +137,22 @@ class WebRTCCamera extends VideoRTC {
     }
 
     autoFullscreen() {
-        // masonry and sidebar views move the card into its column right after attaching it; ask only once it
-        // has settled, because one tap allows only one fullscreen request (a move would also drop fullscreen)
         clearTimeout(this.autoFullscreenTimer);
-        this.autoFullscreenTimer = setTimeout(() => this.autoFullscreenNow(), 500);
+        // A detach and re-attach within a moment is a move, not a removal
+        const moved = this.autoFullscreenDetachedAt && performance.now() - this.autoFullscreenDetachedAt < 1000;
+        this.autoFullscreenDetachedAt = 0;
+        // Masonry and sidebar views move the card into its column right after attaching it. One tap allows
+        // only one fullscreen request and the move would drop fullscreen again, so there wait for the move
+        // (or, if none comes, e.g. when the view is already laid out, a moment). Elsewhere ask right away.
+        const wait = !moved && this.inMovingLayout();
+        this.autoFullscreenTimer = setTimeout(() => this.autoFullscreenNow(), wait ? 500 : 0);
+    }
+
+    inMovingLayout() {
+        for (let node = this; node; node = node.parentNode || node.host) {
+            if (node.localName === 'hui-masonry-view' || node.localName === 'hui-sidebar-view') return true;
+        }
+        return false;
     }
 
     autoFullscreenNow() {
@@ -157,6 +169,7 @@ class WebRTCCamera extends VideoRTC {
     disconnectedCallback() {
         super.disconnectedCallback();
         clearTimeout(this.autoFullscreenTimer);
+        this.autoFullscreenDetachedAt = performance.now();
         this.autoFullscreenDone = false; // the next time the view opens, go fullscreen again
     }
 
