@@ -477,6 +477,16 @@ class WebRTCCamera extends VideoRTC {
                     display: flex;
                     align-items: center;
                 }
+                .controls ha-icon, .stream {
+                    padding: 6px;
+                    border-radius: 18px;
+                    transition: background-color 0.15s, transform 0.1s;
+                    -webkit-tap-highlight-color: transparent;
+                }
+                .controls ha-icon:active, .stream:active {
+                    background-color: rgba(255, 255, 255, 0.25);
+                    transform: scale(0.9);
+                }
                 .space {
                     width: 100%;
                 }
@@ -484,8 +494,7 @@ class WebRTCCamera extends VideoRTC {
                     display: none;
                 }
                 .stream {
-                    padding-top: 2px;
-                    margin-left: 2px;
+                    line-height: 24px;
                     font-weight: 400;
                     font-size: 20px;
                     color: white;
@@ -549,6 +558,10 @@ class WebRTCCamera extends VideoRTC {
         const ui = this.querySelector('.ui');
         ui.addEventListener('click', ev => {
             const icon = ev.target.icon;
+            // short vibration on the device that was tapped (Home Assistant's own haptic event)
+            if (icon || ev.target.className === 'stream') {
+                window.dispatchEvent(new CustomEvent('haptic', {detail: 'selection'}));
+            }
             if (icon === 'mdi:play') {
                 this.play();
             } else if (icon === 'mdi:volume-mute') {
