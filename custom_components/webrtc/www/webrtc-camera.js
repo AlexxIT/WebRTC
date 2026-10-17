@@ -532,7 +532,8 @@ class WebRTCCamera extends VideoRTC {
         }
 
         const pip = this.querySelector('.pictureinpicture');
-        if (video.requestPictureInPicture) {
+        // Android WebView (the HA app) has the method but refuses it; pictureInPictureEnabled tells the truth
+        if (video.requestPictureInPicture && document.pictureInPictureEnabled) {
             video.addEventListener('enterpictureinpicture', () => {
                 pip.icon = 'mdi:rectangle';
                 this.background = true;
