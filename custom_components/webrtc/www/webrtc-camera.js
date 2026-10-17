@@ -34,6 +34,7 @@ class WebRTCCamera extends VideoRTC {
          *     poster: string,
          *     poster_remote: boolean,
          *     muted: boolean,
+         *     fullscreen: string,
          *     intersection: number,
          *     ui: boolean,
          *     style: string,
@@ -72,6 +73,7 @@ class WebRTCCamera extends VideoRTC {
         this.nextStream(false);
 
         this.onhass = [];
+        if (this.isConnected) this.autoFullscreen();
     }
 
     set hass(hass) {
@@ -127,6 +129,48 @@ class WebRTCCamera extends VideoRTC {
     /** @return {string} */
     get streamName() {
         return this.config.streams[this.streamID].name || `S${this.streamID}`;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.autoFullscreen();
+    }
+
+    autoFullscreen() {
+        clearTimeout(this.autoFullscreenTimer);
+        // A detach and re-attach within a moment is a move, not a removal
+        const moved = this.autoFullscreenDetachedAt && performance.now() - this.autoFullscreenDetachedAt < 1000;
+        this.autoFullscreenDetachedAt = 0;
+        // Masonry and sidebar views move the card into its column right after attaching it. One tap allows
+        // only one fullscreen request and the move would drop fullscreen again, so there wait for the move
+        // (or, if none comes, e.g. when the view is already laid out, a moment). Elsewhere ask right away.
+        const wait = !moved && this.inMovingLayout();
+        this.autoFullscreenTimer = setTimeout(() => this.autoFullscreenNow(), wait ? 500 : 0);
+    }
+
+    inMovingLayout() {
+        for (let node = this; node; node = node.parentNode || node.host) {
+            if (node.localName === 'hui-masonry-view' || node.localName === 'hui-sidebar-view') return true;
+        }
+        return false;
+    }
+
+    autoFullscreenNow() {
+        // browsers only allow this shortly after a tap, e.g. the one that opened the view
+        if (!this.isConnected) return;
+        if (!this.config || this.config.fullscreen !== 'auto' || this.autoFullscreenDone) return;
+        if (document.fullscreenElement || !this.requestFullscreen) return;
+        // a card in a hidden view must not use up the tap: one tap allows only one fullscreen request
+        if (!(this.checkVisibility ? this.checkVisibility() : this.offsetParent !== null)) return;
+        this.autoFullscreenDone = true;
+        this.requestFullscreen().catch(console.warn);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        clearTimeout(this.autoFullscreenTimer);
+        this.autoFullscreenDetachedAt = performance.now();
+        this.autoFullscreenDone = false; // the next time the view opens, go fullscreen again
     }
 
     oninit() {
